@@ -13,7 +13,8 @@ import {
   CalendarCheck2,
   TrendingUp,
   Award,
-  RefreshCw
+  RefreshCw,
+  ArrowRight
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -64,10 +65,10 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner & Quick Controls */}
+    <div className="space-y-4">
+      {/* Top Banner & Quick Actions */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 lg:p-6 rounded-2xl border transition-all shadow-md"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border shadow-sm transition-all"
         style={{
           backgroundColor: colors.bgCard,
           borderColor: colors.border
@@ -75,20 +76,21 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
       >
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xl">🥋</span>
-            <h1 className="text-xl lg:text-2xl font-black tracking-tight" style={{ color: colors.textPrimary }}>
-              Executive Academy Command Center
+            <span className="text-lg">🥋</span>
+            <h1 className="text-base sm:text-lg font-bold tracking-tight" style={{ color: colors.textPrimary }}>
+              Academy Dashboard
             </h1>
           </div>
-          <p className="text-xs lg:text-sm mt-1" style={{ color: colors.textSecondary }}>
-            Real-time biometric tracking, end-of-month fee audits, and federation grading records for Al Murtaza Shah TKD.
+          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+            Live attendance tracking, monthly fee audits, and belt rankings for Al Murtaza Shah TKD.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={loadData}
-            className="px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 border transition-all hover:scale-105 active:scale-95"
+            disabled={loading}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition hover:opacity-80 active:scale-95"
             style={{
               backgroundColor: colors.bgSecondary,
               color: colors.textPrimary,
@@ -96,55 +98,58 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
             }}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} style={{ color: colors.primary }} />
-            <span>Sync Live</span>
+            <span>Sync</span>
           </button>
           <button
             onClick={() => onNavigate('terminal')}
-            className="px-3.5 py-2 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all hover:opacity-95 active:scale-95"
+            className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:opacity-95 active:scale-95"
             style={{ backgroundColor: colors.primary }}
           >
             <CalendarCheck2 className="w-3.5 h-3.5" />
-            <span>Launch Smart Terminal</span>
+            <span>Open Attendance</span>
           </button>
         </div>
       </div>
 
-      {/* 4 PRIMARY EXECUTIVE KPI CARDS */}
+      {/* 4 Clean Primary KPI Cards */}
       {data && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* KPI 1: Active vs Inactive Students */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* KPI 1: Active Students */}
           <div
-            className="p-4 rounded-2xl border shadow-sm relative overflow-hidden group transition-all duration-200 hover:shadow-md"
+            className="p-3.5 rounded-xl border shadow-sm transition-all duration-150 flex flex-col justify-between"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
-                Student Registry
-              </span>
-              <div
-                className="p-2 rounded-xl border"
-                style={{
-                  backgroundColor: colors.badgeBg,
-                  borderColor: colors.border,
-                  color: colors.primary
-                }}
-              >
-                <Users className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                  Active Students
+                </span>
+                <div
+                  className="p-1.5 rounded-lg border"
+                  style={{
+                    backgroundColor: colors.badgeBg,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
+                  <Users className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-mono tracking-tight" style={{ color: colors.textPrimary }}>
+                  {data.kpis.students.active}
+                </span>
+                <span className="text-xs font-medium" style={{ color: colors.primary }}>
+                  Enrolled
+                </span>
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl lg:text-3xl font-black" style={{ color: colors.textPrimary }}>
-                {data.kpis.students.active}
-              </span>
-              <span className="text-xs font-semibold" style={{ color: colors.primary }}>
-                Active Students
-              </span>
-            </div>
+
             <div
-              className="mt-3 pt-3 border-t flex items-center justify-between text-xs"
+              className="mt-3 pt-2 border-t flex items-center justify-between text-xs"
               style={{
                 borderColor: colors.border,
                 color: colors.textSecondary
@@ -152,95 +157,101 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
             >
               <span className="flex items-center gap-1">
                 <UserCheck className="w-3.5 h-3.5" style={{ color: colors.primary }} />
-                Total: {data.kpis.students.total}
+                Total: <strong>{data.kpis.students.total}</strong>
               </span>
               <span className="flex items-center gap-1">
                 <UserX className="w-3.5 h-3.5 text-rose-500" />
-                Inactive: {data.kpis.students.inactive}
+                Inactive: <strong>{data.kpis.students.inactive}</strong>
               </span>
             </div>
           </div>
 
-          {/* KPI 2: Today's Live Attendance */}
+          {/* KPI 2: Today's Attendance */}
           <div
-            className="p-4 rounded-2xl border shadow-sm relative overflow-hidden group transition-all duration-200 hover:shadow-md"
+            className="p-3.5 rounded-xl border shadow-sm transition-all duration-150 flex flex-col justify-between"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
-                Today's Live Attendance
-              </span>
-              <div
-                className="p-2 rounded-xl border"
-                style={{
-                  backgroundColor: colors.badgeBg,
-                  borderColor: colors.border,
-                  color: colors.primary
-                }}
-              >
-                <CalendarCheck2 className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                  Today's Attendance
+                </span>
+                <div
+                  className="p-1.5 rounded-lg border"
+                  style={{
+                    backgroundColor: colors.badgeBg,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
+                  <CalendarCheck2 className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-2xl font-bold font-mono tracking-tight" style={{ color: colors.primary }}>
+                  {data.kpis.todayAttendance.Present}
+                </span>
+                <span className="text-xs font-medium" style={{ color: colors.textSecondary }}>
+                  Present Today
+                </span>
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl lg:text-3xl font-black" style={{ color: colors.primary }}>
-                {data.kpis.todayAttendance.Present}
-              </span>
-              <span className="text-xs font-semibold" style={{ color: colors.textSecondary }}>
-                Present in Dojang
-              </span>
-            </div>
+
             <div
-              className="mt-3 pt-3 border-t grid grid-cols-3 gap-1.5 text-[11px] text-center font-mono"
-              style={{ borderColor: colors.border }}
+              className="mt-3 pt-2 border-t flex items-center justify-between text-xs"
+              style={{
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
             >
-              <div className="p-1 rounded-lg border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
-                <span className="text-rose-500 font-bold block">{data.kpis.todayAttendance.Absent}</span>
-                <span className="text-[10px]" style={{ color: colors.textMuted }}>Absent</span>
-              </div>
-              <div className="p-1 rounded-lg border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
-                <span className="text-amber-500 font-bold block">{data.kpis.todayAttendance.Leave}</span>
-                <span className="text-[10px]" style={{ color: colors.textMuted }}>Leave</span>
-              </div>
-              <div className="p-1 rounded-lg border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
-                <span className="font-bold block" style={{ color: colors.primary }}>{data.kpis.todayAttendance.Late}</span>
-                <span className="text-[10px]" style={{ color: colors.textMuted }}>Late</span>
-              </div>
+              <span className="text-rose-500 font-semibold">
+                Absent: {data.kpis.todayAttendance.Absent}
+              </span>
+              <span className="text-amber-500 font-semibold">
+                Leave: {data.kpis.todayAttendance.Leave}
+              </span>
+              <span className="font-semibold" style={{ color: colors.primary }}>
+                Late: {data.kpis.todayAttendance.Late}
+              </span>
             </div>
           </div>
 
-          {/* KPI 3: Financial Summary (Current Month) */}
+          {/* KPI 3: Monthly Fee Collection */}
           <div
-            className="p-4 rounded-2xl border shadow-sm relative overflow-hidden group transition-all duration-200 hover:shadow-md"
+            className="p-3.5 rounded-xl border shadow-sm transition-all duration-150 flex flex-col justify-between"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
-                Monthly Fee Collection
-              </span>
-              <div
-                className="p-2 rounded-xl border"
-                style={{
-                  backgroundColor: colors.badgeBg,
-                  borderColor: colors.border,
-                  color: colors.primary
-                }}
-              >
-                <DollarSign className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                  Fee Collected
+                </span>
+                <div
+                  className="p-1.5 rounded-lg border"
+                  style={{
+                    backgroundColor: colors.badgeBg,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold font-mono tracking-tight" style={{ color: colors.primary }}>
+                  PKR {data.kpis.financial.totalFeeCollected.toLocaleString()}
+                </span>
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl lg:text-3xl font-black font-mono" style={{ color: colors.primary }}>
-                PKR {data.kpis.financial.totalFeeCollected.toLocaleString()}
-              </span>
-            </div>
+
             <div
-              className="mt-3 pt-3 border-t flex items-center justify-between text-xs"
+              className="mt-3 pt-2 border-t flex items-center justify-between text-xs"
               style={{
                 borderColor: colors.border,
                 color: colors.textSecondary
@@ -249,49 +260,50 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
               <span>
                 Expected: <strong style={{ color: colors.textPrimary }}>PKR {data.kpis.financial.totalExpectedFee.toLocaleString()}</strong>
               </span>
-              <span className="font-bold" style={{ color: colors.primary }}>
+              <span className="font-bold font-mono" style={{ color: colors.primary }}>
                 {data.kpis.financial.collectionRate}%
               </span>
             </div>
           </div>
 
-          {/* KPI 4: Fee Status Breakdown & Defaulters */}
+          {/* KPI 4: Pending Dues (Baqaya) */}
           <div
-            className="p-4 rounded-2xl border shadow-sm relative overflow-hidden group transition-all duration-200 hover:shadow-md"
+            className="p-3.5 rounded-xl border shadow-sm transition-all duration-150 flex flex-col justify-between"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
-                Defaulters & Pending Dues
-              </span>
-              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
-                <AlertOctagon className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                  Pending Dues
+                </span>
+                <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                  <AlertOctagon className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-rose-500 font-mono tracking-tight">
+                  PKR {data.kpis.financial.totalRemainingBalance.toLocaleString()}
+                </span>
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl lg:text-3xl font-black text-rose-500 font-mono">
-                PKR {data.kpis.financial.totalRemainingBalance.toLocaleString()}
-              </span>
-              <span className="text-xs text-rose-500 font-medium">Baqaya</span>
-            </div>
+
             <div
-              className="mt-3 pt-3 border-t flex items-center justify-between text-xs"
+              className="mt-3 pt-2 border-t flex items-center justify-between text-xs"
               style={{
                 borderColor: colors.border,
                 color: colors.textSecondary
               }}
             >
-              <span className="flex items-center gap-1" style={{ color: colors.primary }}>
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <span style={{ color: colors.primary }}>
                 {data.kpis.financial.breakdown.paid} Paid
               </span>
-              <span className="flex items-center gap-1 text-amber-500">
+              <span className="text-amber-500">
                 {data.kpis.financial.breakdown.partial} Partial
               </span>
-              <span className="flex items-center gap-1 font-bold text-rose-500">
+              <span className="font-bold text-rose-500">
                 {data.kpis.financial.breakdown.unpaid} Defaulters
               </span>
             </div>
@@ -299,68 +311,71 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
         </div>
       )}
 
-      {/* VISUAL ANALYTICS SECTION */}
+      {/* Visual Analytics */}
       {data && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Chart 1: Monthly Revenue vs Pending Dues Bar Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {/* Chart 1: Revenue vs Dues Bar Chart */}
           <div
-            className="lg:col-span-2 p-5 rounded-2xl border shadow-md transition-all"
+            className="lg:col-span-2 p-4 rounded-xl border shadow-sm transition-all"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4" style={{ color: colors.primary }} />
-                <h3 className="text-sm font-bold" style={{ color: colors.textPrimary }}>
+                <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
                   Monthly Fee Revenue vs Pending Dues (PKR)
                 </h3>
               </div>
-              <span className="text-xs" style={{ color: colors.textSecondary }}>Past 6 Months</span>
+              <span className="text-[10px]" style={{ color: colors.textMuted }}>Past 6 Months</span>
             </div>
 
-            <div className="h-64 w-full">
+            <div className="h-56 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.visualAnalytics.revenueTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <BarChart data={data.visualAnalytics.revenueTrend} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={colors.chartGrid} />
-                  <XAxis dataKey="month" stroke={colors.textSecondary} fontSize={11} />
-                  <YAxis stroke={colors.textSecondary} fontSize={11} tickFormatter={(val) => `${val / 1000}k`} />
+                  <XAxis dataKey="month" stroke={colors.textSecondary} fontSize={10} />
+                  <YAxis stroke={colors.textSecondary} fontSize={10} tickFormatter={(val) => `${val / 1000}k`} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: colors.bgCard,
                       borderColor: colors.border,
-                      borderRadius: '12px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
                       color: colors.textPrimary
                     }}
                     formatter={(value) => [`PKR ${Number(value || 0).toLocaleString()}`, '']}
                   />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: colors.textSecondary }} />
-                  <Bar dataKey="Collected" name="Fee Collected" fill={colors.primary} radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Pending" name="Remaining Baqaya" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '6px', color: colors.textSecondary }} />
+                  <Bar dataKey="Collected" name="Fee Collected" fill={colors.primary} radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Pending" name="Remaining Baqaya" fill="#ef4444" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Chart 2: Student Belt Distribution Donut Chart */}
+          {/* Chart 2: Belt Distribution */}
           <div
-            className="p-5 rounded-2xl border shadow-md flex flex-col justify-between transition-all"
+            className="p-4 rounded-xl border shadow-sm flex flex-col justify-between transition-all"
             style={{
               backgroundColor: colors.bgCard,
               borderColor: colors.border
             }}
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4 text-amber-500" />
-                  <h3 className="text-sm font-bold" style={{ color: colors.textPrimary }}>Student Belt Distribution</h3>
+                  <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                    Belt Rank Distribution
+                  </h3>
                 </div>
-                <span className="text-xs" style={{ color: colors.textSecondary }}>By Rank</span>
+                <span className="text-[10px]" style={{ color: colors.textMuted }}>By Belt</span>
               </div>
 
-              <div className="h-52 w-full flex items-center justify-center">
+              <div className="h-44 w-full flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -369,8 +384,8 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
                       nameKey="belt"
                       cx="50%"
                       cy="50%"
-                      innerRadius={45}
-                      outerRadius={75}
+                      innerRadius={40}
+                      outerRadius={68}
                       paddingAngle={3}
                     >
                       {data.visualAnalytics.beltDistribution.map((entry) => (
@@ -386,7 +401,8 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
                       contentStyle={{
                         backgroundColor: colors.bgCard,
                         borderColor: colors.border,
-                        borderRadius: '12px',
+                        borderRadius: '8px',
+                        fontSize: '11px',
                         color: colors.textPrimary
                       }}
                       formatter={(val) => [`${val} Students`, 'Count']}
@@ -397,13 +413,13 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
             </div>
 
             <div
-              className="grid grid-cols-3 gap-2 pt-2 border-t text-[11px]"
+              className="grid grid-cols-3 gap-1.5 pt-2 border-t text-[10px]"
               style={{ borderColor: colors.border }}
             >
               {data.visualAnalytics.beltDistribution.map((b) => (
-                <div key={b.belt} className="flex items-center gap-1.5">
+                <div key={b.belt} className="flex items-center gap-1 truncate">
                   <span
-                    className="w-2.5 h-2.5 rounded-full border"
+                    className="w-2 h-2 rounded-full border flex-shrink-0"
                     style={{
                       backgroundColor: beltPalette[b.belt] || colors.primary,
                       borderColor: colors.border
@@ -418,57 +434,58 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
         </div>
       )}
 
-      {/* Chart 3: Daily Attendance Trend Line (Last 7 Days) */}
+      {/* Chart 3: Attendance Trend */}
       {data && (
         <div
-          className="p-5 rounded-2xl border shadow-md transition-all"
+          className="p-4 rounded-xl border shadow-sm transition-all"
           style={{
             backgroundColor: colors.bgCard,
             borderColor: colors.border
           }}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" style={{ color: colors.primary }} />
-              <h3 className="text-sm font-bold" style={{ color: colors.textPrimary }}>
-                Daily Attendance Trend (Last 7 Days)
+              <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                Daily Attendance Trend (Past 7 Days)
               </h3>
             </div>
-            <span className="text-xs" style={{ color: colors.textSecondary }}>Live Dojang Logs</span>
+            <span className="text-[10px]" style={{ color: colors.textMuted }}>Live Logs</span>
           </div>
 
-          <div className="h-56 w-full">
+          <div className="h-48 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.visualAnalytics.dailyAttendanceTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={data.visualAnalytics.dailyAttendanceTrend} margin={{ top: 8, right: 8, left: -25, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={colors.chartGrid} />
-                <XAxis dataKey="label" stroke={colors.textSecondary} fontSize={11} />
-                <YAxis stroke={colors.textSecondary} fontSize={11} allowDecimals={false} />
+                <XAxis dataKey="label" stroke={colors.textSecondary} fontSize={10} />
+                <YAxis stroke={colors.textSecondary} fontSize={10} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: colors.bgCard,
                     borderColor: colors.border,
-                    borderRadius: '12px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
                     color: colors.textPrimary
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px', color: colors.textSecondary }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '6px', color: colors.textSecondary }} />
                 <Line
                   type="monotone"
                   dataKey="Present"
                   name="Present Students"
                   stroke={colors.primary}
-                  strokeWidth={2.5}
-                  dot={{ r: 4, fill: colors.primary }}
-                  activeDot={{ r: 6 }}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: colors.primary }}
+                  activeDot={{ r: 5 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="Absent"
                   name="Absent Students"
                   stroke="#ef4444"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   strokeDasharray="4 4"
-                  dot={{ r: 3, fill: '#ef4444' }}
+                  dot={{ r: 2.5, fill: '#ef4444' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -476,8 +493,30 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
         </div>
       )}
 
-      {/* END-OF-MONTH AUDIT WIDGET INTEGRATION */}
-      <EndOfMonthAuditWidget onOpenStudent={onOpenStudent} />
+      {/* Monthly Audit Closing Section */}
+      <div className="space-y-2 pt-1">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-sm font-bold tracking-tight" style={{ color: colors.textPrimary }}>
+              End-of-Month Audit & Reconciliation
+            </h2>
+            <p className="text-[11px]" style={{ color: colors.textSecondary }}>
+              Individual student monthly attendance ratios and fee balances
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('audit')}
+            className="text-xs font-semibold flex items-center gap-1 hover:underline"
+            style={{ color: colors.primary }}
+          >
+            <span>Full Screen Audit</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <EndOfMonthAuditWidget onOpenStudent={onOpenStudent} />
+      </div>
     </div>
   );
 };
+export default DashboardView;

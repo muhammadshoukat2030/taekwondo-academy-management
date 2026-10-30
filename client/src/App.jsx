@@ -21,6 +21,48 @@ const AppContent = () => {
   const [printCert, setPrintCert] = useState(null);
   const [defaulterCount, setDefaulterCount] = useState(0);
 
+  // Desktop sidebar collapse & Mobile slide-in drawer states
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('tkd_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleSidebarCollapse = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('tkd_sidebar_collapsed', String(next));
+      } catch {
+        // Ignore
+      }
+      return next;
+    });
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((prev) => !prev);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  // Prevent background scrolling while mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
   const fetchDefaultersCount = async () => {
     try {
       const res = await api.getDefaulters();
@@ -51,6 +93,11 @@ const AppContent = () => {
     setActiveTab('certificates');
   };
 
+  const handleNavigate = (tab) => {
+    setActiveTab(tab);
+    closeMobileMenu();
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col font-sans transition-colors duration-200"
@@ -59,16 +106,26 @@ const AppContent = () => {
         color: colors.textPrimary
       }}
     >
-      <Header onNavigate={setActiveTab} activeTab={activeTab} />
+      <Header
+        onNavigate={handleNavigate}
+        activeTab={activeTab}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={toggleSidebarCollapse}
+        mobileMenuOpen={mobileMenuOpen}
+        onToggleMobileMenu={toggleMobileMenu}
+      />
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
         <Sidebar
           activeTab={activeTab}
-          onNavigate={setActiveTab}
+          onNavigate={handleNavigate}
           defaulterCount={defaulterCount}
+          isCollapsed={sidebarCollapsed}
+          isMobileOpen={mobileMenuOpen}
+          onCloseMobile={closeMobileMenu}
         />
 
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-3.5 lg:p-5 overflow-y-auto max-w-7xl mx-auto w-full min-w-0">
           {activeTab === 'dashboard' && (
             <DashboardView
               onOpenStudent={handleOpenStudentProfile}

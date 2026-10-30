@@ -154,11 +154,28 @@ export const createStudent = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   try {
-    const updated = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const body = { ...req.body };
+
+    // Auto calculate age if dob was updated and age is not explicitly set
+    if (body.dob && !body.age) {
+      const birthDate = new Date(body.dob);
+      const diff = Date.now() - birthDate.getTime();
+      body.age = Math.abs(new Date(diff).getUTCFullYear() - 1970);
+    }
+
+    const updated = await Student.findByIdAndUpdate(req.params.id, body, {
+      new: true,
+      runValidators: true
+    });
+
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
-    res.json({ success: true, data: updated });
+    res.json({
+      success: true,
+      message: `Student ${updated.fullName} updated successfully`,
+      data: updated
+    });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }

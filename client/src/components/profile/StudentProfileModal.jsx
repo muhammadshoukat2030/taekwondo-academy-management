@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
+import { useTheme } from '../../context/ThemeContext.jsx';
+import { EditStudentModal } from './EditStudentModal.jsx';
 import {
   X,
   User,
@@ -14,14 +16,21 @@ import {
   Trophy,
   ChevronLeft,
   ChevronRight,
-  Clock
+  Clock,
+  Edit2,
+  Power,
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 
 export const StudentProfileModal = ({
   studentId,
   onClose,
-  onPrintCertificate
+  onPrintCertificate,
+  onOpenReceipt,
+  onStudentUpdated
 }) => {
+  const { colors, theme, mode } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState(null);
@@ -30,6 +39,10 @@ export const StudentProfileModal = ({
   const [achievements, setAchievements] = useState([]);
   const [certificates, setCertificates] = useState([]);
   const [financialSummary, setFinancialSummary] = useState(null);
+
+  // Edit Modal & Status State
+  const [isEditing, setIsEditing] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   // Attendance calendar state
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
@@ -54,6 +67,39 @@ export const StudentProfileModal = ({
     }
   };
 
+  const handleToggleStatus = async () => {
+    if (!student) return;
+    const newStatus = student.status === 'Active' ? 'Inactive' : 'Active';
+    const confirmText = newStatus === 'Inactive'
+      ? `Mark ${student.fullName} as INACTIVE?\n\n• Student will be excluded from attendance marking.\n• All previous attendance & fee records remain safe.`
+      : `Reactivate ${student.fullName}?\n\n• Student will be immediately eligible for attendance scanning.`;
+    if (!window.confirm(confirmText)) return;
+
+    try {
+      setStatusUpdating(true);
+      const res = await api.updateStudent(student._id, { status: newStatus });
+      if (res.success) {
+        const updated = { ...student, status: newStatus };
+        setStudent(updated);
+        if (onStudentUpdated) onStudentUpdated(updated);
+      } else {
+        alert(res.message || 'Failed to update student status');
+      }
+    } catch (err) {
+      console.error('Error toggling student status:', err);
+      alert(err.response?.data?.message || err.message || 'Error updating status');
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  const handleEditSuccess = (updatedData) => {
+    setStudent(prev => ({ ...prev, ...updatedData }));
+    setIsEditing(false);
+    if (onStudentUpdated) onStudentUpdated(updatedData);
+    fetchStudentData();
+  };
+
   useEffect(() => {
     if (studentId) {
       fetchStudentData();
@@ -63,9 +109,16 @@ export const StudentProfileModal = ({
   if (!student && loading) {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 flex items-center gap-3 text-white">
-          <Clock className="w-5 h-5 text-red-500 animate-spin" />
-          <span>Loading 360° Student Dossier...</span>
+        <div
+          className="border rounded-xl p-6 flex items-center gap-2.5 shadow-md"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border,
+            color: colors.textPrimary
+          }}
+        >
+          <Clock className="w-4 h-4 animate-spin" style={{ color: colors.primary }} />
+          <span className="text-xs">Loading 360° Student Dossier...</span>
         </div>
       </div>
     );
@@ -101,67 +154,147 @@ export const StudentProfileModal = ({
   };
 
   const beltColors = {
-    White: 'bg-slate-200 text-slate-900 border-slate-300',
-    Yellow: 'bg-yellow-400 text-yellow-950 border-yellow-500',
-    Green: 'bg-emerald-600 text-white border-emerald-500',
-    Blue: 'bg-blue-600 text-white border-blue-500',
-    Red: 'bg-red-600 text-white border-red-500',
-    Black: 'bg-slate-950 text-amber-400 border-amber-500/80 shadow-md'
+    White: mode === 'dark' ? 'bg-slate-200 text-slate-900 border-slate-300' : 'bg-slate-100 text-slate-800 border-slate-300',
+    Yellow: 'bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/40',
+    Green: 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40',
+    Blue: 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/40',
+    Red: 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40',
+    Black: 'bg-slate-900 text-amber-400 border-amber-500/80 shadow-md'
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 lg:p-6 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-auto">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+      <div
+        className="border rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-xl overflow-hidden my-auto transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
         {/* Modal Top Bar */}
-        <div className="p-4 lg:p-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div
+          className="p-3 sm:p-3.5 border-b flex flex-wrap items-center justify-between gap-2.5"
+          style={{
+            backgroundColor: colors.bgSecondary,
+            borderColor: colors.border
+          }}
+        >
+          <div className="flex items-center gap-2.5">
             {student.photo ? (
               <img
                 src={student.photo}
                 alt=""
-                className="w-12 h-12 rounded-2xl object-cover border-2 border-red-600 shadow-lg"
+                className="w-10 h-10 rounded-xl object-cover border-2 shadow-sm"
+                style={{ borderColor: colors.primary }}
               />
             ) : (
-              <div className="w-12 h-12 rounded-2xl bg-slate-800 border-2 border-red-600 flex items-center justify-center font-bold text-white text-lg">
+              <div
+                className="w-10 h-10 rounded-xl border-2 flex items-center justify-center font-bold text-base"
+                style={{
+                  backgroundColor: colors.bgCard,
+                  borderColor: colors.primary,
+                  color: colors.textPrimary
+                }}
+              >
                 {student.fullName[0]}
               </div>
             )}
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg lg:text-xl font-black text-white">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-bold" style={{ color: colors.textPrimary }}>
                   {student.fullName}
                 </h2>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
-                    beltColors[student.currentBelt] || 'bg-slate-800 text-white'
+                  className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${
+                    beltColors[student.currentBelt] || 'border-current'
                   }`}
                 >
                   {student.currentBelt} Belt
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-mono font-semibold">
+                <span
+                  className="text-[10px] px-1.5 py-0.2 rounded border font-mono font-semibold"
+                  style={{
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
                   {student.registrationNo}
                 </span>
+
+                {/* Status Badge */}
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                    student.status === 'Active'
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                      : 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${student.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                  {student.status || 'Active'}
+                </span>
               </div>
-              <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+              <div className="text-[11px] flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5" style={{ color: colors.textSecondary }}>
                 <span>S/O {student.fatherName}</span>
                 <span>•</span>
-                <span>{student.permanentAddress}</span>
+                <span className="truncate max-w-[180px] sm:max-w-none">{student.permanentAddress}</span>
                 <span>•</span>
-                <span className="font-mono text-amber-400">{student.phone}</span>
+                <span className="font-mono text-amber-500 font-medium">{student.phone}</span>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Quick Status Toggle */}
+            <button
+              onClick={handleToggleStatus}
+              disabled={statusUpdating}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition ${
+                student.status === 'Active'
+                  ? 'border-red-500/30 text-red-500 hover:bg-red-500/10'
+                  : 'border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10'
+              }`}
+            >
+              {statusUpdating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Power className="w-3 h-3" />}
+              <span>{student.status === 'Active' ? 'Deactivate' : 'Activate'}</span>
+            </button>
+
+            {/* Edit Student Button */}
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition hover:scale-105"
+              style={{
+                backgroundColor: colors.bgCard,
+                borderColor: colors.border,
+                color: colors.textPrimary
+              }}
+            >
+              <Edit2 className="w-3 h-3" style={{ color: colors.primary }} />
+              <span>Edit Details</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg border transition hover:opacity-80"
+              style={{
+                backgroundColor: colors.bgCard,
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation Navigation Bar */}
-        <div className="flex items-center gap-1 px-4 lg:px-6 bg-slate-900 border-b border-slate-800 overflow-x-auto text-xs">
+        <div
+          className="flex items-center gap-1 px-3 border-b overflow-x-auto text-xs"
+          style={{
+            backgroundColor: colors.bgSecondary,
+            borderColor: colors.border
+          }}
+        >
           {[
             { id: 'profile', label: '1. Profile & Biometrics', icon: User },
             { id: 'attendance', label: '2. Attendance History & Calendar', icon: Calendar },
@@ -175,13 +308,14 @@ export const StudentProfileModal = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-3.5 px-3 font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap ${
-                  isActive
-                    ? 'border-red-600 text-white bg-slate-800/40'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
-                }`}
+                className="py-2.5 px-2.5 font-semibold flex items-center gap-1.5 border-b-2 transition whitespace-nowrap text-[11.5px]"
+                style={{
+                  borderBottomColor: isActive ? colors.primary : 'transparent',
+                  color: isActive ? colors.primary : colors.textSecondary,
+                  backgroundColor: isActive ? colors.badgeBg : 'transparent'
+                }}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-red-500' : 'text-slate-500'}`} />
+                <Icon className="w-3.5 h-3.5" style={{ color: isActive ? colors.primary : colors.textMuted }} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -189,169 +323,224 @@ export const StudentProfileModal = ({
         </div>
 
         {/* Tab Content Container */}
-        <div className="p-4 lg:p-6 overflow-y-auto flex-1 space-y-6">
+        <div className="p-3.5 lg:p-4 overflow-y-auto flex-1 space-y-4" style={{ backgroundColor: colors.bgCard }}>
           {/* TAB 1: PROFILE & BIOMETRICS */}
           {activeTab === 'profile' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* ID Card Preview */}
-              <div className="lg:col-span-1 p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-red-950/40 border border-slate-700 shadow-xl flex flex-col justify-between">
+              <div
+                className="lg:col-span-1 p-4 rounded-xl border shadow-sm flex flex-col justify-between"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
                 <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: colors.border }}>
                     <div>
-                      <div className="text-[11px] font-black text-white uppercase tracking-wider">
+                      <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: colors.textPrimary }}>
                         AL MURTAZA SHAH TAEKWONDO
                       </div>
-                      <div className="text-[9px] text-red-400">Student Identity Card • Kohat</div>
+                      <div className="text-[9px]" style={{ color: colors.primary }}>Student Identity Card • Kohat</div>
                     </div>
-                    <span className="text-xl">🥋</span>
+                    <span className="text-base">🥋</span>
                   </div>
 
-                  <div className="flex flex-col items-center text-center mt-4">
+                  <div className="flex flex-col items-center text-center mt-3">
                     {student.photo ? (
                       <img
                         src={student.photo}
                         alt=""
-                        className="w-24 h-28 object-cover rounded-xl border-2 border-red-500 shadow-md"
+                        className="w-20 h-24 object-cover rounded-lg border-2 shadow-sm"
+                        style={{ borderColor: colors.primary }}
                       />
                     ) : (
-                      <div className="w-24 h-28 bg-slate-800 rounded-xl border-2 border-red-500 flex items-center justify-center font-bold text-2xl">
+                      <div
+                        className="w-20 h-24 rounded-lg border-2 flex items-center justify-center font-bold text-xl"
+                        style={{ backgroundColor: colors.bgCard, borderColor: colors.primary, color: colors.textPrimary }}
+                      >
                         {student.fullName[0]}
                       </div>
                     )}
-                    <div className="font-bold text-white text-base mt-2">{student.fullName}</div>
-                    <div className="text-xs text-slate-300">S/O {student.fatherName}</div>
-                    <div className="mt-1 inline-block px-3 py-0.5 rounded-full text-xs font-bold border border-slate-700 bg-slate-900 font-mono text-amber-400">
+                    <div className="font-bold text-sm mt-1.5" style={{ color: colors.textPrimary }}>{student.fullName}</div>
+                    <div className="text-[11px]" style={{ color: colors.textSecondary }}>S/O {student.fatherName}</div>
+                    <div
+                      className="mt-1 inline-block px-2.5 py-0.2 rounded-full text-[10px] font-bold border font-mono"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
                       {student.registrationNo}
                     </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] space-y-1.5 text-slate-300">
+                  <div
+                    className="mt-3 pt-2.5 border-t text-[11px] space-y-1"
+                    style={{
+                      borderColor: colors.border,
+                      color: colors.textSecondary
+                    }}
+                  >
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Belt Rank:</span>
-                      <span className="font-bold text-white">{student.currentBelt} Belt</span>
+                      <span style={{ color: colors.textMuted }}>Belt Rank:</span>
+                      <span className="font-bold" style={{ color: colors.textPrimary }}>{student.currentBelt} Belt</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Date of Birth:</span>
-                      <span>{new Date(student.dob).toLocaleDateString()} (Age: {student.age})</span>
+                      <span style={{ color: colors.textMuted }}>DOB:</span>
+                      <span style={{ color: colors.textPrimary }}>{new Date(student.dob).toLocaleDateString()} (Age: {student.age})</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Contact:</span>
-                      <span className="font-mono text-white">{student.phone}</span>
+                      <span style={{ color: colors.textMuted }}>Contact:</span>
+                      <span className="font-mono" style={{ color: colors.textPrimary }}>{student.phone}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Admission:</span>
-                      <span>{new Date(student.admissionDate).toLocaleDateString()}</span>
+                      <span style={{ color: colors.textMuted }}>Admission:</span>
+                      <span style={{ color: colors.textPrimary }}>{new Date(student.admissionDate).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-400">
+                <div
+                  className="mt-3 pt-2 border-t flex items-center justify-between text-[9.5px]"
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.textMuted
+                  }}
+                >
                   <span>Instructor: M. H. Bangash</span>
-                  <span className="text-red-400 font-semibold">Valid 2026/27</span>
+                  <span className="font-semibold" style={{ color: colors.primary }}>Valid 2026/27</span>
                 </div>
               </div>
 
               {/* Admission Record & Biometrics Status */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800">
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <div className="lg:col-span-2 space-y-3">
+                <div
+                  className="p-3.5 rounded-xl border"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
+                >
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: colors.textPrimary }}>
+                    <ShieldCheck className="w-3.5 h-3.5" style={{ color: colors.primary }} />
                     <span>Biometric Authentication Security Status</span>
                   </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                          <Camera className="w-5 h-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div
+                      className="p-2.5 rounded-lg border flex items-center justify-between"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md bg-indigo-500/15 text-indigo-500">
+                          <Camera className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white">AI Face Recognition</div>
-                          <div className="text-[10px] text-slate-400">Webcam Neural Match</div>
+                          <div className="text-[11px] font-bold" style={{ color: colors.textPrimary }}>Face AI</div>
+                          <div className="text-[9.5px]" style={{ color: colors.textMuted }}>Neural Match</div>
                         </div>
                       </div>
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                          student.isFaceEnrolled
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                            : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-                        }`}
+                        className="text-[9.5px] font-bold px-2 py-0.5 rounded border"
+                        style={{
+                          backgroundColor: student.isFaceEnrolled ? colors.badgeBg : 'rgba(239, 68, 68, 0.1)',
+                          borderColor: student.isFaceEnrolled ? colors.border : 'rgba(239, 68, 68, 0.3)',
+                          color: student.isFaceEnrolled ? colors.primary : '#EF4444'
+                        }}
                       >
-                        {student.isFaceEnrolled ? 'Enrolled' : 'Not Enrolled'}
+                        {student.isFaceEnrolled ? 'Enrolled' : 'Pending'}
                       </span>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                          <Fingerprint className="w-5 h-5" />
+                    <div
+                      className="p-2.5 rounded-lg border flex items-center justify-between"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-md" style={{ backgroundColor: colors.badgeBg, color: colors.primary }}>
+                          <Fingerprint className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-white">Fingerprint Biometrics</div>
-                          <div className="text-[10px] font-mono text-slate-400">
+                          <div className="text-[11px] font-bold" style={{ color: colors.textPrimary }}>Fingerprint</div>
+                          <div className="text-[9.5px] font-mono" style={{ color: colors.textMuted }}>
                             {student.fingerprintTemplateId || 'FP-LINKED'}
                           </div>
                         </div>
                       </div>
                       <span
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                          student.isFingerprintEnrolled
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                            : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                        }`}
+                        className="text-[9.5px] font-bold px-2 py-0.5 rounded border"
+                        style={{
+                          backgroundColor: student.isFingerprintEnrolled ? colors.badgeBg : 'rgba(245, 158, 11, 0.1)',
+                          borderColor: student.isFingerprintEnrolled ? colors.border : 'rgba(245, 158, 11, 0.3)',
+                          color: student.isFingerprintEnrolled ? colors.primary : '#F59E0B'
+                        }}
                       >
-                        {student.isFingerprintEnrolled ? 'Device Linked' : 'Standby'}
+                        {student.isFingerprintEnrolled ? 'Linked' : 'Standby'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs space-y-3">
-                  <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+                <div
+                  className="p-3.5 rounded-xl border text-[11px] space-y-2.5"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
+                >
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.textPrimary }}>
                     Complete Admission Dossier
                   </h3>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">Nationality / Cast</div>
-                      <div className="font-semibold text-white mt-0.5">{student.nationalityCast || 'Pakistani'}</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Nationality</div>
+                      <div className="font-semibold mt-0.5 truncate" style={{ color: colors.textPrimary }}>{student.nationalityCast || 'Pakistani'}</div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">CNIC / Form-B</div>
-                      <div className="font-mono font-semibold text-white mt-0.5">{student.cnicFormB || 'N/A'}</div>
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>CNIC / Form-B</div>
+                      <div className="font-mono font-semibold mt-0.5 truncate" style={{ color: colors.textPrimary }}>{student.cnicFormB || 'N/A'}</div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">Education Level</div>
-                      <div className="font-semibold text-white mt-0.5">{student.education || 'Matric'}</div>
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Education</div>
+                      <div className="font-semibold mt-0.5 truncate" style={{ color: colors.textPrimary }}>{student.education || 'Matric'}</div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">Monthly Fee Setting</div>
-                      <div className="font-mono font-bold text-emerald-400 mt-0.5">PKR {student.fixedMonthlyFee}</div>
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Monthly Fee</div>
+                      <div className="font-mono font-bold mt-0.5" style={{ color: colors.primary }}>PKR {student.fixedMonthlyFee}</div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">Initial Admission Fee</div>
-                      <div className="font-mono font-bold text-amber-400 mt-0.5">PKR {student.admissionFee}</div>
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Admission Fee</div>
+                      <div className="font-mono font-bold mt-0.5 text-amber-500">PKR {student.admissionFee}</div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800/80">
-                      <div className="text-[10px] text-slate-400 uppercase">Prior Sports Played</div>
-                      <div className="font-semibold text-white mt-0.5">{student.hasPlayedBefore ? 'Yes' : 'No'}</div>
+                    <div className="p-2 rounded-lg border" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Prior Sports</div>
+                      <div className="font-semibold mt-0.5" style={{ color: colors.textPrimary }}>{student.hasPlayedBefore ? 'Yes' : 'No'}</div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+                  <div className="p-2.5 rounded-lg border flex items-center justify-between" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase">Medical & Health Notes</div>
-                      <div className="text-white mt-0.5">
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Medical & Health</div>
+                      <div className="mt-0.5" style={{ color: colors.textPrimary }}>
                         {student.hasIllnessInjury ? (
-                          <span className="text-amber-400">{student.medicalNotes || 'Medical condition reported.'}</span>
+                          <span className="text-amber-500">{student.medicalNotes || 'Medical condition reported.'}</span>
                         ) : (
-                          <span className="text-emerald-400">No known illness or injury. Medically cleared.</span>
+                          <span style={{ color: colors.primary }}>No illness or injury reported.</span>
                         )}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase">Guardian Signature</div>
-                      <div className="text-amber-300 font-serif italic">{student.guardianSignature || 'Verified'}</div>
+                      <div className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Guardian Sign</div>
+                      <div className="text-amber-500 font-serif italic">{student.guardianSignature || 'Verified'}</div>
                     </div>
                   </div>
                 </div>
@@ -361,44 +550,62 @@ export const StudentProfileModal = ({
 
           {/* TAB 2: ATTENDANCE HISTORY & CALENDAR */}
           {activeTab === 'attendance' && (
-            <div className="space-y-6">
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div className="space-y-4">
+              <div
+                className="p-3.5 rounded-xl border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b" style={{ borderColor: colors.border }}>
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-red-500" />
+                    <Calendar className="w-4 h-4" style={{ color: colors.primary }} />
                     <div>
-                      <h3 className="text-sm font-bold text-white">Interactive Attendance Calendar</h3>
-                      <p className="text-[11px] text-slate-400">Green = Present, Red = Absent, Yellow = Leave, Cyan = Late</p>
+                      <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Interactive Attendance Calendar</h3>
+                      <p className="text-[10px]" style={{ color: colors.textSecondary }}>Green = Present, Red = Absent, Yellow = Leave, Cyan = Late</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs"
+                    style={{
+                      backgroundColor: colors.bgCard,
+                      borderColor: colors.border
+                    }}
+                  >
                     <button
                       onClick={() => changeCalendarMonth(-1)}
-                      className="p-1 rounded-lg hover:bg-slate-800 text-slate-300"
+                      className="p-0.5 rounded hover:opacity-80"
+                      style={{ color: colors.textPrimary }}
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
-                    <span className="text-xs font-bold text-white min-w-32 text-center">
+                    <span className="text-[11px] font-bold min-w-28 text-center" style={{ color: colors.textPrimary }}>
                       {monthNames[calendarMonth]} {calendarYear}
                     </span>
                     <button
                       onClick={() => changeCalendarMonth(1)}
-                      className="p-1 rounded-lg hover:bg-slate-800 text-slate-300"
+                      className="p-0.5 rounded hover:opacity-80"
+                      style={{ color: colors.textPrimary }}
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-slate-400 mb-2">
+                <div className="mt-3">
+                  <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold mb-1.5" style={{ color: colors.textMuted }}>
                     <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-1">
                     {Array.from({ length: firstDayIndex }).map((_, i) => (
-                      <div key={`empty-${i}`} className="h-14 rounded-xl bg-slate-900/30 border border-slate-900" />
+                      <div
+                        key={`empty-${i}`}
+                        className="h-11 rounded-lg opacity-30 border"
+                        style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+                      />
                     ))}
 
                     {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -406,35 +613,48 @@ export const StudentProfileModal = ({
                       const dateStr = `${calendarYear}-${(calendarMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
                       const status = attendanceDateMap.get(dateStr);
 
-                      let bgClass = 'bg-slate-900/60 border-slate-800/80 text-slate-400';
+                      let borderCol = colors.border;
+                      let textCol = colors.textSecondary;
                       let label = null;
 
                       if (status === 'Present') {
-                        bgClass = 'bg-emerald-950/50 border-emerald-500/50 text-emerald-300 shadow-sm shadow-emerald-950';
+                        borderCol = colors.primary;
+                        textCol = colors.primary;
                         label = 'P';
                       } else if (status === 'Absent') {
-                        bgClass = 'bg-rose-950/50 border-rose-500/50 text-rose-300';
+                        borderCol = '#EF4444';
+                        textCol = '#EF4444';
                         label = 'A';
                       } else if (status === 'Leave') {
-                        bgClass = 'bg-amber-950/50 border-amber-500/50 text-amber-300';
+                        borderCol = '#F59E0B';
+                        textCol = '#F59E0B';
                         label = 'L';
                       } else if (status === 'Late') {
-                        bgClass = 'bg-cyan-950/50 border-cyan-500/50 text-cyan-300';
+                        borderCol = '#06B6D4';
+                        textCol = '#06B6D4';
                         label = 'LT';
                       }
 
                       return (
                         <div
                           key={`day-${dayNum}`}
-                          className={`h-14 p-1.5 rounded-xl border flex flex-col justify-between transition-all ${bgClass}`}
+                          className="h-11 p-1 rounded-lg border flex flex-col justify-between transition-all"
+                          style={{
+                            backgroundColor: status === 'Present' ? colors.badgeBg : colors.bgCard,
+                            borderColor: borderCol,
+                            color: textCol
+                          }}
                         >
-                          <span className="text-xs font-bold leading-none">{dayNum}</span>
+                          <span className="text-[10px] font-bold leading-none">{dayNum}</span>
                           {label ? (
-                            <span className="text-[10px] font-black uppercase text-center py-0.5 rounded bg-black/40">
+                            <span
+                              className="text-[9px] font-black uppercase text-center py-0.2 rounded"
+                              style={{ backgroundColor: colors.bgSecondary }}
+                            >
                               {status}
                             </span>
                           ) : (
-                            <span className="text-[9px] text-slate-600 text-center">-</span>
+                            <span className="text-[8px] opacity-40 text-center">-</span>
                           )}
                         </div>
                       );
@@ -443,24 +663,37 @@ export const StudentProfileModal = ({
                 </div>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+              <div
+                className="p-3.5 rounded-xl border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <h3 className="text-xs font-bold uppercase tracking-wider mb-2.5" style={{ color: colors.textPrimary }}>
                   Lifetime Month-by-Month Attendance Audit
                 </h3>
 
-                <div className="overflow-x-auto rounded-xl border border-slate-800">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
-                      <tr>
-                        <th className="py-2.5 px-3">Month / Year</th>
-                        <th className="py-2.5 px-3 text-center">Days Present</th>
-                        <th className="py-2.5 px-3 text-center">Days Absent</th>
-                        <th className="py-2.5 px-3 text-center">Days Leave</th>
-                        <th className="py-2.5 px-3 text-center">Attendance %</th>
-                        <th className="py-2.5 px-3 text-center">Audit Status</th>
+                <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+                  <table className="w-full text-left text-[11px] min-w-[640px]">
+                    <thead>
+                      <tr
+                        className="uppercase text-[9.5px] border-b"
+                        style={{
+                          backgroundColor: colors.bgCard,
+                          borderColor: colors.border,
+                          color: colors.textSecondary
+                        }}
+                      >
+                        <th className="py-2 px-2.5">Month</th>
+                        <th className="py-2 px-2 text-center">Present</th>
+                        <th className="py-2 px-2 text-center">Absent</th>
+                        <th className="py-2 px-2 text-center">Leave</th>
+                        <th className="py-2 px-2 text-center">%</th>
+                        <th className="py-2 px-2 text-center">Audit</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className="divide-y" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                       {Array.from(new Set(attendances.map(a => a.monthYear))).map((mYear) => {
                         const recs = attendances.filter(a => a.monthYear === mYear);
                         const p = recs.filter(a => a.status === 'Present').length;
@@ -470,19 +703,26 @@ export const StudentProfileModal = ({
                         const pct = total > 0 ? Math.round((p / total) * 100) : 0;
 
                         return (
-                          <tr key={mYear} className="hover:bg-slate-900/40">
-                            <td className="py-2.5 px-3 font-semibold text-white font-mono">{mYear}</td>
-                            <td className="py-2.5 px-3 text-center font-mono text-emerald-400 font-bold">{p}</td>
-                            <td className="py-2.5 px-3 text-center font-mono text-rose-400">{a}</td>
-                            <td className="py-2.5 px-3 text-center font-mono text-amber-400">{l}</td>
-                            <td className="py-2.5 px-3 text-center font-mono font-bold">
-                              <span className={pct >= 75 ? 'text-emerald-400' : 'text-amber-400'}>
+                          <tr key={mYear} className="hover:opacity-90">
+                            <td className="py-1.5 px-2.5 font-semibold font-mono" style={{ color: colors.textPrimary }}>{mYear}</td>
+                            <td className="py-1.5 px-2 text-center font-mono font-bold" style={{ color: colors.primary }}>{p}</td>
+                            <td className="py-1.5 px-2 text-center font-mono text-rose-500">{a}</td>
+                            <td className="py-1.5 px-2 text-center font-mono text-amber-500">{l}</td>
+                            <td className="py-1.5 px-2 text-center font-mono font-bold">
+                              <span style={{ color: pct >= 75 ? colors.primary : '#F59E0B' }}>
                                 {pct}%
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 text-center">
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                                Closed ({p}/{total} Days)
+                            <td className="py-1.5 px-2 text-center">
+                              <span
+                                className="text-[9.5px] px-1.5 py-0.2 rounded border"
+                                style={{
+                                  backgroundColor: colors.bgSecondary,
+                                  borderColor: colors.border,
+                                  color: colors.textSecondary
+                                }}
+                              >
+                                Closed ({p}/{total}d)
                               </span>
                             </td>
                           </tr>
@@ -497,97 +737,124 @@ export const StudentProfileModal = ({
 
           {/* TAB 3: COMPLETE FINANCIAL LEDGER */}
           {activeTab === 'ledger' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {financialSummary && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-                    <span className="text-[11px] text-slate-400 uppercase">Lifetime Total Billed</span>
-                    <div className="text-xl font-bold font-mono text-white mt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div
+                    className="p-3 rounded-xl border"
+                    style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}
+                  >
+                    <span className="text-[10px] uppercase font-medium" style={{ color: colors.textSecondary }}>Lifetime Total Billed</span>
+                    <div className="text-lg font-bold font-mono mt-0.5" style={{ color: colors.textPrimary }}>
                       PKR {financialSummary.totalBilled.toLocaleString()}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40">
-                    <span className="text-[11px] text-emerald-400 uppercase">Lifetime Total Paid</span>
-                    <div className="text-xl font-bold font-mono text-emerald-300 mt-1">
+                  <div
+                    className="p-3 rounded-xl border bg-emerald-500/10 border-emerald-500/30"
+                  >
+                    <span className="text-[10px] uppercase font-medium text-emerald-600 dark:text-emerald-400">Lifetime Total Paid</span>
+                    <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-300 mt-0.5">
                       PKR {financialSummary.totalPaid.toLocaleString()}
                     </div>
                   </div>
-                  <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-800/40">
-                    <span className="text-[11px] text-rose-400 uppercase">Total Remaining Baqaya</span>
-                    <div className="text-xl font-bold font-mono text-rose-300 mt-1">
+                  <div
+                    className="p-3 rounded-xl border bg-rose-500/10 border-rose-500/30"
+                  >
+                    <span className="text-[10px] uppercase font-medium text-rose-500">Remaining Baqaya</span>
+                    <div className="text-lg font-bold font-mono text-rose-500 dark:text-rose-300 mt-0.5">
                       PKR {financialSummary.totalRemaining.toLocaleString()}
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <div className="flex items-center justify-between mb-4">
+              <div
+                className="p-3.5 rounded-xl border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-white">Lifetime Monthly Fee Ledger</h3>
-                    <p className="text-[11px] text-slate-400">Complete record of every month's dues, payments, and balance carry-over</p>
+                    <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Lifetime Monthly Fee Ledger</h3>
+                    <p className="text-[10px]" style={{ color: colors.textSecondary }}>Complete record of every month's dues, payments, and balance carry-over</p>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-slate-800">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-900 text-slate-400 uppercase text-[10px]">
-                      <tr>
-                        <th className="py-3 px-3">Billing Month</th>
-                        <th className="py-3 px-3 text-right">Monthly Fee</th>
-                        <th className="py-3 px-3 text-right">Admission Fee</th>
-                        <th className="py-3 px-3 text-right">Previous Arrears</th>
-                        <th className="py-3 px-3 text-right">Total Payable</th>
-                        <th className="py-3 px-3 text-right">Paid Amount</th>
-                        <th className="py-3 px-3 text-right">Remaining Baqaya</th>
-                        <th className="py-3 px-3 text-center">Status</th>
-                        <th className="py-3 px-3 text-center">Last Payment</th>
+                <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+                  <table className="w-full text-left text-[11px] min-w-[640px]">
+                    <thead>
+                      <tr
+                        className="uppercase text-[9.5px] border-b"
+                        style={{
+                          backgroundColor: colors.bgCard,
+                          borderColor: colors.border,
+                          color: colors.textSecondary
+                        }}
+                      >
+                        <th className="py-2 px-2.5">Month</th>
+                        <th className="py-2 px-2 text-right">Fee</th>
+                        <th className="py-2 px-2 text-right">Admission</th>
+                        <th className="py-2 px-2 text-right">Arrears</th>
+                        <th className="py-2 px-2 text-right">Total Due</th>
+                        <th className="py-2 px-2 text-right">Paid</th>
+                        <th className="py-2 px-2 text-right">Baqaya</th>
+                        <th className="py-2 px-2 text-center">Status</th>
+                        <th className="py-2 px-2 text-center">Paid Date</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/80 font-sans">
+                    <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                       {feeLedgers.map((l) => (
-                        <tr key={l._id} className="hover:bg-slate-900/40">
-                          <td className="py-3 px-3 font-semibold text-white font-mono">
+                        <tr key={l._id} className="hover:opacity-90">
+                          <td className="py-2 px-2.5 font-semibold font-mono" style={{ color: colors.textPrimary }}>
                             {l.monthName || l.monthYear}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono text-slate-300">
+                          <td className="py-2 px-2 text-right font-mono" style={{ color: colors.textSecondary }}>
                             PKR {l.monthlyFee}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono text-slate-300">
+                          <td className="py-2 px-2 text-right font-mono" style={{ color: colors.textSecondary }}>
                             PKR {l.admissionFee || 0}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono text-slate-400">
+                          <td className="py-2 px-2 text-right font-mono" style={{ color: colors.textMuted }}>
                             PKR {l.previousBalance || 0}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono font-bold text-white">
+                          <td className="py-2 px-2 text-right font-mono font-bold" style={{ color: colors.textPrimary }}>
                             PKR {l.totalDue}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
+                          <td className="py-2 px-2 text-right font-mono font-bold" style={{ color: colors.primary }}>
                             PKR {l.paidAmount}
                           </td>
-                          <td className="py-3 px-3 text-right font-mono font-bold">
+                          <td className="py-2 px-2 text-right font-mono font-bold">
                             {l.remainingBalance > 0 ? (
-                              <span className="text-rose-400">PKR {l.remainingBalance}</span>
+                              <span className="text-rose-500">PKR {l.remainingBalance}</span>
                             ) : (
-                              <span className="text-emerald-400">0</span>
+                              <span style={{ color: colors.primary }}>0</span>
                             )}
                           </td>
-                          <td className="py-3 px-3 text-center">
+                          <td className="py-2 px-2 text-center">
                             {l.status === 'PAID' ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                              <span
+                                className="px-1.5 py-0.2 rounded text-[9.5px] font-bold border"
+                                style={{
+                                  backgroundColor: colors.badgeBg,
+                                  borderColor: colors.border,
+                                  color: colors.primary
+                                }}
+                              >
                                 PAID
                               </span>
                             ) : l.status === 'PARTIAL' ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                                PARTIAL
+                              <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                                PART
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                              <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
                                 UNPAID
                               </span>
                             )}
                           </td>
-                          <td className="py-3 px-3 text-center font-mono text-slate-400 text-[11px]">
+                          <td className="py-2 px-2 text-center font-mono text-[10px]" style={{ color: colors.textSecondary }}>
                             {l.lastPaymentDate ? new Date(l.lastPaymentDate).toLocaleDateString() : '-'}
                           </td>
                         </tr>
@@ -601,43 +868,55 @@ export const StudentProfileModal = ({
 
           {/* TAB 4: BELT GRADING & ACHIEVEMENTS */}
           {activeTab === 'achievements' && (
-            <div className="space-y-6">
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <div className="flex items-center justify-between mb-4">
+            <div className="space-y-4">
+              <div
+                className="p-3.5 rounded-xl border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-white">Belt Promotion History & Tournament Honors</h3>
-                    <p className="text-[11px] text-slate-400">Official timeline accredited by Khyber Pakhtunkhwa Taekwondo Association</p>
+                    <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Belt Promotion History & Tournament Honors</h3>
+                    <p className="text-[10px]" style={{ color: colors.textSecondary }}>Official timeline accredited by Khyber Pakhtunkhwa Taekwondo Association</p>
                   </div>
-                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                    <Trophy className="w-5 h-5" />
+                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                    <Trophy className="w-4 h-4" />
                   </div>
                 </div>
 
-                <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800">
+                <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-300 dark:before:bg-slate-700">
                   {achievements.map((ach) => (
                     <div key={ach._id} className="relative group">
-                      <div className="absolute -left-6 top-1 w-3.5 h-3.5 rounded-full bg-red-600 border-2 border-slate-950 group-hover:scale-125 transition" />
-                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+                      <div
+                        className="absolute -left-5 top-1 w-3 h-3 rounded-full border-2 transition"
+                        style={{ backgroundColor: colors.primary, borderColor: colors.bgCard }}
+                      />
+                      <div
+                        className="p-3 rounded-lg border space-y-1"
+                        style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+                      >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">{ach.title}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>{ach.title}</span>
+                          <span className="text-[10px] font-mono" style={{ color: colors.textSecondary }}>
                             {new Date(ach.date).toLocaleDateString()}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-1.5 mt-0.5">
                           {ach.beltPromotedTo && (
-                            <span className="px-2 py-0.5 rounded bg-blue-950 border border-blue-500/30 text-blue-300 text-[10px] font-semibold">
+                            <span className="px-1.5 py-0.2 rounded bg-blue-500/15 border border-blue-500/30 text-blue-500 text-[9.5px] font-semibold">
                               Promoted to: {ach.beltPromotedTo}
                             </span>
                           )}
                           {ach.medal && ach.medal !== 'None' && (
-                            <span className="px-2 py-0.5 rounded bg-amber-950 border border-amber-500/30 text-amber-300 text-[10px] font-bold flex items-center gap-1">
+                            <span className="px-1.5 py-0.2 rounded bg-amber-500/15 border border-amber-500/30 text-amber-500 text-[9.5px] font-bold flex items-center gap-1">
                               🏅 {ach.medal} Medal
                             </span>
                           )}
                         </div>
                         {ach.remarks && (
-                          <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                          <p className="text-[11px] mt-1.5 leading-snug" style={{ color: colors.textSecondary }}>
                             {ach.remarks}
                           </p>
                         )}
@@ -651,54 +930,72 @@ export const StudentProfileModal = ({
 
           {/* TAB 5: ISSUED CERTIFICATES */}
           {activeTab === 'certificates' && (
-            <div className="space-y-6">
-              <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800">
-                <div className="flex items-center justify-between mb-4">
+            <div className="space-y-4">
+              <div
+                className="p-3.5 rounded-xl border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-white">Federation Official Issued Certificates</h3>
-                    <p className="text-[11px] text-slate-400">Signed certificates ready for 1-click re-print or landscape download</p>
+                    <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Federation Official Issued Certificates</h3>
+                    <p className="text-[10px]" style={{ color: colors.textSecondary }}>Signed certificates ready for 1-click re-print or landscape download</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {certificates.length === 0 ? (
-                    <div className="col-span-2 py-8 text-center text-slate-400">
+                    <div className="col-span-2 py-6 text-center text-xs" style={{ color: colors.textSecondary }}>
                       No certificates issued yet for this student. Use the Federation Certificate module to issue one.
                     </div>
                   ) : (
                     certificates.map((cert) => (
                       <div
                         key={cert._id}
-                        className="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex flex-col justify-between space-y-3"
+                        className="p-3 rounded-lg border flex flex-col justify-between space-y-2.5"
+                        style={{
+                          backgroundColor: colors.bgCard,
+                          borderColor: colors.border
+                        }}
                       >
                         <div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold font-mono text-red-400">
+                            <span className="text-[10px] font-bold font-mono" style={{ color: colors.primary }}>
                               {cert.certificateNo}
                             </span>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            <span
+                              className="px-1.5 py-0.2 rounded text-[9.5px] font-semibold border"
+                              style={{
+                                backgroundColor: colors.badgeBg,
+                                borderColor: colors.border,
+                                color: colors.primary
+                              }}
+                            >
                               {cert.status}
                             </span>
                           </div>
-                          <h4 className="text-sm font-bold text-white mt-2">
+                          <h4 className="text-xs font-bold mt-1.5" style={{ color: colors.textPrimary }}>
                             {cert.beltLevel || cert.beltRank} Certification
                           </h4>
-                          <p className="text-xs text-slate-400 line-clamp-2 mt-1">
+                          <p className="text-[11px] line-clamp-2 mt-0.5" style={{ color: colors.textSecondary }}>
                             {cert.citationText}
                           </p>
-                          <div className="text-[10px] text-slate-400 mt-2">
+                          <div className="text-[9.5px] mt-1.5" style={{ color: colors.textMuted }}>
                             Issued: {new Date(cert.issueDate).toLocaleDateString()}
                           </div>
                         </div>
 
-                        <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                          <span className="text-[10px] text-slate-400">Signatory: Murtaza Hassan Bangash</span>
+                        <div className="pt-2 border-t flex items-center justify-between" style={{ borderColor: colors.border }}>
+                          <span className="text-[9.5px]" style={{ color: colors.textMuted }}>Signatory: Murtaza Hassan Bangash</span>
                           <button
                             onClick={() => onPrintCertificate && onPrintCertificate(cert)}
-                            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold flex items-center gap-1.5"
+                            className="px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold flex items-center gap-1 transition hover:scale-105"
+                            style={{ backgroundColor: colors.primary }}
                           >
-                            <Printer className="w-3.5 h-3.5" />
-                            <span>Re-print Certificate</span>
+                            <Printer className="w-3 h-3" />
+                            <span>Print Certificate</span>
                           </button>
                         </div>
                       </div>
@@ -710,6 +1007,16 @@ export const StudentProfileModal = ({
           )}
         </div>
       </div>
+
+      {/* Edit Student Modal */}
+      {isEditing && student && (
+        <EditStudentModal
+          student={student}
+          isOpen={isEditing}
+          onClose={() => setIsEditing(false)}
+          onSaveSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 };

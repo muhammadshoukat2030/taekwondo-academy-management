@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/api.js';
 import { soundEffects } from '../../utils/audio.js';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import {
   ScanFace,
   Fingerprint,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react';
 
 export const SmartAttendanceTerminal = () => {
+  const { colors, theme, mode } = useTheme();
   const [activeMode, setActiveMode] = useState('face');
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -123,9 +125,12 @@ export const SmartAttendanceTerminal = () => {
 
         setLastCheckIn(logItem);
         setRecentLogs(prev => [logItem, ...prev.slice(0, 9)]);
+      } else {
+        alert(res.message || 'Unable to record attendance for this student.');
       }
     } catch (err) {
       console.error('Error logging attendance:', err);
+      alert(err.response?.data?.message || err.message || 'Error recording attendance');
     } finally {
       setLoading(false);
     }
@@ -204,68 +209,87 @@ export const SmartAttendanceTerminal = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Top Mode Selector Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 lg:p-6 rounded-2xl">
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 lg:p-4 rounded-xl border shadow-sm transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-red-600/10 text-red-500 border border-red-500/20">
-              <ScanFace className="w-5 h-5" />
+            <span
+              className="p-1.5 rounded-lg border flex items-center justify-center"
+              style={{
+                backgroundColor: colors.badgeBg,
+                borderColor: colors.border,
+                color: colors.primary
+              }}
+            >
+              <ScanFace className="w-4 h-4" />
             </span>
-            <h1 className="text-xl font-black text-white">
-              Tri-Mode Smart Daily Attendance Terminal
+            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+              Attendance Terminal
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time AI Face Recognition Scanner, External Biometric Reader Interface & Full Monthly Matrix Sheet
+          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+            Mark daily attendance via Face AI, Fingerprint biometric scanner, Batch register, or Monthly matrix grid.
           </p>
         </div>
 
         {/* Mode Switcher Buttons */}
-        <div className="flex items-center bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs">
+        <div
+          className="flex flex-wrap items-center p-1 rounded-lg border text-xs gap-1"
+          style={{
+            backgroundColor: colors.bgSecondary,
+            borderColor: colors.border
+          }}
+        >
           <button
             onClick={() => { setActiveMode('face'); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeMode === 'face'
-                ? 'bg-red-600 text-white shadow-md shadow-red-950'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            style={{
+              backgroundColor: activeMode === 'face' ? colors.primary : 'transparent',
+              color: activeMode === 'face' ? '#FFFFFF' : colors.textSecondary
+            }}
           >
             <Camera className="w-3.5 h-3.5" />
-            <span>Mode 1: Face AI</span>
+            <span>Face AI</span>
           </button>
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('fingerprint'); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeMode === 'fingerprint'
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            style={{
+              backgroundColor: activeMode === 'fingerprint' ? colors.primary : 'transparent',
+              color: activeMode === 'fingerprint' ? '#FFFFFF' : colors.textSecondary
+            }}
           >
             <Fingerprint className="w-3.5 h-3.5" />
-            <span>Mode 2: Biometric</span>
+            <span>Fingerprint</span>
           </button>
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('register'); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeMode === 'register'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-950'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            style={{
+              backgroundColor: activeMode === 'register' ? colors.primary : 'transparent',
+              color: activeMode === 'register' ? '#FFFFFF' : colors.textSecondary
+            }}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>Mode 3: Batch Register</span>
+            <span>Batch Register</span>
           </button>
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('monthlyGrid'); }}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeMode === 'monthlyGrid'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-950'
-                : 'text-slate-400 hover:text-white'
-            }`}
+            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            style={{
+              backgroundColor: activeMode === 'monthlyGrid' ? colors.primary : 'transparent',
+              color: activeMode === 'monthlyGrid' ? '#FFFFFF' : colors.textSecondary
+            }}
           >
             <TableProperties className="w-3.5 h-3.5" />
             <span>Monthly Grid</span>
@@ -275,26 +299,33 @@ export const SmartAttendanceTerminal = () => {
 
       {/* MODE 1: LIVE AI FACE RECOGNITION SCANNER */}
       {activeMode === 'face' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div
+            className="lg:col-span-2 p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
+            <div className="flex items-center justify-between pb-2.5 border-b" style={{ borderColor: colors.border }}>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <h3 className="text-sm font-bold text-white">Live AI Neural Scanner Terminal</h3>
+                <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: colors.primary }} />
+                <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Live AI Neural Scanner Terminal</h3>
               </div>
               <div className="flex items-center gap-2">
                 {!cameraActive ? (
                   <button
                     onClick={startFaceCamera}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5"
+                    className="px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold flex items-center gap-1.5 transition hover:scale-102"
+                    style={{ backgroundColor: colors.primary }}
                   >
-                    <Camera className="w-3.5 h-3.5" />
+                    <Camera className="w-3 h-3" />
                     <span>Start Live Webcam</span>
                   </button>
                 ) : (
                   <button
                     onClick={stopFaceCamera}
-                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold"
                   >
                     Stop Webcam
                   </button>
@@ -303,17 +334,30 @@ export const SmartAttendanceTerminal = () => {
             </div>
 
             {/* Video Viewport */}
-            <div className="relative aspect-video rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center">
+            <div
+              className="relative aspect-video rounded-lg border overflow-hidden flex items-center justify-center"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border
+              }}
+            >
               {cameraActive ? (
                 <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transform -scale-x-100" />
               ) : (
-                <div className="flex flex-col items-center justify-center p-6 text-center space-y-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-500">
-                    <Camera className="w-8 h-8" />
+                <div className="flex flex-col items-center justify-center p-5 text-center space-y-2">
+                  <div
+                    className="w-12 h-12 rounded-full border flex items-center justify-center"
+                    style={{
+                      backgroundColor: colors.bgCard,
+                      borderColor: colors.border,
+                      color: colors.textMuted
+                    }}
+                  >
+                    <Camera className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-white">Live AI Face Terminal Ready</p>
-                    <p className="text-[11px] text-slate-400 mt-1 max-w-sm">
+                    <p className="text-xs font-semibold" style={{ color: colors.textPrimary }}>Live AI Face Terminal Ready</p>
+                    <p className="text-[10.5px] mt-0.5 max-w-sm" style={{ color: colors.textSecondary }}>
                       Click "Start Live Webcam" to stream directly from your camera, or use the quick student triggers below to test instant face check-in.
                     </p>
                   </div>
@@ -321,22 +365,39 @@ export const SmartAttendanceTerminal = () => {
               )}
 
               {/* HUD / Scanning Overlay */}
-              <div className="absolute inset-0 pointer-events-none p-6 flex flex-col justify-between">
-                <div className="flex justify-between items-center text-[10px] font-mono text-emerald-400 bg-slate-950/80 px-3 py-1 rounded-lg border border-emerald-500/30 backdrop-blur-sm self-start">
+              <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+                <div
+                  className="flex justify-between items-center text-[9.5px] font-mono px-2.5 py-0.5 rounded border backdrop-blur-sm self-start"
+                  style={{
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
                   <span>AI MODEL: TKD-NET v2.4</span>
-                  <span className="mx-2">•</span>
+                  <span className="mx-1.5">•</span>
                   <span>FPS: 30</span>
                 </div>
 
-                <div className="self-center w-56 h-64 border-2 border-emerald-500/40 rounded-2xl relative flex items-center justify-center">
-                  <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-emerald-400" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-emerald-400" />
-                  <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-emerald-400" />
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-emerald-400" />
-                  <div className="w-full h-0.5 bg-emerald-400/30 animate-pulse" />
+                <div
+                  className="self-center w-48 h-56 border-2 rounded-xl relative flex items-center justify-center"
+                  style={{ borderColor: colors.primary }}
+                >
+                  <div className="absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2" style={{ borderColor: colors.primary }} />
+                  <div className="absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2" style={{ borderColor: colors.primary }} />
+                  <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2" style={{ borderColor: colors.primary }} />
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2" style={{ borderColor: colors.primary }} />
+                  <div className="w-full h-0.5 animate-pulse" style={{ backgroundColor: colors.primary }} />
                 </div>
 
-                <div className="text-[11px] font-semibold text-center text-slate-300 bg-slate-950/80 py-1 px-4 rounded-full border border-slate-800 self-center backdrop-blur-sm">
+                <div
+                  className="text-[10px] font-semibold text-center py-0.5 px-3 rounded-full border self-center backdrop-blur-sm"
+                  style={{
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                >
                   Align student face within the reticle for instant verification
                 </div>
               </div>
@@ -344,8 +405,8 @@ export const SmartAttendanceTerminal = () => {
 
             {/* Quick Trigger Bar */}
             <div>
-              <div className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <div className="text-[11px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5" style={{ color: colors.textSecondary }}>
+                <Sparkles className="w-3 h-3 text-amber-500" />
                 <span>Simulate Student Approach (Click Student to Trigger AI Match):</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -353,20 +414,27 @@ export const SmartAttendanceTerminal = () => {
                   <button
                     key={st._id}
                     onClick={() => triggerScanForStudent(st)}
-                    className="p-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-left transition flex items-center gap-2 group"
+                    className="p-1.5 rounded-lg border text-left transition flex items-center gap-2 group hover:scale-[1.01]"
+                    style={{
+                      backgroundColor: colors.bgSecondary,
+                      borderColor: colors.border
+                    }}
                   >
                     {st.photo ? (
-                      <img src={st.photo} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                      <img src={st.photo} alt="" className="w-7 h-7 rounded-md object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold">
+                      <div
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold"
+                        style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}
+                      >
                         {st.fullName[0]}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-white truncate group-hover:text-red-400">
+                      <div className="text-[11px] font-semibold truncate group-hover:opacity-80" style={{ color: colors.textPrimary }}>
                         {st.fullName}
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">
+                      <div className="text-[9.5px] truncate" style={{ color: colors.textMuted }}>
                         {st.currentBelt} Belt
                       </div>
                     </div>
@@ -377,88 +445,131 @@ export const SmartAttendanceTerminal = () => {
           </div>
 
           {/* Real-Time Scan Result & Live Fee Alert */}
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between space-y-4">
+          <div
+            className="p-3.5 lg:p-4 rounded-xl border shadow-sm flex flex-col justify-between space-y-3 transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
             <div>
-              <h3 className="text-sm font-bold text-white pb-3 border-b border-slate-800 flex items-center justify-between">
+              <h3 className="text-xs font-bold pb-2.5 border-b flex items-center justify-between" style={{ borderColor: colors.border, color: colors.textPrimary }}>
                 <span>Real-Time Biometric Match Result</span>
-                <span className="text-[10px] text-slate-400 font-mono">LIVE FEEDBACK</span>
+                <span className="text-[9.5px] font-mono" style={{ color: colors.textMuted }}>LIVE FEEDBACK</span>
               </h3>
 
               {lastCheckIn ? (
-                <div className="mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-3 animate-in fade-in duration-200">
+                <div
+                  className="mt-3 p-3 rounded-xl border text-center space-y-2.5 animate-in fade-in duration-200"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
+                >
                   <div className="relative inline-block">
                     {lastCheckIn.photo ? (
                       <img
                         src={lastCheckIn.photo}
                         alt=""
-                        className="w-20 h-24 object-cover rounded-xl border-2 border-emerald-500 shadow-lg mx-auto"
+                        className="w-16 h-20 object-cover rounded-lg border-2 shadow-sm mx-auto"
+                        style={{ borderColor: colors.primary }}
                       />
                     ) : (
-                      <div className="w-20 h-24 bg-slate-800 rounded-xl border-2 border-emerald-500 flex items-center justify-center font-bold text-2xl mx-auto">
+                      <div
+                        className="w-16 h-20 rounded-lg border-2 flex items-center justify-center font-bold text-xl mx-auto"
+                        style={{ backgroundColor: colors.bgCard, borderColor: colors.primary, color: colors.textPrimary }}
+                      >
                         {lastCheckIn.studentName[0]}
                       </div>
                     )}
-                    <div className="absolute -bottom-2 -right-2 p-1 rounded-full bg-emerald-500 text-white">
-                      <CheckCircle2 className="w-4 h-4" />
+                    <div
+                      className="absolute -bottom-1.5 -right-1.5 p-0.5 rounded-full text-white"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="text-base font-black text-white">{lastCheckIn.studentName}</h4>
-                    <p className="text-xs text-slate-400">S/O {lastCheckIn.fatherName}</p>
-                    <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-bold border border-slate-800 bg-slate-900 text-amber-400 font-mono">
+                    <h4 className="text-sm font-bold" style={{ color: colors.textPrimary }}>{lastCheckIn.studentName}</h4>
+                    <p className="text-[11px]" style={{ color: colors.textSecondary }}>S/O {lastCheckIn.fatherName}</p>
+                    <span
+                      className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold border font-mono"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
                       {lastCheckIn.registrationNo}
                     </span>
                   </div>
 
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-around font-mono">
-                    <span className="text-emerald-400 font-bold">STATUS: PRESENT</span>
-                    <span className="text-slate-400">TIME: {lastCheckIn.time}</span>
+                  <div
+                    className="p-1.5 rounded-lg border text-[11px] flex items-center justify-around font-mono"
+                    style={{
+                      backgroundColor: colors.bgCard,
+                      borderColor: colors.border
+                    }}
+                  >
+                    <span className="font-bold" style={{ color: colors.primary }}>STATUS: PRESENT</span>
+                    <span style={{ color: colors.textMuted }}>TIME: {lastCheckIn.time}</span>
                   </div>
 
                   {/* CRITICAL: Live Fee Alert */}
                   {lastCheckIn.feeAlert && lastCheckIn.feeAlert.hasDues ? (
-                    <div className="p-3 rounded-xl bg-rose-950/60 border-2 border-rose-600/80 text-left space-y-1 animate-pulse">
-                      <div className="flex items-center gap-1.5 text-xs font-black text-rose-300">
-                        <AlertTriangle className="w-4 h-4 text-rose-400" />
+                    <div className="p-2.5 rounded-lg bg-rose-500/10 border-2 border-rose-500 text-left space-y-0.5 animate-pulse">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-500">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                         <span>FEE PAYMENT DUE ALERT</span>
                       </div>
-                      <p className="text-xs font-semibold text-rose-200">
+                      <p className="text-[11px] font-semibold text-rose-600 dark:text-rose-300">
                         {lastCheckIn.feeAlert.message}
                       </p>
-                      <p className="text-[10px] text-rose-300/80">
+                      <p className="text-[9.5px] text-rose-500">
                         Instructor Alert: Prompt student for remaining Baqaya of PKR {lastCheckIn.feeAlert.remainingBalance}.
                       </p>
                     </div>
                   ) : (
-                    <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800 text-xs text-emerald-300 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <div
+                      className="p-2 rounded-lg border text-[11px] flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: colors.badgeBg,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.primary }} />
                       <span>Fee Cleared: Student has paid dues in full for this month.</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="py-12 text-center text-slate-500 text-xs">
+                <div className="py-10 text-center text-[11px]" style={{ color: colors.textMuted }}>
                   Scan a face to see real-time student identity, timestamp, and fee pending alert.
                 </div>
               )}
             </div>
 
             <div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <div className="text-[10.5px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.textSecondary }}>
                 Recent Check-ins Today
               </div>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              <div className="space-y-1 max-h-44 overflow-y-auto">
                 {recentLogs.map((log, i) => (
                   <div
                     key={i}
-                    className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs flex items-center justify-between"
+                    className="p-1.5 rounded-lg border text-[11px] flex items-center justify-between"
+                    style={{
+                      backgroundColor: colors.bgSecondary,
+                      borderColor: colors.border
+                    }}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      <span className="font-semibold text-white truncate">{log.studentName}</span>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.primary }} />
+                      <span className="font-semibold truncate" style={{ color: colors.textPrimary }}>{log.studentName}</span>
                     </div>
-                    <span className="font-mono text-[11px] text-slate-400">{log.time}</span>
+                    <span className="font-mono text-[10px]" style={{ color: colors.textMuted }}>{log.time}</span>
                   </div>
                 ))}
               </div>
@@ -469,42 +580,71 @@ export const SmartAttendanceTerminal = () => {
 
       {/* MODE 2: FINGERPRINT SCANNER */}
       {activeMode === 'fingerprint' && (
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl max-w-3xl mx-auto space-y-6">
-          <div className="text-center pb-4 border-b border-slate-800">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-3">
-              <Fingerprint className="w-9 h-9" />
+        <div
+          className="p-4 lg:p-5 rounded-xl border shadow-sm max-w-2xl mx-auto space-y-4 transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <div className="text-center pb-3 border-b" style={{ borderColor: colors.border }}>
+            <div
+              className="w-12 h-12 rounded-xl border flex items-center justify-center mx-auto mb-2"
+              style={{
+                backgroundColor: colors.badgeBg,
+                borderColor: colors.border,
+                color: colors.primary
+              }}
+            >
+              <Fingerprint className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-black text-white">
+            <h3 className="text-base font-bold" style={{ color: colors.textPrimary }}>
               Optical / Capacitive Fingerprint Biometric Terminal
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
               External USB Fingerprint Reader API listener (DigitalPersona / SecuGen / WebAuthn standard)
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col items-center justify-center text-center space-y-4">
+          <div
+            className="p-4 rounded-xl border flex flex-col items-center justify-center text-center space-y-3"
+            style={{
+              backgroundColor: colors.bgSecondary,
+              borderColor: colors.border
+            }}
+          >
             <div
               className="relative group cursor-pointer"
               onClick={() => {
                 if (students.length > 0) processCheckIn(students[0], 'Fingerprint');
               }}
             >
-              <div className="w-32 h-32 rounded-3xl bg-slate-900 border-2 border-emerald-500 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-950/60 group-hover:scale-105 transition">
-                <Fingerprint className="w-16 h-16 animate-pulse" />
+              <div
+                className="w-24 h-24 rounded-2xl border-2 flex items-center justify-center shadow-sm group-hover:scale-102 transition"
+                style={{
+                  backgroundColor: colors.bgCard,
+                  borderColor: colors.primary,
+                  color: colors.primary
+                }}
+              >
+                <Fingerprint className="w-12 h-12 animate-pulse" />
               </div>
-              <div className="absolute inset-0 rounded-3xl border border-emerald-400 animate-ping opacity-30 pointer-events-none" />
+              <div
+                className="absolute inset-0 rounded-2xl border animate-ping opacity-30 pointer-events-none"
+                style={{ borderColor: colors.primary }}
+              />
             </div>
 
-            <div className="space-y-1">
-              <div className="text-sm font-bold text-white">Press Thumb / Finger on Scanner</div>
-              <p className="text-xs text-slate-400">
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>Press Thumb / Finger on Scanner</div>
+              <p className="text-[11px]" style={{ color: colors.textSecondary }}>
                 Listening on USB COM Port / WebUSB Device. Click the sensor icon to simulate immediate biometric match.
               </p>
             </div>
           </div>
 
           <div>
-            <div className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+            <div className="text-[10.5px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.textSecondary }}>
               Registered Fingerprint Templates (Click to Authenticate):
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -512,12 +652,16 @@ export const SmartAttendanceTerminal = () => {
                 <button
                   key={st._id}
                   onClick={() => processCheckIn(st, 'Fingerprint')}
-                  className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-left transition flex items-center gap-2"
+                  className="p-2 rounded-lg border text-left transition flex items-center gap-2 hover:scale-102"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
                 >
-                  <Fingerprint className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <Fingerprint className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.primary }} />
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-white truncate">{st.fullName}</div>
-                    <div className="text-[10px] font-mono text-slate-400">{st.fingerprintTemplateId || 'FP-LINKED'}</div>
+                    <div className="text-[11px] font-semibold truncate" style={{ color: colors.textPrimary }}>{st.fullName}</div>
+                    <div className="text-[9.5px] font-mono" style={{ color: colors.textMuted }}>{st.fingerprintTemplateId || 'FP-LINKED'}</div>
                   </div>
                 </button>
               ))}
@@ -528,37 +672,52 @@ export const SmartAttendanceTerminal = () => {
 
       {/* MODE 3: BATCH MANUAL REGISTER */}
       {activeMode === 'register' && (
-        <div className="p-5 lg:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div
+          className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b" style={{ borderColor: colors.border }}>
             <div>
-              <h3 className="text-sm font-bold text-white">Batch Daily Attendance Register</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Quickly toggle Present / Absent / Leave for all students in one click</p>
+              <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Batch Daily Attendance Register</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>Quickly toggle Present / Absent / Leave for all students in one click</p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs text-white">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex items-center gap-2.5">
+              <div
+                className="flex items-center gap-2 px-2.5 py-1 rounded-lg border text-xs"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
+              >
+                <Calendar className="w-3 h-3" style={{ color: colors.textMuted }} />
                 <input
                   type="date"
                   value={registerDate}
                   onChange={(e) => setRegisterDate(e.target.value)}
-                  className="bg-transparent text-xs text-white focus:outline-none"
+                  className="bg-transparent text-xs focus:outline-none"
+                  style={{ color: colors.textPrimary }}
                 />
               </div>
 
               <button
                 onClick={handleSaveBatch}
                 disabled={loading}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-red-950/60"
+                className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition hover:scale-102"
+                style={{ backgroundColor: colors.primary }}
               >
-                <Save className="w-3.5 h-3.5" />
-                <span>Save Batch Attendance</span>
+                <Save className="w-3 h-3" />
+                <span>Save Batch</span>
               </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <span>Quick Set All:</span>
+          <div className="flex items-center gap-2 text-xs" style={{ color: colors.textSecondary }}>
+            <span className="text-[11px]">Quick Set All:</span>
             {['Present', 'Absent', 'Leave'].map((st) => (
               <button
                 key={st}
@@ -567,36 +726,61 @@ export const SmartAttendanceTerminal = () => {
                   students.forEach(s => { updated[s._id] = st; });
                   setBatchStatus(updated);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium"
+                className="px-2 py-0.5 rounded-md border text-[11px] font-medium transition"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               >
                 All {st}
               </button>
             ))}
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px]">
-                <tr>
-                  <th className="py-3 px-3">Student / Roll No</th>
-                  <th className="py-3 px-3">Belt Rank</th>
-                  <th className="py-3 px-3">Status Toggle</th>
+          <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+            <table className="w-full text-left text-xs min-w-[500px]">
+              <thead>
+                <tr
+                  className="uppercase text-[9.5px] border-b"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border,
+                    color: colors.textSecondary
+                  }}
+                >
+                  <th className="py-2 px-3">Student / Roll No</th>
+                  <th className="py-2 px-3">Belt Rank</th>
+                  <th className="py-2 px-3">Status Toggle</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                 {students.map((st) => (
-                  <tr key={st._id} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-white">{st.fullName}</div>
-                      <div className="text-[11px] text-slate-400">S/O {st.fatherName} • {st.registrationNo}</div>
+                  <tr key={st._id} className="hover:opacity-90">
+                    <td className="py-2 px-3">
+                      <div className="font-semibold text-xs" style={{ color: colors.textPrimary }}>{st.fullName}</div>
+                      <div className="text-[10px]" style={{ color: colors.textSecondary }}>S/O {st.fatherName} • {st.registrationNo}</div>
                     </td>
-                    <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                    <td className="py-2 px-3">
+                      <span
+                        className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold border"
+                        style={{
+                          backgroundColor: colors.bgSecondary,
+                          borderColor: colors.border,
+                          color: colors.textSecondary
+                        }}
+                      >
                         {st.currentBelt} Belt
                       </span>
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-fit">
+                    <td className="py-2 px-3">
+                      <div
+                        className="flex items-center gap-0.5 p-0.5 rounded-lg border w-fit"
+                        style={{
+                          backgroundColor: colors.bgSecondary,
+                          borderColor: colors.border
+                        }}
+                      >
                         {['Present', 'Absent', 'Leave', 'Late'].map((opt) => {
                           const current = batchStatus[st._id] || 'Present';
                           const isSel = current === opt;
@@ -605,17 +789,19 @@ export const SmartAttendanceTerminal = () => {
                               key={opt}
                               type="button"
                               onClick={() => setBatchStatus({ ...batchStatus, [st._id]: opt })}
-                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                                isSel
+                              className="px-2 py-0.5 rounded-md text-[10.5px] font-semibold transition"
+                              style={{
+                                backgroundColor: isSel
                                   ? opt === 'Present'
-                                    ? 'bg-emerald-600 text-white'
+                                    ? colors.primary
                                     : opt === 'Absent'
-                                    ? 'bg-rose-600 text-white'
+                                    ? '#EF4444'
                                     : opt === 'Leave'
-                                    ? 'bg-amber-600 text-white'
-                                    : 'bg-cyan-600 text-white'
-                                  : 'text-slate-400 hover:text-white'
-                              }`}
+                                    ? '#F59E0B'
+                                    : '#06B6D4'
+                                  : 'transparent',
+                                color: isSel ? '#FFFFFF' : colors.textSecondary
+                              }}
                             >
                               {opt}
                             </button>
@@ -633,26 +819,39 @@ export const SmartAttendanceTerminal = () => {
 
       {/* MODE 4: MONTHLY ATTENDANCE SHEET GRID */}
       {activeMode === 'monthlyGrid' && (
-        <div className="p-5 lg:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div
+          className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b" style={{ borderColor: colors.border }}>
             <div>
-              <h3 className="text-sm font-bold text-white">Monthly Attendance Register Matrix (Days 1 to {daysInGridMonth})</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Comprehensive grid view with individual days, total presents, and ratio</p>
+              <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Monthly Attendance Register Matrix (Days 1 to {daysInGridMonth})</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>Comprehensive grid view with individual days, total presents, and ratio</p>
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1 bg-slate-950 px-2.5 py-1.5 rounded-xl border border-slate-800 text-xs">
+            <div className="flex items-center gap-2">
+              <div
+                className="flex items-center gap-1 px-2 py-1 rounded-lg border text-xs"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
                 <select
                   value={gridMonth}
                   onChange={(e) => setGridMonth(Number(e.target.value))}
                   aria-label="Select Grid Month"
-                  className="bg-transparent text-white font-semibold focus:outline-none"
+                  className="bg-transparent font-semibold focus:outline-none text-xs"
+                  style={{ color: colors.textPrimary }}
                 >
                   {[
                     'January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'
                   ].map((m, idx) => (
-                    <option key={idx + 1} value={idx + 1} className="bg-slate-900 text-white">
+                    <option key={idx + 1} value={idx + 1} style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}>
                       {m}
                     </option>
                   ))}
@@ -661,10 +860,14 @@ export const SmartAttendanceTerminal = () => {
                   value={gridYear}
                   onChange={(e) => setGridYear(Number(e.target.value))}
                   aria-label="Select Grid Year"
-                  className="bg-transparent text-red-400 font-semibold focus:outline-none border-l border-slate-800 pl-2"
+                  className="bg-transparent font-semibold focus:outline-none border-l pl-2 text-xs"
+                  style={{
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
                 >
                   {[2024, 2025, 2026, 2027].map((y) => (
-                    <option key={y} value={y} className="bg-slate-900 text-white">
+                    <option key={y} value={y} style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}>
                       {y}
                     </option>
                   ))}
@@ -673,79 +876,85 @@ export const SmartAttendanceTerminal = () => {
 
               <button
                 onClick={exportGridCSV}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 border border-slate-700"
+                className="px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition hover:scale-102"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               >
-                <Download className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Export Excel / CSV</span>
+                <Download className="w-3 h-3" style={{ color: colors.primary }} />
+                <span>Export CSV</span>
               </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800 max-h-[600px]">
+          <div className="overflow-x-auto rounded-lg border max-h-[500px]" style={{ borderColor: colors.border }}>
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] sticky top-0 z-20">
+              <thead className="uppercase text-[9.5px] sticky top-0 z-20" style={{ backgroundColor: colors.bgSecondary, color: colors.textSecondary }}>
                 <tr>
-                  <th className="py-2.5 px-3 sticky left-0 bg-slate-950 z-30 min-w-44 border-r border-slate-800">
+                  <th className="py-2 px-2.5 sticky left-0 z-30 min-w-40 border-r" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border }}>
                     Student Details
                   </th>
                   {Array.from({ length: daysInGridMonth }, (_, i) => (
-                    <th key={i + 1} className="py-2.5 px-1.5 text-center min-w-[28px] border-r border-slate-800/60 font-mono">
+                    <th key={i + 1} className="py-2 px-1 text-center min-w-[24px] border-r font-mono text-[9.5px]" style={{ borderColor: colors.border }}>
                       {i + 1}
                     </th>
                   ))}
-                  <th className="py-2.5 px-2 text-center min-w-14">Pres</th>
-                  <th className="py-2.5 px-2 text-center min-w-14">Abs</th>
-                  <th className="py-2.5 px-2 text-center min-w-16">Ratio</th>
-                  <th className="py-2.5 px-2 text-center min-w-14">%</th>
+                  <th className="py-2 px-1.5 text-center min-w-12">Pres</th>
+                  <th className="py-2 px-1.5 text-center min-w-12">Abs</th>
+                  <th className="py-2 px-1.5 text-center min-w-14">Ratio</th>
+                  <th className="py-2 px-1.5 text-center min-w-12">%</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-sans">
+              <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                 {gridMatrix.map((row) => (
-                  <tr key={row.student._id} className="hover:bg-slate-800/40">
-                    <td className="py-2.5 px-3 sticky left-0 bg-slate-900 z-10 border-r border-slate-800">
-                      <div className="font-semibold text-white truncate max-w-[160px]">{row.student.fullName}</div>
-                      <div className="text-[10px] font-mono text-slate-400 truncate">{row.student.registrationNo} • {row.student.currentBelt}</div>
+                  <tr key={row.student._id} className="hover:opacity-90">
+                    <td className="py-2 px-2.5 sticky left-0 z-10 border-r" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                      <div className="font-semibold truncate max-w-[150px] text-[11px]" style={{ color: colors.textPrimary }}>{row.student.fullName}</div>
+                      <div className="text-[9.5px] font-mono truncate" style={{ color: colors.textMuted }}>{row.student.registrationNo} • {row.student.currentBelt}</div>
                     </td>
 
                     {Array.from({ length: daysInGridMonth }, (_, i) => {
                       const dayVal = row.dailyRecords[i + 1] || '-';
-                      let cellColor = 'text-slate-600';
+                      let cellStyle = { color: colors.textMuted };
                       let char = '-';
 
                       if (dayVal === 'Present') {
-                        cellColor = 'text-emerald-400 font-bold bg-emerald-950/20';
+                        cellStyle = { color: colors.primary, fontWeight: 'bold' };
                         char = 'P';
                       } else if (dayVal === 'Absent') {
-                        cellColor = 'text-rose-400 font-bold bg-rose-950/20';
+                        cellStyle = { color: '#EF4444', fontWeight: 'bold' };
                         char = 'A';
                       } else if (dayVal === 'Leave') {
-                        cellColor = 'text-amber-400 font-bold bg-amber-950/20';
+                        cellStyle = { color: '#F59E0B', fontWeight: 'bold' };
                         char = 'L';
                       } else if (dayVal === 'Late') {
-                        cellColor = 'text-cyan-400 font-bold';
+                        cellStyle = { color: '#06B6D4', fontWeight: 'bold' };
                         char = 'T';
                       }
 
                       return (
                         <td
                           key={i + 1}
-                          className={`py-2 px-1 text-center font-mono text-[11px] border-r border-slate-800/40 ${cellColor}`}
+                          className="py-1.5 px-0.5 text-center font-mono text-[10px] border-r"
+                          style={{ borderColor: colors.border, ...cellStyle }}
                         >
                           {char}
                         </td>
                       );
                     })}
 
-                    <td className="py-2 px-2 text-center font-mono font-bold text-emerald-400">
+                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.primary }}>
                       {row.presentCount}
                     </td>
-                    <td className="py-2 px-2 text-center font-mono font-bold text-rose-400">
+                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs text-rose-500">
                       {row.absentCount}
                     </td>
-                    <td className="py-2 px-2 text-center font-mono font-semibold text-slate-300">
+                    <td className="py-1.5 px-1.5 text-center font-mono font-semibold text-[10.5px]" style={{ color: colors.textSecondary }}>
                       {row.attendanceRatio}
                     </td>
-                    <td className="py-2 px-2 text-center font-mono font-bold text-white">
+                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.textPrimary }}>
                       {row.attendancePercentage}%
                     </td>
                   </tr>

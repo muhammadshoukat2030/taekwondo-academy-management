@@ -17,6 +17,13 @@ export const markAttendance = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
+    if (student.status !== 'Active') {
+      return res.status(400).json({
+        success: false,
+        message: `Attendance rejected: ${student.fullName} is currently marked as ${student.status || 'Inactive'}. Attendance can only be recorded for Active students.`
+      });
+    }
+
     const checkMethod = method || mode || 'Manual';
 
     let attendance = await Attendance.findOne({ student: student._id, date: todayStr });
@@ -121,8 +128,18 @@ export const batchMarkAttendance = async (req, res) => {
     const year = parseInt(parts[0]);
     const month = parseInt(parts[1]);
 
+    // Validate and enforce that only Active students can have attendance recorded
+    const targetStudentIds = (records || []).map(r => r.studentId).filter(Boolean);
+    const activeStudents = await Student.find({ _id: { $in: targetStudentIds }, status: 'Active' }).select('_id');
+    const activeStudentIds = new Set(activeStudents.map(s => s._id.toString()));
+
     const results = [];
-    for (const rec of records) {
+    let skippedCount = 0;
+    for (const rec of (records || [])) {
+      if (!activeStudentIds.has(rec.studentId?.toString())) {
+        skippedCount++;
+        continue;
+      }
       const updated = await Attendance.findOneAndUpdate(
         { student: rec.studentId, date: targetDate },
         {
@@ -140,7 +157,13 @@ export const batchMarkAttendance = async (req, res) => {
       results.push(updated);
     }
 
-    res.json({ success: true, count: results.length, data: results });
+    res.json({
+      success: true,
+      count: results.length,
+      skippedInactive: skippedCount,
+      message: `Batch attendance saved for ${results.length} active students${skippedCount > 0 ? ` (${skippedCount} inactive students skipped)` : ''}`,
+      data: results
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -155,7 +178,8 @@ export const getMonthlyAttendanceReport = async (req, res) => {
     const monthYear = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
     const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
 
-    const students = await Student.find({ status: { $ne: 'Inactive' } }).sort({ registrationNo: 1 });
+    // Fetch and display only Active students for monthly attendance marking
+    const students = await Student.find({ status: 'Active' }).sort({ registrationNo: 1 });
     const attendances = await Attendance.find({ monthYear });
 
     const lookup = {};

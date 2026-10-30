@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import { Printer, X } from 'lucide-react';
 
 export const DualSlipReceipt = ({ receipt, onClose }) => {
+  const { colors } = useTheme();
+
   const formattedDate = new Date(receipt.date).toLocaleDateString('en-GB', {
     day: '2-digit',
     month: 'short',
@@ -141,14 +144,23 @@ export const DualSlipReceipt = ({ receipt, onClose }) => {
   );
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 lg:p-6 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 max-w-5xl w-full p-4 lg:p-6 rounded-2xl shadow-2xl relative my-auto">
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800 no-print">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 lg:p-5 overflow-y-auto">
+      <div
+        className="border max-w-4xl w-full p-3.5 lg:p-4 rounded-xl shadow-xl relative my-auto transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
+        <div
+          className="flex items-center justify-between pb-2.5 mb-3 border-b no-print"
+          style={{ borderColor: colors.border }}
+        >
           <div>
-            <h3 className="text-base font-black text-white">
+            <h3 className="text-sm font-bold" style={{ color: colors.textPrimary }}>
               Official Printable Two-Part Dual Slip Receipt #{receipt.receiptNo}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-[11px]" style={{ color: colors.textSecondary }}>
               Perforated split slip with identical Office Copy & Student Copy
             </p>
           </div>
@@ -156,22 +168,28 @@ export const DualSlipReceipt = ({ receipt, onClose }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => window.print()}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-red-950 transition"
+              className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95"
+              style={{ backgroundColor: colors.primary }}
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="w-3.5 h-3.5" />
               <span>Print Dual Slip</span>
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+              className="p-1.5 rounded-lg border transition hover:opacity-80"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl receipt-print-page">
-          <div className="flex flex-col md:flex-row gap-4 relative">
+        <div className="bg-white p-3 rounded-lg receipt-print-page overflow-x-auto w-full">
+          <div className="flex flex-col md:flex-row gap-3 relative min-w-[520px] md:min-w-0">
             {renderSingleSlip('OFFICE COPY')}
 
             <div className="hidden md:flex flex-col items-center justify-center px-1">

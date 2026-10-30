@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
 import { DualSlipReceipt } from './DualSlipReceipt.jsx';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import {
   CreditCard,
   AlertTriangle,
@@ -16,6 +17,7 @@ export const FeeManagementView = ({
   initialStudentId,
   onOpenStudentProfile
 }) => {
+  const { colors, theme, mode } = useTheme();
   const [activeTab, setActiveTab] = useState('collection');
   const [students, setStudents] = useState([]);
   const [defaulters, setDefaulters] = useState([]);
@@ -174,97 +176,123 @@ export const FeeManagementView = ({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Top Banner & Automated Billing Engine Trigger */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 lg:p-6 rounded-2xl">
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 lg:p-4 rounded-xl border shadow-sm transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-emerald-600/10 text-emerald-500 border border-emerald-500/20">
-              <CreditCard className="w-5 h-5" />
+            <span
+              className="p-1.5 rounded-lg border flex items-center justify-center"
+              style={{
+                backgroundColor: colors.badgeBg,
+                borderColor: colors.border,
+                color: colors.primary
+              }}
+            >
+              <CreditCard className="w-4 h-4" />
             </span>
-            <h1 className="text-xl font-black text-white">
-              Fee Management & Dual-Slip Receipt Desk
+            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+              Fee Management & Receipts
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Automated monthly ledger billing, arrears carry-forward, instant dual-copy perforated receipt printing
+          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+            Monthly fee collection, baqaya arrears tracking, WhatsApp alerts, and dual-slip printing.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={handleGenerateMonthlyDues}
             disabled={loading}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-950 transition"
+            className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:opacity-95 active:scale-95"
+            style={{ backgroundColor: colors.primary }}
             title="Automatically generate dues for all active students and carry over Baqaya"
           >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Run Monthly Billing Engine</span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Generate Monthly Dues</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+      <div className="flex items-center gap-2 border-b pb-2.5" style={{ borderColor: colors.border }}>
         <button
           onClick={() => setActiveTab('collection')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeTab === 'collection'
-              ? 'bg-red-600 text-white shadow-md shadow-red-950'
-              : 'bg-slate-900 text-slate-400 hover:text-white'
-          }`}
+          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          style={{
+            backgroundColor: activeTab === 'collection' ? colors.primary : colors.bgCard,
+            color: activeTab === 'collection' ? '#FFFFFF' : colors.textSecondary
+          }}
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>Fee Collection & Receipt Maker</span>
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>Collect Fee</span>
         </button>
 
         <button
           onClick={() => setActiveTab('defaulters')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeTab === 'defaulters'
-              ? 'bg-rose-600 text-white shadow-md shadow-rose-950'
-              : 'bg-slate-900 text-slate-400 hover:text-white'
-          }`}
+          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          style={{
+            backgroundColor: activeTab === 'defaulters' ? '#EF4444' : colors.bgCard,
+            color: activeTab === 'defaulters' ? '#FFFFFF' : colors.textSecondary
+          }}
         >
-          <AlertTriangle className="w-4 h-4" />
-          <span>Defaulter List ({defaulters.length})</span>
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>Defaulters ({defaulters.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('receipts')}
-          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition ${
-            activeTab === 'receipts'
-              ? 'bg-slate-800 text-white border border-slate-700'
-              : 'bg-slate-900 text-slate-400 hover:text-white'
-          }`}
+          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          style={{
+            backgroundColor: activeTab === 'receipts' ? colors.primary : colors.bgCard,
+            color: activeTab === 'receipts' ? '#FFFFFF' : colors.textSecondary
+          }}
         >
-          <Receipt className="w-4 h-4" />
+          <Receipt className="w-3.5 h-3.5" />
           <span>Receipts Archive ({receipts.length})</span>
         </button>
       </div>
 
       {/* TAB 1: FEE COLLECTION & DUAL-SLIP GENERATOR */}
       {activeTab === 'collection' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <form onSubmit={handleCollectFee} className="lg:col-span-2 p-5 lg:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white pb-3 border-b border-slate-800 flex items-center justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <form
+            onSubmit={handleCollectFee}
+            className="lg:col-span-2 p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
+            <h3 className="text-xs font-bold pb-2 border-b flex items-center justify-between" style={{ borderColor: colors.border, color: colors.textPrimary }}>
               <span>Collect Fee & Issue Dual-Part Receipt</span>
-              <span className="text-[10px] text-emerald-400 font-mono">RECEIPT #100+ ENGINE</span>
+              <span className="text-[9.5px] font-mono" style={{ color: colors.primary }}>RECEIPT #100+ ENGINE</span>
             </h3>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                 Select Enrolled Student *
               </label>
               <select
                 required
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-red-500 font-semibold"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-semibold transition"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               >
                 <option value="">-- Choose Student from Kohat Registry --</option>
                 {students.map((st) => (
-                  <option key={st._id} value={st._id}>
+                  <option key={st._id} value={st._id} style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}>
                     {st.fullName} S/O {st.fatherName} ({st.registrationNo}) - {st.currentBelt} Belt
                   </option>
                 ))}
@@ -272,77 +300,103 @@ export const FeeManagementView = ({
             </div>
 
             {selectedStudent && (
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div
+                className="p-2.5 rounded-lg border grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase">Student Name:</span>
-                  <div className="font-bold text-white truncate">{selectedStudent.fullName}</div>
+                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Student Name:</span>
+                  <div className="font-semibold truncate" style={{ color: colors.textPrimary }}>{selectedStudent.fullName}</div>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase">Father Name:</span>
-                  <div className="text-slate-200 truncate">{selectedStudent.fatherName}</div>
+                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Father Name:</span>
+                  <div className="truncate" style={{ color: colors.textSecondary }}>{selectedStudent.fatherName}</div>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase">Cell / Phone:</span>
-                  <div className="font-mono text-amber-400 truncate">{selectedStudent.phone}</div>
+                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Cell / Phone:</span>
+                  <div className="font-mono text-amber-500 truncate">{selectedStudent.phone}</div>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase">Address:</span>
-                  <div className="text-slate-300 truncate">{selectedStudent.permanentAddress}</div>
+                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Address:</span>
+                  <div className="truncate" style={{ color: colors.textSecondary }}>{selectedStudent.permanentAddress}</div>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Monthly Academy Fee (PKR)
                 </label>
                 <input
                   type="number"
                   value={monthlyFee}
                   onChange={(e) => setMonthlyFee(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Admission Fee (if new)
                 </label>
                 <input
                   type="number"
                   value={admissionFee}
                   onChange={(e) => setAdmissionFee(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Previous Arrears / Baqaya
                 </label>
                 <input
                   type="number"
                   value={previousArrears}
                   onChange={(e) => setPreviousArrears(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-rose-400 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold text-rose-500 focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border
+                  }}
                 />
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+            <div
+              className="p-2.5 rounded-lg border flex items-center justify-between"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border
+              }}
+            >
               <div>
-                <span className="text-xs font-semibold text-slate-400">Total Payable Amount:</span>
-                <p className="text-[10px] text-slate-500">Monthly + Admission + Carried Arrears</p>
+                <span className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>Total Payable Amount:</span>
+                <p className="text-[9.5px]" style={{ color: colors.textMuted }}>Monthly + Admission + Carried Arrears</p>
               </div>
-              <span className="text-xl font-black font-mono text-white">
+              <span className="text-lg font-bold font-mono" style={{ color: colors.textPrimary }}>
                 PKR {totalPayable.toLocaleString()}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
               <div>
-                <label className="block text-xs font-bold text-emerald-400 mb-1 uppercase tracking-wider">
+                <label className="block text-[11px] font-bold mb-1 uppercase tracking-wider" style={{ color: colors.primary }}>
                   Amount Received (PKR) *
                 </label>
                 <input
@@ -350,29 +404,45 @@ export const FeeManagementView = ({
                   required
                   value={receivedAmount}
                   onChange={(e) => setReceivedAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-xl bg-emerald-950/30 border-2 border-emerald-600/80 text-base font-mono font-black text-emerald-300 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border-2 text-sm font-mono font-bold focus:outline-none"
+                  style={{
+                    backgroundColor: colors.badgeBg,
+                    borderColor: colors.primary,
+                    color: colors.primary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-rose-400 mb-1 uppercase tracking-wider">
+                <label className="block text-[11px] font-bold mb-1 uppercase tracking-wider text-rose-500">
                   Calculated Remaining Baqaya (PKR)
                 </label>
-                <div className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-base font-mono font-black text-rose-400">
+                <div
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-sm font-mono font-bold text-rose-500"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border
+                  }}
+                >
                   PKR {calculatedRemainingBalance.toLocaleString()}
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Payment Method
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 >
                   <option value="Cash">Cash (نقدی)</option>
                   <option value="EasyPaisa">EasyPaisa</option>
@@ -382,49 +452,73 @@ export const FeeManagementView = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Authorized Collector / Instructor
                 </label>
                 <input
                   type="text"
                   value={receivedBy}
                   onChange={(e) => setReceivedBy(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-xs text-slate-400">
+            <div className="pt-3 border-t flex items-center justify-between" style={{ borderColor: colors.border }}>
+              <span className="text-[11px]" style={{ color: colors.textSecondary }}>
                 Instantly prints physical dual-part perforated slip
               </span>
               <button
                 type="submit"
                 disabled={loading || !selectedStudentId}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-emerald-950 transition disabled:opacity-50"
+                className="px-4 py-2 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95 disabled:opacity-50"
+                style={{ backgroundColor: colors.primary }}
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-3.5 h-3.5" />
                 <span>Confirm & Print Dual Receipt</span>
               </button>
             </div>
           </form>
 
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white pb-3 border-b border-slate-800">
+          <div
+            className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
+            <h3 className="text-xs font-bold pb-2 border-b" style={{ borderColor: colors.border, color: colors.textPrimary }}>
               Receipt Guidelines & Academy Policy
             </h3>
 
-            <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-bold text-amber-400 block">Dual Copy Requirement:</span>
-                <p className="text-[11px] text-slate-400">
+            <div className="space-y-2.5 text-xs leading-relaxed" style={{ color: colors.textSecondary }}>
+              <div
+                className="p-2.5 rounded-lg border space-y-0.5"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <span className="font-bold text-amber-500 block text-[11px]">Dual Copy Requirement:</span>
+                <p className="text-[10.5px]" style={{ color: colors.textSecondary }}>
                   Left side is filed in Academy Records; Right side is handed to student/guardian along with the instructor stamp.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-bold text-emerald-400 block">Carry-Forward Logic:</span>
-                <p className="text-[11px] text-slate-400">
+              <div
+                className="p-2.5 rounded-lg border space-y-0.5"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <span className="font-bold block text-[11px]" style={{ color: colors.primary }}>Carry-Forward Logic:</span>
+                <p className="text-[10.5px]" style={{ color: colors.textSecondary }}>
                   Any unpaid Baqaya automatically accumulates into the student's next monthly billing cycle until zeroed out.
                 </p>
               </div>
@@ -435,33 +529,53 @@ export const FeeManagementView = ({
 
       {/* TAB 2: DEFAULTER LIST */}
       {activeTab === 'defaulters' && (
-        <div className="p-5 lg:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div
+          className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b" style={{ borderColor: colors.border }}>
             <div>
-              <h3 className="text-sm font-bold text-white">Academy Defaulters & Pending Dues List</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Students with unpaid or partial fees with direct 1-click WhatsApp reminders</p>
+              <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Academy Defaulters & Pending Dues List</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>Students with unpaid or partial fees with direct 1-click WhatsApp reminders</p>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="relative w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <div className="relative w-56">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-2" style={{ color: colors.textMuted }} />
                 <input
                   type="text"
                   placeholder="Filter defaulters..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none"
+                  className="w-full pl-8 pr-2.5 py-1 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
-              <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <div
+                className="flex items-center p-0.5 rounded-lg border text-xs"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
                 {['ALL', 'PARTIAL', 'UNPAID'].map((f) => (
                   <button
                     key={f}
                     onClick={() => setDefaulterFilter(f)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
-                      defaulterFilter === f ? 'bg-red-600 text-white font-bold' : 'text-slate-400 hover:text-white'
-                    }`}
+                    className="px-2 py-0.5 rounded-md text-[11px] font-medium transition"
+                    style={{
+                      backgroundColor: defaulterFilter === f ? '#EF4444' : 'transparent',
+                      color: defaulterFilter === f ? '#FFFFFF' : colors.textSecondary,
+                      fontWeight: defaulterFilter === f ? 'bold' : 'normal'
+                    }}
                   >
                     {f}
                   </button>
@@ -470,25 +584,32 @@ export const FeeManagementView = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px]">
-                <tr>
-                  <th className="py-3 px-3">Student Name</th>
-                  <th className="py-3 px-3">Father Name</th>
-                  <th className="py-3 px-3">Roll No</th>
-                  <th className="py-3 px-3">Belt Rank</th>
-                  <th className="py-3 px-3 text-right">Fee Billed</th>
-                  <th className="py-3 px-3 text-right">Paid</th>
-                  <th className="py-3 px-3 text-right">Pending Baqaya</th>
-                  <th className="py-3 px-3 text-center">Status</th>
-                  <th className="py-3 px-3 text-center">1-Click Actions</th>
+          <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+            <table className="w-full text-left text-xs min-w-[640px]">
+              <thead>
+                <tr
+                  className="uppercase text-[9.5px] border-b"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border,
+                    color: colors.textSecondary
+                  }}
+                >
+                  <th className="py-2 px-2.5">Student Name</th>
+                  <th className="py-2 px-2.5">Father Name</th>
+                  <th className="py-2 px-2.5">Roll No</th>
+                  <th className="py-2 px-2.5">Belt Rank</th>
+                  <th className="py-2 px-2.5 text-right">Fee Billed</th>
+                  <th className="py-2 px-2.5 text-right">Paid</th>
+                  <th className="py-2 px-2.5 text-right">Pending Baqaya</th>
+                  <th className="py-2 px-2.5 text-center">Status</th>
+                  <th className="py-2 px-2.5 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-sans">
+              <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                 {filteredDefaulters.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-400">
+                    <td colSpan={9} className="py-6 text-center text-xs" style={{ color: colors.textSecondary }}>
                       No defaulters matching your filter!
                     </td>
                   </tr>
@@ -497,36 +618,43 @@ export const FeeManagementView = ({
                     const st = d.student;
                     if (!st) return null;
                     return (
-                      <tr key={d._id} className="hover:bg-slate-800/40">
-                        <td className="py-3 px-3 font-semibold text-white">{st.fullName}</td>
-                        <td className="py-3 px-3 text-slate-300">{st.fatherName}</td>
-                        <td className="py-3 px-3 font-mono text-slate-400">{st.registrationNo}</td>
-                        <td className="py-3 px-3">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-300">
+                      <tr key={d._id} className="hover:opacity-90">
+                        <td className="py-2 px-2.5 font-semibold text-xs" style={{ color: colors.textPrimary }}>{st.fullName}</td>
+                        <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{st.fatherName}</td>
+                        <td className="py-2 px-2.5 font-mono text-[11px]" style={{ color: colors.textMuted }}>{st.registrationNo}</td>
+                        <td className="py-2 px-2.5">
+                          <span
+                            className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold border"
+                            style={{
+                              backgroundColor: colors.bgSecondary,
+                              borderColor: colors.border,
+                              color: colors.textSecondary
+                            }}
+                          >
                             {st.currentBelt}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-300">PKR {d.totalDue}</td>
-                        <td className="py-3 px-3 text-right font-mono text-emerald-400">PKR {d.paidAmount}</td>
-                        <td className="py-3 px-3 text-right font-mono font-bold text-rose-400">
+                        <td className="py-2 px-2.5 text-right font-mono text-xs" style={{ color: colors.textSecondary }}>PKR {d.totalDue}</td>
+                        <td className="py-2 px-2.5 text-right font-mono font-semibold text-xs" style={{ color: colors.primary }}>PKR {d.paidAmount}</td>
+                        <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-500">
                           PKR {d.remainingBalance}
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-2 px-2.5 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            className={`px-1.5 py-0.5 rounded-full text-[9.5px] font-bold border ${
                               d.status === 'PARTIAL'
-                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
+                                : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
                             }`}
                           >
                             {d.status}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-2 px-2.5 text-center">
                           <div className="flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => sendWhatsAppReminder(d)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-medium flex items-center gap-1 shadow-sm"
+                              className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[10.5px] font-medium flex items-center gap-1 shadow-sm transition hover:scale-102"
                               title="Send pre-filled Urdu/English WhatsApp reminder"
                             >
                               <MessageSquare className="w-3 h-3" />
@@ -538,7 +666,12 @@ export const FeeManagementView = ({
                                 setSelectedStudentId(st._id);
                                 setActiveTab('collection');
                               }}
-                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700"
+                              className="px-2 py-0.5 rounded-md border text-[10.5px] font-medium transition hover:scale-102"
+                              style={{
+                                backgroundColor: colors.bgSecondary,
+                                borderColor: colors.border,
+                                color: colors.textPrimary
+                              }}
                             >
                               Collect
                             </button>
@@ -556,51 +689,69 @@ export const FeeManagementView = ({
 
       {/* TAB 3: RECEIPTS ARCHIVE */}
       {activeTab === 'receipts' && (
-        <div className="p-5 lg:p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div
+          className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <div className="flex items-center justify-between pb-3 border-b" style={{ borderColor: colors.border }}>
             <div>
-              <h3 className="text-sm font-bold text-white">Issued Fee Receipts Archive</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Click any receipt to view or re-print the dual-part physical replica slip</p>
+              <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Issued Fee Receipts Archive</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>Click any receipt to view or re-print the dual-part physical replica slip</p>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase text-[10px]">
-                <tr>
-                  <th className="py-3 px-3">Receipt No</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3">Student Name</th>
-                  <th className="py-3 px-3">Father Name</th>
-                  <th className="py-3 px-3 text-right">Received Amount</th>
-                  <th className="py-3 px-3 text-right">Balance Baqaya</th>
-                  <th className="py-3 px-3">Payment Method</th>
-                  <th className="py-3 px-3 text-center">Actions</th>
+          <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+            <table className="w-full text-left text-xs min-w-[640px]">
+              <thead>
+                <tr
+                  className="uppercase text-[9.5px] border-b"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border,
+                    color: colors.textSecondary
+                  }}
+                >
+                  <th className="py-2 px-2.5">Receipt No</th>
+                  <th className="py-2 px-2.5">Date</th>
+                  <th className="py-2 px-2.5">Student Name</th>
+                  <th className="py-2 px-2.5">Father Name</th>
+                  <th className="py-2 px-2.5 text-right">Received Amount</th>
+                  <th className="py-2 px-2.5 text-right">Balance Baqaya</th>
+                  <th className="py-2 px-2.5">Payment Method</th>
+                  <th className="py-2 px-2.5 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-sans">
+              <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
                 {receipts.map((r) => (
-                  <tr key={r._id} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-3 font-mono font-bold text-red-400">#{r.receiptNo}</td>
-                    <td className="py-3 px-3 font-mono text-slate-400">
+                  <tr key={r._id} className="hover:opacity-90">
+                    <td className="py-2 px-2.5 font-mono font-bold text-xs" style={{ color: colors.primary }}>#{r.receiptNo}</td>
+                    <td className="py-2 px-2.5 font-mono text-[11px]" style={{ color: colors.textMuted }}>
                       {new Date(r.date).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-3 font-semibold text-white">{r.studentName}</td>
-                    <td className="py-3 px-3 text-slate-300">{r.fatherName}</td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">
+                    <td className="py-2 px-2.5 font-semibold text-xs" style={{ color: colors.textPrimary }}>{r.studentName}</td>
+                    <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.fatherName}</td>
+                    <td className="py-2 px-2.5 text-right font-mono font-bold text-xs" style={{ color: colors.primary }}>
                       PKR {r.amountReceived !== undefined ? r.amountReceived : r.receivedAmount}
                     </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-rose-400">
+                    <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-500">
                       PKR {r.remainingBalance !== undefined ? r.remainingBalance : r.balanceRemaining}
                     </td>
-                    <td className="py-3 px-3 text-slate-300">{r.paymentMethod}</td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.paymentMethod}</td>
+                    <td className="py-2 px-2.5 text-center">
                       <button
                         onClick={() => setActiveReceipt(r)}
-                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-1.5 mx-auto"
+                        className="px-2.5 py-0.5 rounded-md text-[11px] font-medium border flex items-center gap-1 mx-auto transition hover:scale-102"
+                        style={{
+                          backgroundColor: colors.bgSecondary,
+                          borderColor: colors.border,
+                          color: colors.textPrimary
+                        }}
                       >
-                        <Printer className="w-3 h-3 text-cyan-400" />
-                        <span>Print Dual Slip</span>
+                        <Printer className="w-3 h-3 text-cyan-500" />
+                        <span>Print Slip</span>
                       </button>
                     </td>
                   </tr>

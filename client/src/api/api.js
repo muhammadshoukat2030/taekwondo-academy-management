@@ -177,6 +177,9 @@ export const api = {
       const res = await apiClient.post('/attendance/mark', payload);
       return res.data;
     } catch (err) {
+      if (err.response && err.response.data) {
+        return err.response.data;
+      }
       const student = fallbackStudents.find(s => s._id === payload.studentId) || fallbackStudents[0];
       const hasDues = student.remainingBalance > 0;
       return {

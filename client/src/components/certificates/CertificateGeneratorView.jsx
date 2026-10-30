@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import {
   Award,
   Printer,
@@ -7,6 +8,7 @@ import {
 } from 'lucide-react';
 
 export const CertificateGeneratorView = ({ initialCertificate }) => {
+  const { colors, theme, mode } = useTheme();
   const [students, setStudents] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -101,20 +103,33 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 lg:p-6 rounded-2xl no-print">
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 lg:p-4 rounded-xl border shadow-sm no-print transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-amber-600/10 text-amber-500 border border-amber-500/20">
-              <Award className="w-5 h-5" />
+            <span
+              className="p-1.5 rounded-lg border flex items-center justify-center"
+              style={{
+                backgroundColor: colors.badgeBg,
+                borderColor: colors.border,
+                color: colors.primary
+              }}
+            >
+              <Award className="w-4 h-4" />
             </span>
-            <h1 className="text-xl font-black text-white">
-              Official Federation Certificate Generator
+            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+              Belt Certificates
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Modeled after the Pakistan Taekwondo Federation & KPK Taekwondo Association with authentic martial arts graphics and Grandmaster signatory block
+          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+            Generate and print official KPK & PTF belt promotion certificates.
           </p>
         </div>
 
@@ -122,37 +137,49 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
           {currentCert && (
             <button
               onClick={handlePrint}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-red-950 transition"
+              className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:opacity-95 active:scale-95"
+              style={{ backgroundColor: colors.primary }}
             >
-              <Printer className="w-4 h-4" />
-              <span>Print A4 Landscape Certificate</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print Certificate</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Certificate Issue Controls */}
-        <div className="lg:col-span-1 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4 no-print">
-          <h3 className="text-sm font-bold text-white pb-3 border-b border-slate-800 flex items-center justify-between">
-            <span>Issue Official Promotion Test Certificate</span>
-            <span className="text-[10px] text-amber-400 font-mono">PTF FORMAT</span>
+        <div
+          className="lg:col-span-1 p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 no-print transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
+          <h3 className="text-xs font-bold pb-2 border-b flex items-center justify-between" style={{ borderColor: colors.border, color: colors.textPrimary }}>
+            <span>Issue Belt Promotion Certificate</span>
+            <span className="text-[9.5px] font-mono text-amber-500">PTF FORMAT</span>
           </h3>
 
-          <form onSubmit={handleIssueCertificate} className="space-y-3">
+          <form onSubmit={handleIssueCertificate} className="space-y-2.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                 Select Student for Promotion *
               </label>
               <select
                 required
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-red-500 font-semibold"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-semibold transition"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               >
                 <option value="">-- Choose Student --</option>
                 {students.map((st) => (
-                  <option key={st._id} value={st._id}>
+                  <option key={st._id} value={st._id} style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}>
                     {st.fullName} ({st.registrationNo}) - Current: {st.currentBelt}
                   </option>
                 ))}
@@ -160,13 +187,18 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                 Belt Level Certification *
               </label>
               <select
                 value={beltLevel}
                 onChange={(e) => setBeltLevel(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none font-bold text-amber-400"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-bold"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.primary
+                }}
               >
                 <option value="YELLOW BELT">YELLOW BELT</option>
                 <option value="GREEN BELT">GREEN BELT</option>
@@ -179,86 +211,114 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                 Academy Unit Name
               </label>
               <input
                 type="text"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Nationality
                 </label>
                 <input
                   type="text"
                   value={nationality}
                   onChange={(e) => setNationality(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Issue Date
                 </label>
                 <input
                   type="date"
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                 Official Citation Text
               </label>
               <textarea
                 rows={3}
                 value={customCitation}
                 onChange={(e) => setCustomCitation(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none resize-none leading-relaxed"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none resize-none leading-relaxed"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !selectedStudentId}
-              className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-950 transition disabled:opacity-50"
+              className="w-full py-2 rounded-lg text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95 disabled:opacity-50"
+              style={{ backgroundColor: colors.primary }}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3.5 h-3.5" />
               <span>Generate & Issue Certificate</span>
             </button>
           </form>
 
           {/* Archive List */}
-          <div className="pt-4 border-t border-slate-800">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <div className="pt-3 border-t" style={{ borderColor: colors.border }}>
+            <h4 className="text-[10.5px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.textSecondary }}>
               Recently Issued Certificates
             </h4>
-            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+            <div className="space-y-1 max-h-44 overflow-y-auto">
               {certificatesArchive.map((c) => (
                 <button
                   key={c._id}
                   onClick={() => setCurrentCert(c)}
-                  className={`w-full p-2 rounded-xl text-left text-xs transition flex items-center justify-between border ${
-                    currentCert?._id === c._id
-                      ? 'bg-red-950/40 border-red-500/50 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className="w-full p-1.5 rounded-lg text-left text-xs transition flex items-center justify-between border hover:scale-[1.01]"
+                  style={{
+                    backgroundColor: currentCert?._id === c._id ? colors.badgeBg : colors.bgSecondary,
+                    borderColor: currentCert?._id === c._id ? colors.primary : colors.border
+                  }}
                 >
                   <div className="truncate min-w-0">
-                    <div className="font-bold truncate text-white">{c.studentName}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">{c.certificateNo}</div>
+                    <div className="font-semibold text-[11px] truncate" style={{ color: colors.textPrimary }}>{c.studentName}</div>
+                    <div className="text-[9.5px] font-mono" style={{ color: colors.textMuted }}>{c.certificateNo}</div>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-amber-400">
+                  <span
+                    className="text-[9.5px] font-bold px-1.5 py-0.5 rounded border"
+                    style={{
+                      backgroundColor: colors.bgCard,
+                      borderColor: colors.border,
+                      color: colors.primary
+                    }}
+                  >
                     {c.beltLevel || c.beltRank}
                   </span>
                 </button>
@@ -270,10 +330,16 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
         {/* High-Resolution Landscape Certificate Canvas */}
         <div className="lg:col-span-2 space-y-4">
           {currentCert ? (
-            <div className="bg-slate-900 p-2 sm:p-4 rounded-2xl border border-slate-800">
+            <div
+              className="p-2 sm:p-4 rounded-xl border shadow-sm overflow-x-auto w-full"
+              style={{
+                backgroundColor: colors.bgCard,
+                borderColor: colors.border
+              }}
+            >
               <div
                 id="printable-federation-certificate"
-                className="certificate-print-page bg-[#fcfbfa] text-slate-900 rounded-lg shadow-2xl relative overflow-hidden border-8 border-[#1e3a8a] aspect-[1.414/1] w-full p-6 sm:p-8 flex flex-col justify-between select-none"
+                className="certificate-print-page bg-[#fcfbfa] text-slate-900 rounded-lg shadow-2xl relative overflow-hidden border-8 border-[#1e3a8a] aspect-[1.414/1] w-full min-w-[580px] lg:min-w-0 p-4 sm:p-8 flex flex-col justify-between select-none"
                 style={{
                   backgroundImage: 'radial-gradient(circle at center, #ffffff 60%, #eff6ff 100%)',
                 }}
@@ -431,7 +497,14 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
               </div>
             </div>
           ) : (
-            <div className="p-12 text-center text-slate-500 rounded-2xl bg-slate-900 border border-slate-800 text-xs">
+            <div
+              className="p-12 text-center rounded-2xl border text-xs"
+              style={{
+                backgroundColor: colors.bgCard,
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
+            >
               Select or issue a certificate to view the official federation replica.
             </div>
           )}

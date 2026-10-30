@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { api } from '../../api/api.js';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import {
   Camera,
   Upload,
@@ -11,6 +12,8 @@ import {
 } from 'lucide-react';
 
 export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
+  const { colors, theme, mode } = useTheme();
+
   const [formData, setFormData] = useState({
     fullName: '',
     fatherName: '',
@@ -140,19 +143,32 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 lg:p-6 rounded-2xl">
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 lg:p-4 rounded-xl border shadow-sm transition-all"
+        style={{
+          backgroundColor: colors.bgCard,
+          borderColor: colors.border
+        }}
+      >
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-red-600/10 text-red-500 border border-red-500/20">
-              <FileCheck className="w-5 h-5" />
+            <span
+              className="p-1.5 rounded-lg border flex items-center justify-center"
+              style={{
+                backgroundColor: colors.badgeBg,
+                borderColor: colors.border,
+                color: colors.primary
+              }}
+            >
+              <FileCheck className="w-4 h-4" />
             </span>
-            <h1 className="text-xl font-black text-white">
+            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
               Official Digital Admission Desk
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
             Exact replica of the physical Urdu/English admission form with instant ledger auto-initialization & biometric readiness
           </p>
         </div>
@@ -161,66 +177,97 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
           <button
             type="button"
             onClick={() => setPrintPreview(true)}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all hover:scale-102"
+            style={{
+              backgroundColor: colors.bgSecondary,
+              color: colors.textPrimary,
+              borderColor: colors.border
+            }}
           >
-            <Printer className="w-4 h-4 text-cyan-400" />
+            <Printer className="w-3.5 h-3.5 text-cyan-500" />
             <span>Blank Form Print</span>
           </button>
         </div>
       </div>
 
       {/* Main Interactive Digital Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 lg:p-8 shadow-xl">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div
+          className="rounded-xl p-4 lg:p-6 border shadow-sm transition-all"
+          style={{
+            backgroundColor: colors.bgCard,
+            borderColor: colors.border
+          }}
+        >
           {/* Header of Form */}
-          <div className="text-center pb-6 border-b border-slate-800">
-            <h2 className="text-lg lg:text-xl font-black tracking-wide text-white uppercase">
+          <div className="text-center pb-4 border-b" style={{ borderColor: colors.border }}>
+            <h2 className="text-base lg:text-lg font-bold tracking-wide uppercase" style={{ color: colors.textPrimary }}>
               AL MURTAZA SHAH TAEKWONDO ACADEMY
             </h2>
-            <div className="text-xs text-red-400 font-semibold font-urdu mt-0.5">
+            <div className="text-xs font-semibold font-urdu mt-0.5" style={{ color: colors.primary }}>
               المurtضٰی شاہ تائیکوانڈو اکیڈمی کوہاٹ
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[10.5px] mt-0.5" style={{ color: colors.textSecondary }}>
               Affiliated with Khyber Pakhtunkhwa Taekwondo Association & Pakistan Taekwondo Federation
             </p>
-            <div className="inline-block mt-2 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-[11px] font-semibold text-slate-300">
+            <div
+              className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full border text-[10.5px] font-semibold"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border,
+                color: colors.textPrimary
+              }}
+            >
               ADMISSION & REGISTRATION FORM • داخلہ فارم
             </div>
           </div>
 
           {/* Section 1: Personal Details & Photo */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between pb-2 mb-4 border-b border-slate-800/80">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
+          <div className="mt-4">
+            <div className="flex items-center justify-between pb-1.5 mb-3 border-b" style={{ borderColor: colors.border }}>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: colors.primary }}>
                 <span>1. Personal Information</span>
-                <span className="text-[11px] font-normal text-slate-400 font-urdu">(ذاتی کوائف)</span>
+                <span className="text-[10px] font-normal font-urdu" style={{ color: colors.textMuted }}>(ذاتی کوائف)</span>
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
               {/* Photo Box */}
-              <div className="lg:col-span-1 flex flex-col items-center justify-center p-4 rounded-xl bg-slate-950 border-2 border-dashed border-slate-800 text-center">
-                <div className="w-36 h-44 rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex items-center justify-center relative shadow-inner">
+              <div
+                className="lg:col-span-1 flex flex-col items-center justify-center p-3 rounded-lg border-2 border-dashed text-center"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div
+                  className="w-32 h-40 rounded-lg overflow-hidden border flex items-center justify-center relative shadow-inner"
+                  style={{
+                    backgroundColor: colors.bgCard,
+                    borderColor: colors.border
+                  }}
+                >
                   {cameraActive ? (
                     <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
                   ) : photo ? (
                     <img src={photo} alt="Passport" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="flex flex-col items-center justify-center text-slate-400 p-2">
-                      <Camera className="w-8 h-8 mb-1 text-slate-400" />
-                      <span className="text-[10px] uppercase font-semibold">Passport Photo</span>
-                      <span className="text-[9px] text-slate-400 font-urdu">پاسپورٹ سائز تصویر</span>
+                    <div className="flex flex-col items-center justify-center p-2" style={{ color: colors.textMuted }}>
+                      <Camera className="w-7 h-7 mb-1" />
+                      <span className="text-[9.5px] uppercase font-semibold">Passport Photo</span>
+                      <span className="text-[8.5px] font-urdu">پاسپورٹ سائز تصویر</span>
                     </div>
                   )}
                 </div>
                 <canvas ref={canvasRef} className="hidden" />
 
-                <div className="flex items-center gap-2 mt-3 w-full">
+                <div className="flex items-center gap-1.5 mt-2.5 w-full">
                   {cameraActive ? (
                     <button
                       type="button"
                       onClick={capturePhoto}
-                      className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold"
+                      className="w-full py-1 rounded-md text-white text-xs font-semibold"
+                      style={{ backgroundColor: colors.primary }}
                     >
                       Capture Snapshot
                     </button>
@@ -228,27 +275,35 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                     <button
                       type="button"
                       onClick={startCamera}
-                      className="w-1/2 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-medium flex items-center justify-center gap-1"
+                      className="w-1/2 py-1 rounded-md text-white text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-sm"
+                      style={{ backgroundColor: '#4F46E5' }}
                     >
                       <Camera className="w-3 h-3" />
                       <span>Webcam</span>
                     </button>
                   )}
 
-                  <label className="w-1/2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium flex items-center justify-center gap-1 cursor-pointer border border-slate-700">
+                  <label
+                    className="w-1/2 py-1 rounded-md text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer border"
+                    style={{
+                      backgroundColor: colors.bgCard,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  >
                     <Upload className="w-3 h-3" />
                     <span>Upload</span>
                     <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
                   </label>
                 </div>
-                <span className="text-[9px] text-slate-400 mt-1">Used for AI Face Recognition</span>
+                <span className="text-[8.5px] mt-1" style={{ color: colors.textMuted }}>Used for AI Face Recognition</span>
               </div>
 
               {/* Form inputs */}
-              <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Student Full Name <span className="font-urdu text-slate-400 font-normal">(طالبعلم کا پورا نام)</span> *
+                  <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                    Student Full Name <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(طالبعلم کا پورا نام)</span> *
                   </label>
                   <input
                     type="text"
@@ -256,13 +311,18 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                     placeholder="e.g. Abdul Basit"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Father / Guardian Name <span className="font-urdu text-slate-400 font-normal">(والد / سرپرست کا نام)</span> *
+                  <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                    Father / Guardian Name <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(والد / سرپرست کا نام)</span> *
                   </label>
                   <input
                     type="text"
@@ -270,44 +330,64 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                     placeholder="e.g. Qari Sabir"
                     value={formData.fatherName}
                     onChange={(e) => setFormData({ ...formData, fatherName: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Date of Birth <span className="font-urdu text-slate-400 font-normal">(تاریخ پیدائش)</span> *
+                  <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                    Date of Birth <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(تاریخ پیدائش)</span> *
                   </label>
                   <input
                     type="date"
                     required
                     value={formData.dob}
                     onChange={handleDobChange}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-red-500"
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Age <span className="font-urdu text-slate-400 font-normal">(عمر)</span>
+                    <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                      Age <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(عمر)</span>
                     </label>
                     <input
                       type="number"
                       readOnly
                       placeholder="Auto"
                       value={formData.age}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs font-mono font-bold text-amber-400"
+                      className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold"
+                      style={{
+                        backgroundColor: colors.bgSecondary,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Gender <span className="font-urdu text-slate-400 font-normal">(جنس)</span>
+                    <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                      Gender <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(جنس)</span>
                     </label>
                     <select
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-red-500"
+                      className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                      style={{
+                        backgroundColor: colors.inputBg,
+                        borderColor: colors.border,
+                        color: colors.textPrimary
+                      }}
                     >
                       <option value="Male">Male (مرد)</option>
                       <option value="Female">Female (خاتون)</option>
@@ -317,28 +397,38 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Nationality / Cast <span className="font-urdu text-slate-400 font-normal">(قومیت)</span>
+                  <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                    Nationality / Cast <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(قومیت)</span>
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. Pakistani / Bangash"
                     value={formData.nationalityCast}
                     onChange={(e) => setFormData({ ...formData, nationalityCast: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    CNIC / Form-B No. <span className="font-urdu text-slate-400 font-normal">(شناختی کارڈ یا ب فارم)</span>
+                  <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                    CNIC / Form-B No. <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(شناختی کارڈ یا ب فارم)</span>
                   </label>
                   <input
                     type="text"
                     placeholder="e.g. 14301-8923412-1"
                     value={formData.cnicFormB}
                     onChange={(e) => setFormData({ ...formData, cnicFormB: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500 font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-mono transition"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 </div>
               </div>
@@ -346,18 +436,18 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
           </div>
 
           {/* Section 2: Contact & Education */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between pb-2 mb-4 border-b border-slate-800/80">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
+          <div className="mt-5">
+            <div className="flex items-center justify-between pb-1.5 mb-3 border-b" style={{ borderColor: colors.border }}>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: colors.primary }}>
                 <span>2. Contact & Educational Profile</span>
-                <span className="text-[11px] font-normal text-slate-400 font-urdu">(رابطہ و تعلیمی قابلیت)</span>
+                <span className="text-[10px] font-normal font-urdu" style={{ color: colors.textMuted }}>(رابطہ و تعلیمی قابلیت)</span>
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Cell / WhatsApp No. <span className="font-urdu text-slate-400 font-normal">(فون / واٹس ایپ)</span> *
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Cell / WhatsApp No. <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(فون / واٹس ایپ)</span> *
                 </label>
                 <input
                   type="text"
@@ -365,31 +455,46 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                   placeholder="e.g. 0335-9117230"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value, whatsapp: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500 font-mono"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-mono transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Email Address <span className="font-urdu text-slate-400 font-normal">(ای میل)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Email Address <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(ای میل)</span>
                 </label>
                 <input
                   type="email"
                   placeholder="e.g. student@gmail.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Educational Level <span className="font-urdu text-slate-400 font-normal">(تعلیمی قابلیت)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Educational Level <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(تعلیمی قابلیت)</span>
                 </label>
                 <select
                   value={formData.education}
                   onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none focus:border-red-500"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 >
                   <option value="Primary / Middle">Primary / Middle (پرائمری تا مڈل)</option>
                   <option value="Matric">Matric (میٹرک)</option>
@@ -400,8 +505,8 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Permanent Address <span className="font-urdu text-slate-400 font-normal">(مستقل پتہ)</span> *
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Permanent Address <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(مستقل پتہ)</span> *
                 </label>
                 <input
                   type="text"
@@ -409,54 +514,73 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                   placeholder="e.g. Mohallah Mufti Shah, Kohat"
                   value={formData.permanentAddress}
                   onChange={(e) => setFormData({ ...formData, permanentAddress: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
             </div>
           </div>
 
           {/* Section 3: Medical & Sports History */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between pb-2 mb-4 border-b border-slate-800/80">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
+          <div className="mt-5">
+            <div className="flex items-center justify-between pb-1.5 mb-3 border-b" style={{ borderColor: colors.border }}>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: colors.primary }}>
                 <span>3. Sports Experience & Medical Health</span>
-                <span className="text-[11px] font-normal text-slate-400 font-urdu">(طبی و اسپورٹس معلومات)</span>
+                <span className="text-[10px] font-normal font-urdu" style={{ color: colors.textMuted }}>(طبی و اسپورٹس معلومات)</span>
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div
+                className="p-3 rounded-lg border flex items-start gap-2.5"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
                 <input
                   type="checkbox"
                   id="hasPlayedBefore"
                   checked={formData.hasPlayedBefore}
                   onChange={(e) => setFormData({ ...formData, hasPlayedBefore: e.target.checked })}
-                  className="mt-1 w-4 h-4 rounded text-red-600 focus:ring-red-500 cursor-pointer"
+                  className="mt-0.5 w-3.5 h-3.5 rounded cursor-pointer"
+                  style={{ accentColor: colors.primary }}
                 />
                 <label htmlFor="hasPlayedBefore" className="text-xs cursor-pointer">
-                  <span className="font-semibold text-white block">
+                  <span className="font-semibold block text-[11px]" style={{ color: colors.textPrimary }}>
                     Have you ever played Taekwondo or any other martial art before?
                   </span>
-                  <span className="text-[11px] text-slate-400 font-urdu block mt-0.5">
+                  <span className="text-[10px] font-urdu block mt-0.5" style={{ color: colors.textMuted }}>
                     کیا آپ نے پہلے تائیکوانڈو یا کوئی اور کھیل کھیلا ہے؟
                   </span>
                 </label>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="flex items-start gap-3">
+              <div
+                className="p-3 rounded-lg border space-y-2"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="flex items-start gap-2.5">
                   <input
                     type="checkbox"
                     id="hasIllnessInjury"
                     checked={formData.hasIllnessInjury}
                     onChange={(e) => setFormData({ ...formData, hasIllnessInjury: e.target.checked })}
-                    className="mt-1 w-4 h-4 rounded text-red-600 focus:ring-red-500 cursor-pointer"
+                    className="mt-0.5 w-3.5 h-3.5 rounded cursor-pointer"
+                    style={{ accentColor: colors.primary }}
                   />
                   <label htmlFor="hasIllnessInjury" className="text-xs cursor-pointer">
-                    <span className="font-semibold text-white block">
+                    <span className="font-semibold block text-[11px]" style={{ color: colors.textPrimary }}>
                       Any chronic illness, bone injury, or medical condition?
                     </span>
-                    <span className="text-[11px] text-slate-400 font-urdu block mt-0.5">
+                    <span className="text-[10px] font-urdu block mt-0.5" style={{ color: colors.textMuted }}>
                       کیا آپ کو کوئی جسمانی بیماری یا پرانی چوٹ ہے؟
                     </span>
                   </label>
@@ -467,7 +591,12 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                     placeholder="Enter medical / injury remarks..."
                     value={formData.medicalNotes}
                     onChange={(e) => setFormData({ ...formData, medicalNotes: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none"
+                    className="w-full px-2.5 py-1 rounded-md border text-xs focus:outline-none"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
                   />
                 )}
               </div>
@@ -475,59 +604,78 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
           </div>
 
           {/* Section 4: Fee Structure & Belt */}
-          <div className="mt-8">
-            <div className="flex items-center justify-between pb-2 mb-4 border-b border-slate-800/80">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
+          <div className="mt-5">
+            <div className="flex items-center justify-between pb-1.5 mb-3 border-b" style={{ borderColor: colors.border }}>
+              <h3 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: colors.primary }}>
                 <span>4. Fee Setup & Initial Belt Rank</span>
-                <span className="text-[11px] font-normal text-slate-400 font-urdu">(فیس اور بیلٹ کی تفصیل)</span>
+                <span className="text-[10px] font-normal font-urdu" style={{ color: colors.textMuted }}>(فیس اور بیلٹ کی تفصیل)</span>
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Admission Date <span className="font-urdu text-slate-400 font-normal">(تاریخ داخلہ)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Admission Date <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(تاریخ داخلہ)</span>
                 </label>
                 <input
                   type="date"
                   value={formData.admissionDate}
                   onChange={(e) => setFormData({ ...formData, admissionDate: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Fixed Monthly Fee (PKR) <span className="font-urdu text-slate-400 font-normal">(ماہانہ فیس)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Fixed Monthly Fee (PKR) <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(ماہانہ فیس)</span>
                 </label>
                 <input
                   type="number"
                   value={formData.fixedMonthlyFee}
                   onChange={(e) => setFormData({ ...formData, fixedMonthlyFee: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-emerald-400 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  One-time Admission Fee (PKR) <span className="font-urdu text-slate-400 font-normal">(داخلہ فیس)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  One-time Admission Fee (PKR) <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(داخلہ فیس)</span>
                 </label>
                 <input
                   type="number"
                   value={formData.admissionFee}
                   onChange={(e) => setFormData({ ...formData, admissionFee: Number(e.target.value) })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono font-bold text-amber-400 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold text-amber-500 focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Initial Belt Rank <span className="font-urdu text-slate-400 font-normal">(بیلٹ رینک)</span>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Initial Belt Rank <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(بیلٹ رینک)</span>
                 </label>
                 <select
                   value={formData.currentBelt}
                   onChange={(e) => setFormData({ ...formData, currentBelt: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none font-semibold"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-semibold focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
                 >
                   <option value="White">White Belt (سفید بیلٹ)</option>
                   <option value="Yellow">Yellow Belt (پیلا بیلٹ)</option>
@@ -541,66 +689,100 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
           </div>
 
           {/* Section 5: Declaration & Signatures */}
-          <div className="mt-8 pt-4 border-t border-slate-800">
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-xs leading-relaxed text-slate-300 space-y-2">
-              <div className="flex items-start gap-2.5">
+          <div className="mt-5 pt-3 border-t" style={{ borderColor: colors.border }}>
+            <div
+              className="p-3 rounded-lg border text-xs leading-relaxed space-y-1.5"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
+            >
+              <div className="flex items-start gap-2">
                 <input
                   type="checkbox"
                   id="consent"
                   checked={formData.guardianConsent}
                   onChange={(e) => setFormData({ ...formData, guardianConsent: e.target.checked })}
-                  className="mt-0.5 w-4 h-4 rounded text-red-600 focus:ring-red-500 cursor-pointer"
+                  className="mt-0.5 w-3.5 h-3.5 rounded cursor-pointer"
+                  style={{ accentColor: colors.primary }}
                 />
                 <label htmlFor="consent" className="cursor-pointer">
-                  <span className="font-bold text-white">Declaration & Academy Rules Consent / حلف نامہ:</span>
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <span className="font-bold text-xs" style={{ color: colors.textPrimary }}>
+                    Declaration & Academy Rules Consent / حلف نامہ:
+                  </span>
+                  <p className="text-[10.5px] mt-0.5" style={{ color: colors.textSecondary }}>
                     I hereby certify that all information submitted is accurate. The student will abide by all academy discipline, sparring guidelines, and timely monthly fee dues. The academy is not responsible for injuries sustained during standard martial arts sparring.
                   </p>
-                  <p className="text-[10px] text-slate-400 font-urdu mt-0.5">
+                  <p className="text-[9.5px] font-urdu mt-0.5" style={{ color: colors.textMuted }}>
                     میں اقرار کرتا ہوں کہ مندرجہ بالا کوائف درست ہیں اور میں اکیڈمی کے جملہ قواعد و ضوابط اور ماہانہ فیس کی بروقت ادائیگی کا پابند رہوں گا۔
                   </p>
                 </label>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                  Guardian / Parent Signature <span className="font-urdu text-slate-400 font-normal">(دستخط والد یا سرپرست)</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div
+                className="p-3 rounded-lg border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textSecondary }}>
+                  Guardian / Parent Signature <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(دستخط والد یا سرپرست)</span>
                 </label>
                 <input
                   type="text"
                   placeholder="Type Full Name to Sign e.g. Qari Sabir"
                   value={formData.guardianSignature}
                   onChange={(e) => setFormData({ ...formData, guardianSignature: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-cursive text-amber-300 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-md border text-xs text-amber-500 focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border
+                  }}
                 />
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                  Head Instructor Approval <span className="font-urdu text-slate-400 font-normal">(دستخط ہیڈ انسٹرکٹر)</span>
+              <div
+                className="p-3 rounded-lg border"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textSecondary }}>
+                  Head Instructor Approval <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(دستخط ہیڈ انسٹرکٹر)</span>
                 </label>
-                <div className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-bold text-red-400 flex items-center justify-between">
+                <div
+                  className="px-2.5 py-1.5 rounded-md border text-xs font-bold flex items-center justify-between"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.primary
+                  }}
+                >
                   <span>Murtaza Hassan Bangash</span>
-                  <span className="text-[10px] text-slate-400">6th Dan WTF</span>
+                  <span className="text-[9.5px]" style={{ color: colors.textMuted }}>6th Dan WTF</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Submit Action Bar */}
-          <div className="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Submitting auto-initializes Registration No, Fee Ledger & Biometric Desk.</span>
+          <div className="mt-5 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: colors.border }}>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: colors.textSecondary }}>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-[11px]">Submitting auto-initializes Registration No, Fee Ledger & Biometric Desk.</span>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-950/60 flex items-center justify-center gap-2 transition disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition disabled:opacity-50 hover:scale-102 active:scale-95"
+                style={{ backgroundColor: colors.primary }}
               >
                 {loading ? (
                   <span>Registering Student...</span>
@@ -618,67 +800,97 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
 
       {/* SUCCESS MODAL & BIOMETRIC PROMPT */}
       {successModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 lg:p-4">
+          <div
+            className="border rounded-xl max-w-md w-full p-4 lg:p-5 shadow-xl relative animate-in fade-in zoom-in-95 duration-200"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
             <button
               onClick={() => setSuccessModal(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white"
+              className="absolute top-3 right-3 p-1 rounded-md border"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border,
+                color: colors.textSecondary
+              }}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
 
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-3">
-                <CheckCircle2 className="w-8 h-8" />
+              <div
+                className="w-11 h-11 rounded-full border flex items-center justify-center mx-auto mb-2"
+                style={{
+                  backgroundColor: colors.badgeBg,
+                  borderColor: colors.border,
+                  color: colors.primary
+                }}
+              >
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-black text-white">
+              <h3 className="text-base font-bold" style={{ color: colors.textPrimary }}>
                 Student Registered Successfully!
               </h3>
-              <p className="text-xs text-slate-300 mt-1">
-                Official Registration No: <span className="font-mono font-bold text-red-400 px-2 py-0.5 rounded bg-slate-950 border border-slate-800">{successModal.registrationNo}</span>
+              <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
+                Official Registration No: <span className="font-mono font-bold px-1.5 py-0.2 rounded border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border, color: colors.primary }}>{successModal.registrationNo}</span>
               </p>
             </div>
 
-            <div className="mt-5 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
+            <div
+              className="mt-3 p-2.5 rounded-lg border text-xs space-y-1.5"
+              style={{
+                backgroundColor: colors.bgSecondary,
+                borderColor: colors.border
+              }}
+            >
               <div className="flex justify-between">
-                <span className="text-slate-400">Student Name:</span>
-                <span className="font-semibold text-white">{successModal.fullName}</span>
+                <span style={{ color: colors.textSecondary }}>Student Name:</span>
+                <span className="font-semibold text-xs" style={{ color: colors.textPrimary }}>{successModal.fullName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Father's Name:</span>
-                <span className="text-white">{successModal.fatherName}</span>
+                <span style={{ color: colors.textSecondary }}>Father's Name:</span>
+                <span style={{ color: colors.textPrimary }}>{successModal.fatherName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Initial Monthly Fee:</span>
-                <span className="font-mono text-emerald-400 font-bold">PKR {successModal.fixedMonthlyFee}</span>
+                <span style={{ color: colors.textSecondary }}>Initial Monthly Fee:</span>
+                <span className="font-mono font-bold" style={{ color: colors.primary }}>PKR {successModal.fixedMonthlyFee}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Initial Admission Fee:</span>
-                <span className="font-mono text-amber-400 font-bold">PKR {successModal.admissionFee}</span>
+                <span style={{ color: colors.textSecondary }}>Initial Admission Fee:</span>
+                <span className="font-mono font-bold text-amber-500">PKR {successModal.admissionFee}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Monthly Ledger Status:</span>
-                <span className="text-rose-400 font-semibold">Initialized (PKR {successModal.fixedMonthlyFee + successModal.admissionFee} Total Due)</span>
+                <span style={{ color: colors.textSecondary }}>Monthly Ledger Status:</span>
+                <span className="text-rose-500 font-semibold text-[11px]">Initialized (PKR {successModal.fixedMonthlyFee + successModal.admissionFee} Total Due)</span>
               </div>
             </div>
 
             {/* Prompt for Biometric Registration */}
-            <div className="mt-5 pt-4 border-t border-slate-800 flex flex-col sm:flex-row gap-2.5">
+            <div className="mt-3.5 pt-3 border-t flex flex-col sm:flex-row gap-2" style={{ borderColor: colors.border }}>
               <button
                 type="button"
                 onClick={() => {
                   setSuccessModal(null);
                   if (onNavigateToBiometrics) onNavigateToBiometrics(successModal._id);
                 }}
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-indigo-950"
+                className="w-full py-2 rounded-lg text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm hover:scale-102"
+                style={{ backgroundColor: colors.primary }}
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-3.5 h-3.5" />
                 <span>Enroll Biometrics / Face ID Now</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSuccessModal(null)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                className="w-full sm:w-auto px-3.5 py-2 rounded-lg border text-xs font-medium"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
               >
                 Done
               </button>
@@ -700,7 +912,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5"
+                  className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-blue-700"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print Document</span>
