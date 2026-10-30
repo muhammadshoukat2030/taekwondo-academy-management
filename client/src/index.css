@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-urdu {
+    font-family: 'Noto Nastaliq Urdu', serif;
+  }
+  .font-cert-serif {
+    font-family: 'Cinzel', serif;
+  }
+  .font-cert-title {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* =========================================================
+   PREMIUM DUAL THEME TOKENS (CSS VARIABLES)
+   Default: Emerald Green + Dark Mode
+   ========================================================= */
+
+:root,
+:root[data-theme="emerald"][data-mode="dark"] {
+  --bg-main: #071C18;
+  --bg-sidebar: #0B2721;
+  --bg-card: #123D32;
+  --bg-card-subtle: #0E3027;
+  --bg-secondary: #102C25;
+  --text-primary: #F0FDF4;
+  --text-secondary: #A7C4B8;
+  --text-muted: #6B9080;
+  --border: #245044;
+  --border-subtle: #1A3C33;
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-glow: rgba(16, 185, 129, 0.25);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --input-bg: #09211C;
+  --input-border: #245044;
+  --badge-bg: rgba(16, 185, 129, 0.15);
+  --badge-text: #34D399;
+  --scrollbar-track: #071C18;
+  --scrollbar-thumb: #245044;
+}
+
+:root[data-theme="emerald"][data-mode="light"] {
+  --bg-main: #F2FBF6;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F6FDF9;
+  --bg-secondary: #E6F7F0;
+  --text-primary: #064E3B;
+  --text-secondary: #2D6A55;
+  --text-muted: #528B75;
+  --border: #D1FAE5;
+  --border-subtle: #E2E8F0;
+  --primary: #10B981;
+  --primary-hover: #059669;
+  --primary-glow: rgba(16, 185, 129, 0.15);
+  --success: #10B981;
+  --warning: #D97706;
+  --danger: #EF4444;
+  --input-bg: #FFFFFF;
+  --input-border: #D1FAE5;
+  --badge-bg: #D1FAE5;
+  --badge-text: #065F46;
+  --scrollbar-track: #F2FBF6;
+  --scrollbar-thumb: #A7F3D0;
+}
+
+:root[data-theme="royal"][data-mode="light"] {
+  --bg-main: #F8FAFC;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F1F5F9;
+  --bg-secondary: #EFF4FF;
+  --text-primary: #172554;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --border: #E2E8F0;
+  --border-subtle: #CBD5E1;
+  --primary: #1D4ED8;
+  --primary-hover: #1E40AF;
+  --primary-glow: rgba(29, 78, 216, 0.15);
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --danger: #DC2626;
+  --input-bg: #FFFFFF;
+  --input-border: #E2E8F0;
+  --badge-bg: #DBEAFE;
+  --badge-text: #1E40AF;
+  --scrollbar-track: #F8FAFC;
+  --scrollbar-thumb: #CBD5E1;
+}
+
+:root[data-theme="royal"][data-mode="dark"] {
+  --bg-main: #0A1128;
+  --bg-sidebar: #0F1A3A;
+  --bg-card: #162248;
+  --bg-card-subtle: #111B3C;
+  --bg-secondary: #131D3F;
+  --text-primary: #EFF6FF;
+  --text-secondary: #93C5FD;
+  --text-muted: #6B8CC7;
+  --border: #1E3A8A;
+  --border-subtle: #233876;
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-glow: rgba(37, 99, 235, 0.25);
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --input-bg: #0D1734;
+  --input-border: #1E3A8A;
+  --badge-bg: rgba(37, 99, 235, 0.2);
+  --badge-text: #93C5FD;
+  --scrollbar-track: #0A1128;
+  --scrollbar-thumb: #1E3A8A;
+}
+
+/* =========================================================
+   GLOBAL BASE STYLING & DYNAMIC THEME CLASS MAP
+   ========================================================= */
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Reusable Theme Classes */
+.theme-bg-main {
+  background-color: var(--bg-main) !important;
+}
+
+.theme-bg-sidebar {
+  background-color: var(--bg-sidebar) !important;
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card) !important;
+}
+
+.theme-bg-card-subtle {
+  background-color: var(--bg-card-subtle) !important;
+}
+
+.theme-bg-secondary {
+  background-color: var(--bg-secondary) !important;
+}
+
+.theme-text-primary {
+  color: var(--text-primary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.theme-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.theme-border {
+  border-color: var(--border) !important;
+}
+
+.theme-border-subtle {
+  border-color: var(--border-subtle) !important;
+}
+
+.theme-btn-primary {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.theme-btn-primary:hover {
+  background-color: var(--primary-hover) !important;
+}
+
+.theme-input {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-input::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+.theme-primary-accent {
+  color: var(--primary) !important;
+}
+
+.theme-badge {
+  background-color: var(--badge-bg) !important;
+  color: var(--badge-text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Card Glow Utility */
+.theme-glow {
+  box-shadow: 0 4px 20px -2px var(--primary-glow);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Perforated divider styling */
+.perforated-line {
+  background-image: linear-gradient(to bottom, #94a3b8 50%, rgba(255,255,255,0) 0%);
+  background-position: right;
+  background-size: 2px 14px;
+  background-repeat: repeat-y;
+}
+
+.perforated-line-horizontal {
+  background-image: linear-gradient(to right, #94a3b8 50%, rgba(255,255,255,0) 0%);
+  background-position: bottom;
+  background-size: 14px 2px;
+  background-repeat: repeat-x;
+}
+
+/* =========================================================
+   PRINT SPECIFIC RULES (PRESERVED ACCURACY)
+   ========================================================= */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+
+  @page landscape-cert {
+    size: A4 landscape;
+    margin: 5mm;
+  }
+
+  .certificate-print-page {
+    page: landscape-cert;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .receipt-print-page {
+    page-break-after: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

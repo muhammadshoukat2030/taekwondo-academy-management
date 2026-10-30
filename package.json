@@ -1,0 +1,22 @@
+{
+  "name": "al-murtaza-shah-taekwondo-management",
+  "version": "2.0.0",
+  "description": "Full-Stack Pure MERN (MongoDB, Express.js, React.js .jsx, Node.js) Academy Management System & Admin Dashboard for Al Murtaza Shah Taekwondo, Kohat",
+  "scripts": {
+    "backend": "npm run start --prefix backend",
+    "backend:dev": "npm run dev --prefix backend",
+    "client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "seed": "npm run seed --prefix backend"
+  },
+  "keywords": [
+    "taekwondo",
+    "mern",
+    "mongodb",
+    "express",
+    "react-jsx",
+    "kohat"
+  ],
+  "author": "Antigravity Principal Full-Stack Architect",
+  "license": "ISC"
+}
