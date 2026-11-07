@@ -164,12 +164,12 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
             >
               <FileCheck className="w-4 h-4" />
             </span>
-            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+            <h1 className="text-[22px] sm:text-[24px] font-bold tracking-tight" style={{ color: colors.textHeading }}>
               Official Digital Admission Desk
             </h1>
           </div>
-          <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
-            Exact replica of the physical Urdu/English admission form with instant ledger auto-initialization & biometric readiness
+          <p className="text-[13px] font-normal mt-0.5 leading-relaxed" style={{ color: colors.textSecondary }}>
+            Official Urdu/English admission form with ledger auto-initialization & biometric readiness for Kohat Academy.
           </p>
         </div>
 
@@ -177,7 +177,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
           <button
             type="button"
             onClick={() => setPrintPreview(true)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all hover:scale-102"
+            className="px-3 py-1.5 rounded-lg text-[12px] font-medium flex items-center gap-1.5 border transition hover:opacity-80 active:scale-95"
             style={{
               backgroundColor: colors.bgSecondary,
               color: colors.textPrimary,

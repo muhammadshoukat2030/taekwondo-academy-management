@@ -201,18 +201,18 @@ export const StudentProfileModal = ({
             )}
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-bold" style={{ color: colors.textPrimary }}>
+                <h2 className="text-[18px] sm:text-[19px] font-bold tracking-tight" style={{ color: colors.textPrimary }}>
                   {student.fullName}
                 </h2>
                 <span
-                  className={`px-1.5 py-0.2 rounded text-[10px] font-semibold border ${
+                  className={`px-1.5 py-0.5 rounded text-[11px] font-semibold border ${
                     beltColors[student.currentBelt] || 'border-current'
                   }`}
                 >
                   {student.currentBelt} Belt
                 </span>
                 <span
-                  className="text-[10px] px-1.5 py-0.2 rounded border font-mono font-semibold"
+                  className="text-[11px] px-1.5 py-0.5 rounded border font-mono-numbers font-medium"
                   style={{
                     backgroundColor: colors.bgCard,
                     borderColor: colors.border,
@@ -224,7 +224,7 @@ export const StudentProfileModal = ({
 
                 {/* Status Badge */}
                 <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold border flex items-center gap-1 ${
                     student.status === 'Active'
                       ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                       : 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
@@ -234,12 +234,12 @@ export const StudentProfileModal = ({
                   {student.status || 'Active'}
                 </span>
               </div>
-              <div className="text-[11px] flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5" style={{ color: colors.textSecondary }}>
+              <div className="text-[12.5px] font-normal flex flex-wrap items-center gap-1.5 sm:gap-2 mt-0.5" style={{ color: colors.textSecondary }}>
                 <span>S/O {student.fatherName}</span>
                 <span>•</span>
                 <span className="truncate max-w-[180px] sm:max-w-none">{student.permanentAddress}</span>
                 <span>•</span>
-                <span className="font-mono text-amber-500 font-medium">{student.phone}</span>
+                <span className="font-mono-numbers text-amber-500 font-medium">{student.phone}</span>
               </div>
             </div>
           </div>

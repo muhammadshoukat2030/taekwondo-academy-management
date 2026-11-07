@@ -230,18 +230,18 @@ export const SmartAttendanceTerminal = () => {
             >
               <ScanFace className="w-4 h-4" />
             </span>
-            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+            <h1 className="text-[22px] sm:text-[24px] font-bold tracking-tight" style={{ color: colors.textHeading }}>
               Attendance Terminal
             </h1>
           </div>
-          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+          <p className="text-[13px] font-normal mt-0.5 leading-relaxed" style={{ color: colors.textSecondary }}>
             Mark daily attendance via Face AI, Fingerprint biometric scanner, Batch register, or Monthly matrix grid.
           </p>
         </div>
 
         {/* Mode Switcher Buttons */}
         <div
-          className="flex flex-wrap items-center p-1 rounded-lg border text-xs gap-1"
+          className="flex flex-wrap items-center p-1 rounded-lg border text-[12.5px] gap-1"
           style={{
             backgroundColor: colors.bgSecondary,
             borderColor: colors.border
@@ -249,10 +249,11 @@ export const SmartAttendanceTerminal = () => {
         >
           <button
             onClick={() => { setActiveMode('face'); }}
-            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-md font-medium text-[12.5px] flex items-center gap-1.5 transition"
             style={{
               backgroundColor: activeMode === 'face' ? colors.primary : 'transparent',
-              color: activeMode === 'face' ? '#FFFFFF' : colors.textSecondary
+              color: activeMode === 'face' ? '#FFFFFF' : colors.textSecondary,
+              fontWeight: activeMode === 'face' ? '600' : '500'
             }}
           >
             <Camera className="w-3.5 h-3.5" />
@@ -261,10 +262,11 @@ export const SmartAttendanceTerminal = () => {
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('fingerprint'); }}
-            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-md font-medium text-[12.5px] flex items-center gap-1.5 transition"
             style={{
               backgroundColor: activeMode === 'fingerprint' ? colors.primary : 'transparent',
-              color: activeMode === 'fingerprint' ? '#FFFFFF' : colors.textSecondary
+              color: activeMode === 'fingerprint' ? '#FFFFFF' : colors.textSecondary,
+              fontWeight: activeMode === 'fingerprint' ? '600' : '500'
             }}
           >
             <Fingerprint className="w-3.5 h-3.5" />
@@ -273,10 +275,11 @@ export const SmartAttendanceTerminal = () => {
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('register'); }}
-            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-md font-medium text-[12.5px] flex items-center gap-1.5 transition"
             style={{
               backgroundColor: activeMode === 'register' ? colors.primary : 'transparent',
-              color: activeMode === 'register' ? '#FFFFFF' : colors.textSecondary
+              color: activeMode === 'register' ? '#FFFFFF' : colors.textSecondary,
+              fontWeight: activeMode === 'register' ? '600' : '500'
             }}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -285,7 +288,7 @@ export const SmartAttendanceTerminal = () => {
 
           <button
             onClick={() => { stopFaceCamera(); setActiveMode('monthlyGrid'); }}
-            className="px-3 py-1.5 rounded-md font-semibold text-xs flex items-center gap-1.5 transition"
+            className="px-3 py-1.5 rounded-md font-medium text-[12.5px] flex items-center gap-1.5 transition"
             style={{
               backgroundColor: activeMode === 'monthlyGrid' ? colors.primary : 'transparent',
               color: activeMode === 'monthlyGrid' ? '#FFFFFF' : colors.textSecondary
@@ -310,7 +313,7 @@ export const SmartAttendanceTerminal = () => {
             <div className="flex items-center justify-between pb-2.5 border-b" style={{ borderColor: colors.border }}>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: colors.primary }} />
-                <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Live AI Neural Scanner Terminal</h3>
+                <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: colors.textPrimary }}>Live AI Neural Scanner Terminal</h3>
               </div>
               <div className="flex items-center gap-2">
                 {!cameraActive ? (

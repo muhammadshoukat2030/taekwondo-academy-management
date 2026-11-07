@@ -188,20 +188,21 @@ export const FeeManagementView = ({
         <div>
           <div className="flex items-center gap-2">
             <span
-              className="p-1.5 rounded-lg border flex items-center justify-center"
-              style={{
-                backgroundColor: colors.badgeBg,
-                borderColor: colors.border,
-                color: colors.primary
-              }}
+              className="p-1.5 rounded-lg border flex items-center justify-center bg-blue-50 dark:bg-blue-900/40 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300"
             >
               <CreditCard className="w-4 h-4" />
             </span>
-            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
+            <h1
+              className="text-[20px] sm:text-[22px] font-bold tracking-tight"
+              style={{ color: colors.textHeading }}
+            >
               Fee Management & Receipts
             </h1>
           </div>
-          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+          <p
+            className="text-[12px] sm:text-[13px] font-normal mt-0.5 leading-relaxed"
+            style={{ color: colors.textSecondary }}
+          >
             Monthly fee collection, baqaya arrears tracking, WhatsApp alerts, and dual-slip printing.
           </p>
         </div>
@@ -210,8 +211,7 @@ export const FeeManagementView = ({
           <button
             onClick={handleGenerateMonthlyDues}
             disabled={loading}
-            className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:opacity-95 active:scale-95"
-            style={{ backgroundColor: colors.primary }}
+            className="px-3.5 py-1.5 rounded-lg text-white text-[12.5px] font-semibold flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 shadow-sm transition cursor-pointer"
             title="Automatically generate dues for all active students and carry over Baqaya"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
@@ -221,13 +221,14 @@ export const FeeManagementView = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b pb-2.5" style={{ borderColor: colors.border }}>
+      <div className="flex items-center gap-2 border-b pb-2.5 border-slate-300 dark:border-slate-700">
         <button
           onClick={() => setActiveTab('collection')}
-          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
           style={{
-            backgroundColor: activeTab === 'collection' ? colors.primary : colors.bgCard,
-            color: activeTab === 'collection' ? '#FFFFFF' : colors.textSecondary
+            backgroundColor: activeTab === 'collection' ? '#2563EB' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            color: activeTab === 'collection' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
+            border: activeTab === 'collection' ? '1px solid #2563EB' : '1px solid ' + colors.border
           }}
         >
           <PlusCircle className="w-3.5 h-3.5" />
@@ -236,10 +237,11 @@ export const FeeManagementView = ({
 
         <button
           onClick={() => setActiveTab('defaulters')}
-          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
           style={{
-            backgroundColor: activeTab === 'defaulters' ? '#EF4444' : colors.bgCard,
-            color: activeTab === 'defaulters' ? '#FFFFFF' : colors.textSecondary
+            backgroundColor: activeTab === 'defaulters' ? '#DC2626' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            color: activeTab === 'defaulters' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
+            border: activeTab === 'defaulters' ? '1px solid #DC2626' : '1px solid ' + colors.border
           }}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
@@ -248,10 +250,11 @@ export const FeeManagementView = ({
 
         <button
           onClick={() => setActiveTab('receipts')}
-          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+          className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
           style={{
-            backgroundColor: activeTab === 'receipts' ? colors.primary : colors.bgCard,
-            color: activeTab === 'receipts' ? '#FFFFFF' : colors.textSecondary
+            backgroundColor: activeTab === 'receipts' ? '#2563EB' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            color: activeTab === 'receipts' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
+            border: activeTab === 'receipts' ? '1px solid #2563EB' : '1px solid ' + colors.border
           }}
         >
           <Receipt className="w-3.5 h-3.5" />
@@ -270,20 +273,20 @@ export const FeeManagementView = ({
               borderColor: colors.border
             }}
           >
-            <h3 className="text-xs font-bold pb-2 border-b flex items-center justify-between" style={{ borderColor: colors.border, color: colors.textPrimary }}>
+            <h3 className="text-[13.5px] font-semibold pb-2 border-b flex items-center justify-between tracking-tight" style={{ borderColor: colors.border, color: colors.textPrimary }}>
               <span>Collect Fee & Issue Dual-Part Receipt</span>
-              <span className="text-[9.5px] font-mono" style={{ color: colors.primary }}>RECEIPT #100+ ENGINE</span>
+              <span className="text-[10.5px] font-mono-numbers font-medium" style={{ color: colors.primary }}>RECEIPT #100+ ENGINE</span>
             </h3>
 
             <div>
-              <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+              <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
                 Select Enrolled Student *
               </label>
               <select
                 required
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-semibold transition"
+                className="w-full px-2.5 py-1.5 rounded-lg border text-[12.5px] focus:outline-none font-medium transition"
                 style={{
                   backgroundColor: colors.inputBg,
                   borderColor: colors.border,
@@ -301,41 +304,41 @@ export const FeeManagementView = ({
 
             {selectedStudent && (
               <div
-                className="p-2.5 rounded-lg border grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]"
+                className="p-2.5 rounded-lg border grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11.5px]"
                 style={{
                   backgroundColor: colors.bgSecondary,
                   borderColor: colors.border
                 }}
               >
                 <div>
-                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Student Name:</span>
-                  <div className="font-semibold truncate" style={{ color: colors.textPrimary }}>{selectedStudent.fullName}</div>
+                  <span className="text-[10px] uppercase font-medium" style={{ color: colors.textMuted }}>Student Name:</span>
+                  <div className="font-semibold truncate text-[12.5px]" style={{ color: colors.textPrimary }}>{selectedStudent.fullName}</div>
                 </div>
                 <div>
-                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Father Name:</span>
-                  <div className="truncate" style={{ color: colors.textSecondary }}>{selectedStudent.fatherName}</div>
+                  <span className="text-[10px] uppercase font-medium" style={{ color: colors.textMuted }}>Father Name:</span>
+                  <div className="truncate text-[12px]" style={{ color: colors.textSecondary }}>{selectedStudent.fatherName}</div>
                 </div>
                 <div>
-                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Cell / Phone:</span>
-                  <div className="font-mono text-amber-500 truncate">{selectedStudent.phone}</div>
+                  <span className="text-[10px] uppercase font-medium" style={{ color: colors.textMuted }}>Cell / Phone:</span>
+                  <div className="font-mono-numbers font-medium text-amber-500 truncate text-[12px]">{selectedStudent.phone}</div>
                 </div>
                 <div>
-                  <span className="text-[9.5px] uppercase" style={{ color: colors.textMuted }}>Address:</span>
-                  <div className="truncate" style={{ color: colors.textSecondary }}>{selectedStudent.permanentAddress}</div>
+                  <span className="text-[10px] uppercase font-medium" style={{ color: colors.textMuted }}>Address:</span>
+                  <div className="truncate text-[12px]" style={{ color: colors.textSecondary }}>{selectedStudent.permanentAddress}</div>
                 </div>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <div>
-                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
                   Monthly Academy Fee (PKR)
                 </label>
                 <input
                   type="number"
                   value={monthlyFee}
                   onChange={(e) => setMonthlyFee(Number(e.target.value))}
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold focus:outline-none"
                   style={{
                     backgroundColor: colors.inputBg,
                     borderColor: colors.border,
@@ -345,14 +348,14 @@ export const FeeManagementView = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
                   Admission Fee (if new)
                 </label>
                 <input
                   type="number"
                   value={admissionFee}
                   onChange={(e) => setAdmissionFee(Number(e.target.value))}
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold focus:outline-none"
                   style={{
                     backgroundColor: colors.inputBg,
                     borderColor: colors.border,
@@ -362,14 +365,14 @@ export const FeeManagementView = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
                   Previous Arrears / Baqaya
                 </label>
                 <input
                   type="number"
                   value={previousArrears}
                   onChange={(e) => setPreviousArrears(Number(e.target.value))}
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs font-mono font-bold text-rose-500 focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold text-rose-500 focus:outline-none"
                   style={{
                     backgroundColor: colors.inputBg,
                     borderColor: colors.border
@@ -386,17 +389,17 @@ export const FeeManagementView = ({
               }}
             >
               <div>
-                <span className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>Total Payable Amount:</span>
-                <p className="text-[9.5px]" style={{ color: colors.textMuted }}>Monthly + Admission + Carried Arrears</p>
+                <span className="text-[11.5px] font-medium" style={{ color: colors.textSecondary }}>Total Payable Amount:</span>
+                <p className="text-[10px] font-normal" style={{ color: colors.textMuted }}>Monthly + Admission + Carried Arrears</p>
               </div>
-              <span className="text-lg font-bold font-mono" style={{ color: colors.textPrimary }}>
+              <span className="text-[17px] font-semibold font-mono-numbers tabular-nums" style={{ color: colors.textPrimary }}>
                 PKR {totalPayable.toLocaleString()}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
               <div>
-                <label className="block text-[11px] font-bold mb-1 uppercase tracking-wider" style={{ color: colors.primary }}>
+                <label className="block text-[11.5px] font-semibold mb-1 uppercase tracking-wider" style={{ color: colors.primary }}>
                   Amount Received (PKR) *
                 </label>
                 <input
@@ -404,7 +407,7 @@ export const FeeManagementView = ({
                   required
                   value={receivedAmount}
                   onChange={(e) => setReceivedAmount(Number(e.target.value))}
-                  className="w-full px-2.5 py-1.5 rounded-lg border-2 text-sm font-mono font-bold focus:outline-none"
+                  className="w-full px-2.5 py-1.5 rounded-lg border-2 text-[14px] font-mono-numbers font-semibold focus:outline-none"
                   style={{
                     backgroundColor: colors.badgeBg,
                     borderColor: colors.primary,
@@ -414,11 +417,11 @@ export const FeeManagementView = ({
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold mb-1 uppercase tracking-wider text-rose-500">
+                <label className="block text-[11.5px] font-semibold mb-1 uppercase tracking-wider text-rose-500">
                   Calculated Remaining Baqaya (PKR)
                 </label>
                 <div
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-sm font-mono font-bold text-rose-500"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-[14px] font-mono-numbers font-semibold text-rose-500 flex items-center"
                   style={{
                     backgroundColor: colors.inputBg,
                     borderColor: colors.border
@@ -584,32 +587,28 @@ export const FeeManagementView = ({
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+          <div className="overflow-x-auto rounded-lg border w-full border-slate-300 dark:border-slate-700">
             <table className="w-full text-left text-xs min-w-[640px]">
               <thead>
                 <tr
-                  className="uppercase text-[9.5px] border-b"
-                  style={{
-                    backgroundColor: colors.bgSecondary,
-                    borderColor: colors.border,
-                    color: colors.textSecondary
-                  }}
+                  className="uppercase text-[11px] font-bold border-b border-slate-300 dark:border-slate-700"
+                  style={{ backgroundColor: colors.bgSecondary, color: colors.textHeading }}
                 >
-                  <th className="py-2 px-2.5">Student Name</th>
-                  <th className="py-2 px-2.5">Father Name</th>
-                  <th className="py-2 px-2.5">Roll No</th>
-                  <th className="py-2 px-2.5">Belt Rank</th>
-                  <th className="py-2 px-2.5 text-right">Fee Billed</th>
-                  <th className="py-2 px-2.5 text-right">Paid</th>
-                  <th className="py-2 px-2.5 text-right">Pending Baqaya</th>
-                  <th className="py-2 px-2.5 text-center">Status</th>
-                  <th className="py-2 px-2.5 text-center">Actions</th>
+                  <th className="py-2.5 px-3">Student Name</th>
+                  <th className="py-2.5 px-2.5">Father Name</th>
+                  <th className="py-2.5 px-2.5">Roll No</th>
+                  <th className="py-2.5 px-2.5">Belt Rank</th>
+                  <th className="py-2.5 px-2.5 text-right">Fee Billed</th>
+                  <th className="py-2.5 px-2.5 text-right">Paid</th>
+                  <th className="py-2.5 px-2.5 text-right">Pending Baqaya</th>
+                  <th className="py-2.5 px-2.5 text-center">Status</th>
+                  <th className="py-2.5 px-2.5 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700 font-sans" style={{ backgroundColor: colors.bgCard }}>
                 {filteredDefaulters.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-6 text-center text-xs" style={{ color: colors.textSecondary }}>
+                    <td colSpan={9} className="py-6 text-center text-xs font-semibold text-slate-700 dark:text-slate-300">
                       No defaulters matching your filter!
                     </td>
                   </tr>
@@ -618,33 +617,28 @@ export const FeeManagementView = ({
                     const st = d.student;
                     if (!st) return null;
                     return (
-                      <tr key={d._id} className="hover:opacity-90">
-                        <td className="py-2 px-2.5 font-semibold text-xs" style={{ color: colors.textPrimary }}>{st.fullName}</td>
-                        <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{st.fatherName}</td>
-                        <td className="py-2 px-2.5 font-mono text-[11px]" style={{ color: colors.textMuted }}>{st.registrationNo}</td>
+                      <tr key={d._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition">
+                        <td className="py-2 px-3 font-semibold text-xs" style={{ color: colors.textHeading }}>{st.fullName}</td>
+                        <td className="py-2 px-2.5 text-[11.5px] font-normal" style={{ color: colors.textSecondary }}>{st.fatherName}</td>
+                        <td className="py-2 px-2.5 font-mono font-medium text-[11px] text-blue-700 dark:text-blue-300">{st.registrationNo}</td>
                         <td className="py-2 px-2.5">
                           <span
-                            className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold border"
-                            style={{
-                              backgroundColor: colors.bgSecondary,
-                              borderColor: colors.border,
-                              color: colors.textSecondary
-                            }}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200"
                           >
                             {st.currentBelt}
                           </span>
                         </td>
-                        <td className="py-2 px-2.5 text-right font-mono text-xs" style={{ color: colors.textSecondary }}>PKR {d.totalDue}</td>
-                        <td className="py-2 px-2.5 text-right font-mono font-semibold text-xs" style={{ color: colors.primary }}>PKR {d.paidAmount}</td>
-                        <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-500">
+                        <td className="py-2 px-2.5 text-right font-mono font-medium text-xs" style={{ color: colors.textPrimary }}>PKR {d.totalDue}</td>
+                        <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-emerald-700 dark:text-emerald-400">PKR {d.paidAmount}</td>
+                        <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-700 dark:text-rose-400">
                           PKR {d.remainingBalance}
                         </td>
                         <td className="py-2 px-2.5 text-center">
                           <span
-                            className={`px-1.5 py-0.5 rounded-full text-[9.5px] font-bold border ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                               d.status === 'PARTIAL'
-                                ? 'bg-amber-500/10 text-amber-500 border-amber-500/30'
-                                : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
+                                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-400'
+                                : 'bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-rose-400'
                             }`}
                           >
                             {d.status}
@@ -654,7 +648,7 @@ export const FeeManagementView = ({
                           <div className="flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => sendWhatsAppReminder(d)}
-                              className="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[10.5px] font-medium flex items-center gap-1 shadow-sm transition hover:scale-102"
+                              className="px-2 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center gap-1 shadow-xs transition cursor-pointer"
                               title="Send pre-filled Urdu/English WhatsApp reminder"
                             >
                               <MessageSquare className="w-3 h-3" />
@@ -666,12 +660,7 @@ export const FeeManagementView = ({
                                 setSelectedStudentId(st._id);
                                 setActiveTab('collection');
                               }}
-                              className="px-2 py-0.5 rounded-md border text-[10.5px] font-medium transition hover:scale-102"
-                              style={{
-                                backgroundColor: colors.bgSecondary,
-                                borderColor: colors.border,
-                                color: colors.textPrimary
-                              }}
+                              className="px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] font-bold transition hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                             >
                               Collect
                             </button>

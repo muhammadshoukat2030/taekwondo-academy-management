@@ -1,9 +1,11 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { useAcademy } from '../../context/AcademyContext.jsx';
 import { Printer, X } from 'lucide-react';
 
 export const DualSlipReceipt = ({ receipt, onClose }) => {
   const { colors } = useTheme();
+  const { settings } = useAcademy();
 
   const formattedDate = new Date(receipt.date).toLocaleDateString('en-GB', {
     day: '2-digit',
@@ -29,16 +31,16 @@ export const DualSlipReceipt = ({ receipt, onClose }) => {
           </div>
 
           <h2 className="text-base font-black tracking-tight uppercase mt-1">
-            AL MURTAZA SHAH TAEKWONDO
+            {settings?.academyName || 'AL MURTAZA SHAH TAEKWONDO'}
           </h2>
           <div className="text-xs font-bold font-urdu">
             المurtضٰی شاہ تائیکوانڈو کوہاٹ
           </div>
           <p className="text-[10px] text-gray-700 mt-0.5">
-            Abdur Rehman Plaza, Markaz Road, Chogi No.7, Kohat
+            {settings?.address || 'Abdur Rehman Plaza, Markaz Road, Chogi No.7, Kohat'}
           </p>
           <p className="text-[10px] font-bold text-gray-900">
-            Contact No: 0335-9117230
+            Contact No: {settings?.phone || '0335-9117230'}
           </p>
         </div>
 

@@ -1,117 +1,43 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import {
-  Palette,
   Sun,
   Moon,
   Check,
   RotateCcw,
-  Sparkles,
-  Layout,
   CheckCircle2,
+  Palette,
+  Eye,
   ShieldCheck,
   TrendingUp,
-  Award,
-  Layers,
-  Sliders,
-  Eye
+  Award
 } from 'lucide-react';
 
 export const ThemeSettingsView = () => {
   const {
-    theme,
     mode,
     isDark,
-    setTheme,
     setMode,
-    toggleMode,
-    setThemeAndMode,
     resetDefaults,
-    colors,
-    palettes
+    colors
   } = useTheme();
 
-  const [savedNotification, setSavedNotification] = useState(false);
+  const [savedNotification, setSavedNotification] = useState('');
 
-  const triggerSavedNotice = () => {
-    setSavedNotification(true);
-    setTimeout(() => setSavedNotification(false), 2400);
-  };
-
-  const handleSelectTheme = (newTheme) => {
-    setTheme(newTheme);
-    triggerSavedNotice();
+  const triggerSavedNotice = (msg) => {
+    setSavedNotification(msg);
+    setTimeout(() => setSavedNotification(''), 2200);
   };
 
   const handleSelectMode = (newMode) => {
     setMode(newMode);
-    triggerSavedNotice();
-  };
-
-  const handleSelectPreset = (pTheme, pMode) => {
-    setThemeAndMode(pTheme, pMode);
-    triggerSavedNotice();
+    triggerSavedNotice(`Switched to ${newMode === 'light' ? 'Light Mode (POS Modern Navy)' : 'Dark Mode (POS Midnight Slate)'}!`);
   };
 
   const handleReset = () => {
     resetDefaults();
-    triggerSavedNotice();
+    triggerSavedNotice('Reset to default Light Mode (POS Modern Navy)!');
   };
-
-  const presets = [
-    {
-      id: 'emerald-dark',
-      theme: 'emerald',
-      mode: 'dark',
-      label: 'Emerald Green + Dark',
-      sublabel: 'Default Academy Look',
-      isDefault: true,
-      primaryColor: '#10B981',
-      bgColor: '#071C18',
-      cardColor: '#123D32',
-      textColor: '#F0FDF4',
-      borderColor: '#245044'
-    },
-    {
-      id: 'emerald-light',
-      theme: 'emerald',
-      mode: 'light',
-      label: 'Emerald Green + Light',
-      sublabel: 'Fresh Mint Morning Style',
-      isDefault: false,
-      primaryColor: '#10B981',
-      bgColor: '#F2FBF6',
-      cardColor: '#FFFFFF',
-      textColor: '#064E3B',
-      borderColor: '#D1FAE5'
-    },
-    {
-      id: 'royal-dark',
-      theme: 'royal',
-      mode: 'dark',
-      label: 'White + Royal Blue + Dark',
-      sublabel: 'Midnight Deep Blue SaaS',
-      isDefault: false,
-      primaryColor: '#2563EB',
-      bgColor: '#0A1128',
-      cardColor: '#162248',
-      textColor: '#EFF6FF',
-      borderColor: '#1E3A8A'
-    },
-    {
-      id: 'royal-light',
-      theme: 'royal',
-      mode: 'light',
-      label: 'White + Royal Blue + Light',
-      sublabel: 'Clean Modern SaaS Dashboard',
-      isDefault: false,
-      primaryColor: '#1D4ED8',
-      bgColor: '#F8FAFC',
-      cardColor: '#FFFFFF',
-      textColor: '#172554',
-      borderColor: '#E2E8F0'
-    }
-  ];
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-8">
@@ -125,39 +51,39 @@ export const ThemeSettingsView = () => {
       >
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold mb-1.5"
+            <div
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-semibold mb-1.5 border"
               style={{
                 backgroundColor: colors.badgeBg,
                 color: colors.primary,
-                border: `1px solid ${colors.border}`
+                borderColor: colors.border
               }}
             >
-              <Palette className="w-3 h-3" />
-              <span>Theme Customization Engine</span>
+              <Palette className="w-3.5 h-3.5" />
+              <span>Theme & Appearance Studio</span>
             </div>
-            <h1 className="text-lg lg:text-xl font-bold tracking-tight" style={{ color: colors.textPrimary }}>
-              Appearance & Dual Theme Studio
+            <h1 className="text-[22px] sm:text-[24px] font-bold tracking-tight" style={{ color: colors.textHeading }}>
+              Display & Appearance Settings
             </h1>
-            <p className="text-xs mt-0.5 max-w-xl leading-relaxed" style={{ color: colors.textSecondary }}>
-              Switch seamlessly between <strong style={{ color: colors.primary }}>Emerald Green</strong> and{' '}
-              <strong style={{ color: '#3B82F6' }}>White + Royal Blue</strong> themes in Dark or Light mode.
-              All preferences are synced live across all components and persisted in local storage.
+            <p className="text-[13.5px] font-normal mt-0.5 max-w-xl leading-relaxed" style={{ color: colors.textSecondary }}>
+              Switch between <strong style={{ color: colors.primary }}>Light Mode</strong> (Default: Professional Navy Blue sidebar, clean pure white workspace & Royal Blue actions) and{' '}
+              <strong style={{ color: colors.primary }}>Dark Mode</strong> (Deep midnight navy & charcoal surfaces with high contrast).
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={handleReset}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all shadow-sm hover:scale-102 active:scale-95"
+              className="px-3 py-1.5 rounded-lg text-[12.5px] font-medium flex items-center gap-1.5 border transition-all shadow-xs hover:opacity-80 active:scale-95 cursor-pointer"
               style={{
                 backgroundColor: colors.bgSecondary,
                 color: colors.textPrimary,
                 borderColor: colors.border
               }}
-              title="Reset to factory default (Emerald Green + Dark)"
+              title="Reset to default (Light Mode)"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Restore Default Theme</span>
+              <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+              <span>Restore Default</span>
             </button>
           </div>
         </div>
@@ -165,573 +91,205 @@ export const ThemeSettingsView = () => {
         {/* Saved Toast Banner */}
         {savedNotification && (
           <div
-            className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shadow-md animate-bounce"
-            style={{
-              backgroundColor: colors.primary,
-              color: '#FFFFFF'
-            }}
+            className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md animate-fade-in bg-blue-600 text-white"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Theme preferences saved!</span>
+            <span>{savedNotification}</span>
           </div>
         )}
       </div>
 
-      {/* 4 PRE-CONFIGURED COMBO PRESETS */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="text-sm font-bold flex items-center gap-1.5" style={{ color: colors.textPrimary }}>
-              <Layers className="w-3.5 h-3.5" style={{ color: colors.primary }} />
-              <span>1-Click Theme & Mode Combinations</span>
-            </h2>
-            <p className="text-[11px]" style={{ color: colors.textSecondary }}>
-              Instantly activate any of the 4 independent theme configurations
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {presets.map((preset) => {
-            const isCurrent = theme === preset.theme && mode === preset.mode;
-            return (
-              <div
-                key={preset.id}
-                onClick={() => handleSelectPreset(preset.theme, preset.mode)}
-                className={`group relative p-3 rounded-xl border cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${
-                  isCurrent ? 'ring-2' : ''
-                }`}
-                style={{
-                  backgroundColor: preset.cardColor,
-                  borderColor: isCurrent ? preset.primaryColor : preset.borderColor,
-                  outlineColor: isCurrent ? preset.primaryColor : 'transparent'
-                }}
-              >
-                {/* Visual miniature preview bar */}
-                <div
-                  className="w-full h-14 rounded-lg mb-2.5 p-1.5 flex flex-col justify-between overflow-hidden border"
-                  style={{
-                    backgroundColor: preset.bgColor,
-                    borderColor: preset.borderColor
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: preset.primaryColor }}></span>
-                      <span className="w-2 h-2 rounded-full opacity-60" style={{ backgroundColor: preset.textColor }}></span>
-                    </div>
-                    <span
-                      className="text-[8.5px] font-bold px-1 py-0.2 rounded uppercase"
-                      style={{
-                        backgroundColor: preset.primaryColor,
-                        color: '#FFFFFF'
-                      }}
-                    >
-                      {preset.mode}
-                    </span>
-                  </div>
-
-                  {/* Sample mini bar */}
-                  <div className="space-y-0.5">
-                    <div className="w-2/3 h-1 rounded-full opacity-80" style={{ backgroundColor: preset.textColor }}></div>
-                    <div className="w-1/2 h-1 rounded-full opacity-40" style={{ backgroundColor: preset.textColor }}></div>
-                  </div>
-                </div>
-
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="text-xs font-bold leading-tight" style={{ color: preset.textColor }}>
-                        {preset.label}
-                      </h3>
-                      {preset.isDefault && (
-                        <span className="text-[8.5px] px-1 py-0.2 rounded-full font-semibold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[10px] mt-0.5 opacity-80" style={{ color: preset.textColor }}>
-                      {preset.sublabel}
-                    </p>
-                  </div>
-
-                  {isCurrent ? (
-                    <div
-                      className="w-4 h-4 rounded-full flex items-center justify-center text-white flex-shrink-0"
-                      style={{ backgroundColor: preset.primaryColor }}
-                    >
-                      <Check className="w-2.5 h-2.5" />
-                    </div>
-                  ) : (
-                    <div
-                      className="w-4 h-4 rounded-full border border-dashed opacity-40 group-hover:opacity-100 transition flex-shrink-0"
-                      style={{ borderColor: preset.textColor }}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* INDEPENDENT CONTROLS: THEME SELECTOR & DARK/LIGHT MODE */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Module 1: Color Theme Selector */}
-        <div
-          className="p-4 lg:p-5 rounded-xl border shadow-sm transition-all"
-          style={{
-            backgroundColor: colors.bgCard,
-            borderColor: colors.border
-          }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Palette className="w-4 h-4" style={{ color: colors.primary }} />
-            <div>
-              <h2 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                1. Select Primary Color Theme
-              </h2>
-              <p className="text-[11px]" style={{ color: colors.textSecondary }}>
-                Choose the academy brand aesthetic
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2.5">
-            {/* Theme 1: Emerald Green */}
-            <div
-              onClick={() => handleSelectTheme('emerald')}
-              className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
-                theme === 'emerald' ? 'ring-2' : 'hover:scale-[1.01]'
-              }`}
-              style={{
-                backgroundColor: theme === 'emerald' ? colors.bgSecondary : colors.bgCardSubtle,
-                borderColor: theme === 'emerald' ? '#10B981' : colors.border
-              }}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                  🥋
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                      Emerald Green
-                    </span>
-                    <span className="text-[9.5px] font-semibold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                      Primary
-                    </span>
-                  </div>
-                  <p className="text-[10.5px] mt-0.5" style={{ color: colors.textSecondary }}>
-                    Primary: #10B981 | Dark BG: #071C18 | Cards: #123D32
-                  </p>
-                  {/* Swatches */}
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#10B981' }} title="Primary #10B981"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#071C18' }} title="Dark BG #071C18"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#123D32' }} title="Cards #123D32"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#F0FDF4' }} title="Text #F0FDF4"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#245044' }} title="Border #245044"></span>
-                  </div>
-                </div>
-              </div>
-
-              {theme === 'emerald' && (
-                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-                  <Check className="w-3 h-3" />
-                </div>
-              )}
-            </div>
-
-            {/* Theme 2: White + Royal Blue */}
-            <div
-              onClick={() => handleSelectTheme('royal')}
-              className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
-                theme === 'royal' ? 'ring-2' : 'hover:scale-[1.01]'
-              }`}
-              style={{
-                backgroundColor: theme === 'royal' ? colors.bgSecondary : colors.bgCardSubtle,
-                borderColor: theme === 'royal' ? '#1D4ED8' : colors.border
-              }}
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                  ⚡
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                      White + Royal Blue
-                    </span>
-                    <span className="text-[9.5px] font-semibold px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400">
-                      SaaS Clean
-                    </span>
-                  </div>
-                  <p className="text-[10.5px] mt-0.5" style={{ color: colors.textSecondary }}>
-                    Primary: #1D4ED8 | Main BG: #F8FAFC | Cards: #FFFFFF
-                  </p>
-                  {/* Swatches */}
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#1D4ED8' }} title="Primary #1D4ED8"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#F8FAFC' }} title="Light BG #F8FAFC"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#FFFFFF' }} title="Cards #FFFFFF"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#172554' }} title="Text #172554"></span>
-                    <span className="w-3 h-3 rounded-full border border-black/20" style={{ backgroundColor: '#E2E8F0' }} title="Border #E2E8F0"></span>
-                  </div>
-                </div>
-              </div>
-
-              {theme === 'royal' && (
-                <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                  <Check className="w-3 h-3" />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Module 2: Dark vs Light Mode Toggle */}
-        <div
-          className="p-4 lg:p-5 rounded-xl border shadow-sm transition-all flex flex-col justify-between"
-          style={{
-            backgroundColor: colors.bgCard,
-            borderColor: colors.border
-          }}
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Sliders className="w-4 h-4" style={{ color: colors.primary }} />
-              <div>
-                <h2 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                  2. Choose Display Mode
-                </h2>
-                <p className="text-[11px]" style={{ color: colors.textSecondary }}>
-                  Select high-contrast dark or crisp daytime light mode
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              {/* Dark Mode Button */}
-              <div
-                onClick={() => handleSelectMode('dark')}
-                className={`p-3 rounded-lg border cursor-pointer text-center transition-all ${
-                  mode === 'dark' ? 'ring-2' : 'hover:scale-[1.01]'
-                }`}
-                style={{
-                  backgroundColor: mode === 'dark' ? colors.bgSecondary : colors.bgCardSubtle,
-                  borderColor: mode === 'dark' ? colors.primary : colors.border
-                }}
-              >
-                <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 mx-auto flex items-center justify-center text-amber-400 mb-1.5">
-                  <Moon className="w-4 h-4" />
-                </div>
-                <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                  Dark Mode
-                </div>
-                <div className="text-[10px] mt-0.5" style={{ color: colors.textSecondary }}>
-                  Deep martial arts contrast
-                </div>
-                {mode === 'dark' && (
-                  <div
-                    className="inline-block mt-1.5 text-[9.5px] font-bold px-1.5 py-0.2 rounded-full"
-                    style={{
-                      backgroundColor: colors.badgeBg,
-                      color: colors.primary
-                    }}
-                  >
-                    Active
-                  </div>
-                )}
-              </div>
-
-              {/* Light Mode Button */}
-              <div
-                onClick={() => handleSelectMode('light')}
-                className={`p-3 rounded-lg border cursor-pointer text-center transition-all ${
-                  mode === 'light' ? 'ring-2' : 'hover:scale-[1.01]'
-                }`}
-                style={{
-                  backgroundColor: mode === 'light' ? colors.bgSecondary : colors.bgCardSubtle,
-                  borderColor: mode === 'light' ? colors.primary : colors.border
-                }}
-              >
-                <div className="w-8 h-8 rounded-lg bg-amber-100 border border-amber-300 mx-auto flex items-center justify-center text-amber-600 mb-1.5">
-                  <Sun className="w-4 h-4" />
-                </div>
-                <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                  Light Mode
-                </div>
-                <div className="text-[10px] mt-0.5" style={{ color: colors.textSecondary }}>
-                  Clean daylight readability
-                </div>
-                {mode === 'light' && (
-                  <div
-                    className="inline-block mt-1.5 text-[9.5px] font-bold px-1.5 py-0.2 rounded-full"
-                    style={{
-                      backgroundColor: colors.badgeBg,
-                      color: colors.primary
-                    }}
-                  >
-                    Active
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="mt-3 p-2 rounded-lg border text-[11px] flex items-center justify-between"
-            style={{
-              backgroundColor: colors.bgSecondary,
-              borderColor: colors.border,
-              color: colors.textSecondary
-            }}
-          >
-            <span>Current Theme State:</span>
-            <span className="font-mono font-bold text-xs" style={{ color: colors.primary }}>
-              data-theme="{theme}" data-mode="{mode}"
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* LIVE INTERACTIVE THEME PREVIEW STAGE */}
-      <div
-        className="p-4 lg:p-5 rounded-xl border shadow-sm transition-all"
-        style={{
-          backgroundColor: colors.bgCard,
-          borderColor: colors.border
-        }}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4" style={{ color: colors.primary }} />
-            <div>
-              <h2 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
-                Live Interactive Dashboard Preview
-              </h2>
-              <p className="text-[11px]" style={{ color: colors.textSecondary }}>
-                Preview how the dashboard cards, navigation, tables, and buttons render in real time
-              </p>
-            </div>
-          </div>
-
-          <span
-            className="text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full border flex items-center gap-1.5"
-            style={{
-              backgroundColor: colors.bgSecondary,
-              color: colors.primary,
-              borderColor: colors.border
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: colors.primary }}></span>
-            Live Reactive
+      {/* ONLY TWO OPTIONS: LIGHT MODE & DARK MODE */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: colors.textHeading }}>
+            Select Display Mode
+          </h2>
+          <span className="text-xs font-mono" style={{ color: colors.textSecondary }}>
+            Active: <strong style={{ color: colors.primary }}>{mode === 'light' ? 'Light Mode (POS Modern Navy)' : 'Dark Mode (Midnight Slate)'}</strong>
           </span>
         </div>
 
-        {/* Mock Interactive Window */}
-        <div
-          className="rounded-xl border overflow-hidden shadow-md transition-all"
-          style={{
-            backgroundColor: colors.bgMain,
-            borderColor: colors.border
-          }}
-        >
-          {/* Mock Header */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* OPTION 1: LIGHT MODE - POS MODERN NAVY (DEFAULT) */}
           <div
-            className="px-3.5 py-2.5 border-b flex items-center justify-between"
+            onClick={() => handleSelectMode('light')}
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-150 relative overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-md ${
+              mode === 'light' ? 'ring-2 ring-blue-500' : 'hover:scale-[1.01]'
+            }`}
             style={{
-              backgroundColor: colors.bgSidebar,
-              borderColor: colors.border
+              backgroundColor: '#FFFFFF',
+              borderColor: mode === 'light' ? '#2563EB' : '#E2E8F0',
+              boxShadow: mode === 'light' ? '0 0 20px rgba(37, 99, 235, 0.18)' : undefined
             }}
           >
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-xs shadow-sm"
-                style={{ backgroundColor: colors.primary }}
-              >
-                🥋
-              </div>
-              <div>
-                <div className="text-xs font-bold leading-none" style={{ color: colors.textPrimary }}>
-                  Al Murtaza Shah Taekwondo
+            <div>
+              {/* Header inside card */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#142B4A] flex items-center justify-center text-white shadow-xs">
+                    <Sun className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-slate-900">
+                        Light Mode
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+                        Default
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      POS Modern Navy sidebar & clean workspace
+                    </p>
+                  </div>
                 </div>
-                <div className="text-[9.5px] mt-0.5" style={{ color: colors.textSecondary }}>
-                  Abdur Rehman Plaza, Markaz Road, Chogi No.7, Kohat
+
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                    mode === 'light'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'border-2 border-slate-300'
+                  }`}
+                >
+                  {mode === 'light' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                </div>
+              </div>
+
+              {/* Color Swatches */}
+              <div className="grid grid-cols-4 gap-2 my-4">
+                <div className="p-2 rounded-lg bg-[#142B4A] border border-[#1B385E] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-white block">#142B4A</span>
+                  <span className="text-[9px] text-blue-200">Sidebar</span>
+                </div>
+                <div className="p-2 rounded-lg bg-[#FFFFFF] border border-[#CBD5E1] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-slate-900 block">#FFFFFF</span>
+                  <span className="text-[9px] text-slate-500">Cards</span>
+                </div>
+                <div className="p-2 rounded-lg bg-[#2563EB] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-white block">#2563EB</span>
+                  <span className="text-[9px] text-blue-100">Primary</span>
+                </div>
+                <div className="p-2 rounded-lg bg-[#15803D] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-white block">#15803D</span>
+                  <span className="text-[9px] text-emerald-100">Success</span>
+                </div>
+              </div>
+
+              {/* Live Preview Mini Mockup */}
+              <div className="p-3 rounded-lg bg-[#F5F7FB] border border-[#E2E8F0] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                    <span className="font-semibold text-slate-800">Fee Desk POS Preview</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">PKR 1,500</span>
+                </div>
+                <div className="flex gap-1.5">
+                  <button className="flex-1 py-1 rounded text-[11px] font-semibold bg-blue-600 text-white shadow-xs">
+                    Primary Action
+                  </button>
+                  <button className="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-600 text-white">
+                    Paid
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                className="px-2.5 py-1 rounded-md text-[10.5px] font-semibold text-white shadow-sm"
-                style={{ backgroundColor: colors.primary }}
-              >
-                + New Admission
-              </button>
+            <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-[11.5px] text-slate-600 font-medium">
+              <span>Standard Academy POS theme</span>
+              <span className="text-blue-600 font-semibold">{mode === 'light' ? 'Currently Active' : 'Click to Select'}</span>
             </div>
           </div>
 
-          {/* Mock Main Area */}
-          <div className="p-3.5 lg:p-4 space-y-3">
-            {/* 3 Mock KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {/* Card 1 */}
-              <div
-                className="p-2.5 rounded-lg border shadow-sm transition"
-                style={{
-                  backgroundColor: colors.bgCard,
-                  borderColor: colors.border
-                }}
-              >
-                <div className="flex items-center justify-between text-[11px]" style={{ color: colors.textSecondary }}>
-                  <span>Active Students</span>
-                  <ShieldCheck className="w-3.5 h-3.5" style={{ color: colors.primary }} />
+          {/* OPTION 2: DARK MODE - POS MIDNIGHT SLATE */}
+          <div
+            onClick={() => handleSelectMode('dark')}
+            className={`p-5 rounded-xl border-2 cursor-pointer transition-all duration-150 relative overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-md ${
+              mode === 'dark' ? 'ring-2 ring-blue-400' : 'hover:scale-[1.01]'
+            }`}
+            style={{
+              backgroundColor: '#182438',
+              borderColor: mode === 'dark' ? '#3B82F6' : '#2B3B52',
+              boxShadow: mode === 'dark' ? '0 0 20px rgba(59, 130, 246, 0.22)' : undefined
+            }}
+          >
+            <div>
+              {/* Header inside card */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#10233D] border border-[#2B3B52] flex items-center justify-center text-blue-400 shadow-inner">
+                    <Moon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-slate-100">
+                        Dark Mode
+                      </h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-900/40 text-blue-300 border border-blue-700/50">
+                        Night Shift
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Midnight Navy & Slate with high contrast
+                    </p>
+                  </div>
                 </div>
-                <div className="text-base font-bold mt-0.5" style={{ color: colors.textPrimary }}>
-                  48 <span className="text-[10px] font-normal opacity-70">Enrolled</span>
-                </div>
-                <div className="text-[9.5px] mt-0.5 text-emerald-500 font-medium">
-                  ↑ 96.2% Active Rate
+
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                    mode === 'dark'
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'border-2 border-slate-600'
+                  }`}
+                >
+                  {mode === 'dark' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                 </div>
               </div>
 
-              {/* Card 2 */}
-              <div
-                className="p-2.5 rounded-lg border shadow-sm transition"
-                style={{
-                  backgroundColor: colors.bgCard,
-                  borderColor: colors.border
-                }}
-              >
-                <div className="flex items-center justify-between text-[11px]" style={{ color: colors.textSecondary }}>
-                  <span>Today's Attendance</span>
-                  <TrendingUp className="w-3.5 h-3.5" style={{ color: '#3B82F6' }} />
+              {/* Color Swatches */}
+              <div className="grid grid-cols-4 gap-2 my-4">
+                <div className="p-2 rounded-lg bg-[#10233D] border border-[#2B3B52] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-slate-200 block">#10233D</span>
+                  <span className="text-[9px] text-slate-400">Sidebar</span>
                 </div>
-                <div className="text-base font-bold mt-0.5" style={{ color: colors.textPrimary }}>
-                  42 <span className="text-[10px] font-normal opacity-70">Present</span>
+                <div className="p-2 rounded-lg bg-[#182438] border border-[#2B3B52] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-slate-200 block">#182438</span>
+                  <span className="text-[9px] text-slate-400">Cards</span>
                 </div>
-                <div className="text-[9.5px] mt-0.5 text-emerald-500 font-medium">
-                  3 Leaves | 3 Absents
+                <div className="p-2 rounded-lg bg-[#3B82F6] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-white block">#3B82F6</span>
+                  <span className="text-[9px] text-blue-100">Primary</span>
+                </div>
+                <div className="p-2 rounded-lg bg-[#4ADE80] text-center">
+                  <span className="text-[9.5px] font-mono font-bold text-slate-900 block">#4ADE80</span>
+                  <span className="text-[9px] text-emerald-950 font-bold">Success</span>
                 </div>
               </div>
 
-              {/* Card 3 */}
-              <div
-                className="p-2.5 rounded-lg border shadow-sm transition"
-                style={{
-                  backgroundColor: colors.bgCard,
-                  borderColor: colors.border
-                }}
-              >
-                <div className="flex items-center justify-between text-[11px]" style={{ color: colors.textSecondary }}>
-                  <span>Monthly Collection</span>
-                  <Award className="w-3.5 h-3.5" style={{ color: colors.warning }} />
+              {/* Live Preview Mini Mockup */}
+              <div className="p-3 rounded-lg bg-[#101827] border border-[#2B3B52] space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                    <span className="font-semibold text-slate-200">Terminal Scanner Preview</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">Active</span>
                 </div>
-                <div className="text-base font-bold mt-0.5" style={{ color: colors.textPrimary }}>
-                  PKR 48,000
-                </div>
-                <div className="text-[9.5px] mt-0.5" style={{ color: colors.textSecondary }}>
-                  Pending Dues: PKR 8,500
+                <div className="flex gap-1.5">
+                  <button className="flex-1 py-1 rounded text-[11px] font-semibold bg-blue-600 text-white shadow-xs">
+                    Primary Action
+                  </button>
+                  <button className="px-2 py-1 rounded text-[11px] font-semibold bg-emerald-600 text-white">
+                    Present
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Mock Table */}
-            <div
-              className="rounded-lg border overflow-hidden"
-              style={{
-                backgroundColor: colors.bgCard,
-                borderColor: colors.border
-              }}
-            >
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr
-                    className="border-b"
-                    style={{
-                      backgroundColor: colors.bgSecondary,
-                      borderColor: colors.border,
-                      color: colors.textSecondary
-                    }}
-                  >
-                    <th className="p-2 font-semibold text-[10px]">Roll #</th>
-                    <th className="p-2 font-semibold text-[10px]">Student Name</th>
-                    <th className="p-2 font-semibold text-[10px]">Current Belt</th>
-                    <th className="p-2 font-semibold text-[10px]">Fee Status</th>
-                    <th className="p-2 font-semibold text-[10px] text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y" style={{ borderColor: colors.border }}>
-                  <tr>
-                    <td className="p-2 font-mono font-bold text-[11px]" style={{ color: colors.primary }}>
-                      TKD-001
-                    </td>
-                    <td className="p-2 font-medium text-[11px]" style={{ color: colors.textPrimary }}>
-                      Abdul Basit S/O Qari Sabir
-                    </td>
-                    <td className="p-2">
-                      <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-500/20 text-blue-500 border border-blue-500/30">
-                        Blue Belt
-                      </span>
-                    </td>
-                    <td className="p-2">
-                      <span
-                        className="px-1.5 py-0.2 rounded text-[9.5px] font-bold"
-                        style={{
-                          backgroundColor: colors.badgeBg,
-                          color: colors.primary
-                        }}
-                      >
-                        PAID (PKR 1000)
-                      </span>
-                    </td>
-                    <td className="p-2 text-right">
-                      <button
-                        className="px-2 py-0.5 rounded text-[10.5px] font-medium border"
-                        style={{
-                          backgroundColor: colors.bgSecondary,
-                          color: colors.textPrimary,
-                          borderColor: colors.border
-                        }}
-                      >
-                        View 360°
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="p-2 font-mono font-bold text-[11px]" style={{ color: colors.primary }}>
-                      TKD-002
-                    </td>
-                    <td className="p-2 font-medium text-[11px]" style={{ color: colors.textPrimary }}>
-                      Muhammad Huzaifa S/O Noor Rehman
-                    </td>
-                    <td className="p-2">
-                      <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-green-500/20 text-green-500 border border-green-500/30">
-                        Green Belt
-                      </span>
-                    </td>
-                    <td className="p-2">
-                      <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-red-500/20 text-red-500">
-                        UNPAID (Baqaya PKR 1000)
-                      </span>
-                    </td>
-                    <td className="p-2 text-right">
-                      <button
-                        className="px-2 py-0.5 rounded text-[10.5px] font-medium border"
-                        style={{
-                          backgroundColor: colors.bgSecondary,
-                          color: colors.textPrimary,
-                          borderColor: colors.border
-                        }}
-                      >
-                        View 360°
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="mt-4 pt-3 border-t border-[#2B3B52] flex items-center justify-between text-[11.5px] text-slate-400 font-medium">
+              <span>Deep night eye comfort</span>
+              <span className="text-blue-400 font-semibold">{mode === 'dark' ? 'Currently Active' : 'Click to Select'}</span>
             </div>
           </div>
         </div>
@@ -739,3 +297,5 @@ export const ThemeSettingsView = () => {
     </div>
   );
 };
+
+export default ThemeSettingsView;

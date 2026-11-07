@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { AcademyProvider } from './context/AcademyContext.jsx';
+import { LoginView } from './components/auth/LoginView.jsx';
 import { Header } from './components/common/Header.jsx';
 import { Sidebar } from './components/common/Sidebar.jsx';
 import { DashboardView } from './components/dashboard/DashboardView.jsx';
@@ -10,11 +13,12 @@ import { StudentProfileModal } from './components/profile/StudentProfileModal.js
 import { SmartAttendanceTerminal } from './components/attendance/SmartAttendanceTerminal.jsx';
 import { FeeManagementView } from './components/fees/FeeManagementView.jsx';
 import { CertificateGeneratorView } from './components/certificates/CertificateGeneratorView.jsx';
-import { ThemeSettingsView } from './components/settings/ThemeSettingsView.jsx';
+import { AcademySettingsView } from './components/settings/AcademySettingsView.jsx';
 import { api } from './api/api.js';
 
 const AppContent = () => {
   const { colors } = useTheme();
+  const { isAuthenticated, authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [feeDeskStudentId, setFeeDeskStudentId] = useState(undefined);
@@ -64,6 +68,7 @@ const AppContent = () => {
   }, [mobileMenuOpen]);
 
   const fetchDefaultersCount = async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await api.getDefaulters();
       if (res.success && res.data) {
@@ -75,8 +80,10 @@ const AppContent = () => {
   };
 
   useEffect(() => {
-    fetchDefaultersCount();
-  }, []);
+    if (isAuthenticated) {
+      fetchDefaultersCount();
+    }
+  }, [isAuthenticated]);
 
   const handleOpenStudentProfile = (id) => {
     setSelectedStudentId(id);
@@ -98,85 +105,120 @@ const AppContent = () => {
     closeMobileMenu();
   };
 
+  // 1. Loading splash while verifying administrator session
+  if (authLoading) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center p-4 transition-colors"
+        style={{ backgroundColor: colors.bgMain }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-2xl animate-pulse">🥋</span>
+          <span className="font-bold text-base tracking-tight" style={{ color: colors.textPrimary }}>
+            AL MURTAZA SHAH TAEKWONDO
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-medium" style={{ color: colors.textSecondary }}>
+          <span
+            className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: colors.primary, borderTopColor: 'transparent' }}
+          />
+          <span>Verifying administrator authentication...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated: Render Secure Admin Login View
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
+  // 3. Authenticated: Render Full Protected Admin Dashboard & Management Suite
   return (
     <div
-      className="min-h-screen flex flex-col font-sans transition-colors duration-200"
+      className="h-screen w-screen overflow-hidden flex flex-row font-sans transition-colors duration-150"
       style={{
         backgroundColor: colors.bgMain,
         color: colors.textPrimary
       }}
     >
-      <Header
-        onNavigate={handleNavigate}
+      {/* 1. Desktop Fixed Full-Height Sidebar & Mobile Drawer */}
+      <Sidebar
         activeTab={activeTab}
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={toggleSidebarCollapse}
-        mobileMenuOpen={mobileMenuOpen}
-        onToggleMobileMenu={toggleMobileMenu}
+        onNavigate={handleNavigate}
+        defaulterCount={defaulterCount}
+        isCollapsed={sidebarCollapsed}
+        isMobileOpen={mobileMenuOpen}
+        onCloseMobile={closeMobileMenu}
       />
 
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-        <Sidebar
-          activeTab={activeTab}
+      {/* 2. Main Workspace Column: Header at top, scrollable main content below */}
+      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+        <Header
           onNavigate={handleNavigate}
+          activeTab={activeTab}
+          sidebarCollapsed={sidebarCollapsed}
+          onToggleSidebar={toggleSidebarCollapse}
+          mobileMenuOpen={mobileMenuOpen}
+          onToggleMobileMenu={toggleMobileMenu}
           defaulterCount={defaulterCount}
-          isCollapsed={sidebarCollapsed}
-          isMobileOpen={mobileMenuOpen}
-          onCloseMobile={closeMobileMenu}
         />
 
-        <main className="flex-1 p-3.5 lg:p-5 overflow-y-auto max-w-7xl mx-auto w-full min-w-0">
-          {activeTab === 'dashboard' && (
-            <DashboardView
-              onOpenStudent={handleOpenStudentProfile}
-              onNavigate={setActiveTab}
-            />
-          )}
+        <main className="flex-1 p-3.5 lg:p-5 overflow-y-auto w-full min-w-0">
+          <div className="max-w-7xl mx-auto space-y-4">
+            {activeTab === 'dashboard' && (
+              <DashboardView
+                onOpenStudent={handleOpenStudentProfile}
+                onNavigate={setActiveTab}
+              />
+            )}
 
-          {activeTab === 'audit' && (
-            <div className="space-y-4">
-              <EndOfMonthAuditWidget onOpenStudent={handleOpenStudentProfile} />
-            </div>
-          )}
+            {activeTab === 'audit' && (
+              <div className="space-y-4">
+                <EndOfMonthAuditWidget onOpenStudent={handleOpenStudentProfile} />
+              </div>
+            )}
 
-          {activeTab === 'admission' && (
-            <AdmissionForm
-              onSuccess={() => {
-                fetchDefaultersCount();
-                setActiveTab('students');
-              }}
-              onNavigateToBiometrics={() => {
-                setActiveTab('terminal');
-              }}
-            />
-          )}
+            {activeTab === 'admission' && (
+              <AdmissionForm
+                onSuccess={() => {
+                  fetchDefaultersCount();
+                  setActiveTab('students');
+                }}
+                onNavigateToBiometrics={() => {
+                  setActiveTab('terminal');
+                }}
+              />
+            )}
 
-          {activeTab === 'students' && (
-            <StudentListView
-              onOpenProfile={handleOpenStudentProfile}
-              onNavigateAdmission={() => setActiveTab('admission')}
-              onCollectFee={handleCollectFeeForStudent}
-            />
-          )}
+            {activeTab === 'students' && (
+              <StudentListView
+                onOpenProfile={handleOpenStudentProfile}
+                onNavigateAdmission={() => setActiveTab('admission')}
+                onCollectFee={handleCollectFeeForStudent}
+              />
+            )}
 
-          {activeTab === 'terminal' && (
-            <SmartAttendanceTerminal />
-          )}
+            {activeTab === 'terminal' && (
+              <SmartAttendanceTerminal />
+            )}
 
-          {activeTab === 'fees' && (
-            <FeeManagementView
-              initialStudentId={feeDeskStudentId}
-              onOpenStudentProfile={handleOpenStudentProfile}
-            />
-          )}
+            {activeTab === 'fees' && (
+              <FeeManagementView
+                initialStudentId={feeDeskStudentId}
+                onOpenStudentProfile={handleOpenStudentProfile}
+              />
+            )}
 
-          {activeTab === 'certificates' && (
-            <CertificateGeneratorView initialCertificate={printCert} />
-          )}
+            {activeTab === 'certificates' && (
+              <CertificateGeneratorView initialCertificate={printCert} />
+            )}
 
-          {activeTab === 'settings' && (
-            <ThemeSettingsView />
-          )}
+            {activeTab === 'settings' && (
+              <AcademySettingsView />
+            )}
+          </div>
         </main>
       </div>
 
@@ -198,7 +240,11 @@ const AppContent = () => {
 export const App = () => {
   return (
     <ThemeProvider>
-      <AppContent />
+      <AuthProvider>
+        <AcademyProvider>
+          <AppContent />
+        </AcademyProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 };

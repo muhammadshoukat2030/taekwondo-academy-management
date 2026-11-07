@@ -173,11 +173,11 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold" style={{ color: colors.textPrimary }}>
+                <h2 className="text-[18px] sm:text-[19px] font-bold tracking-tight" style={{ color: colors.textPrimary }}>
                   Edit Student Profile
                 </h2>
                 <span
-                  className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold border"
+                  className="px-2 py-0.5 rounded text-[11px] font-mono-numbers font-medium border"
                   style={{
                     backgroundColor: colors.bgCard,
                     borderColor: colors.border,
@@ -187,7 +187,7 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
                   {student.registrationNo}
                 </span>
               </div>
-              <p className="text-xs" style={{ color: colors.textSecondary }}>
+              <p className="text-[12.5px] font-normal" style={{ color: colors.textSecondary }}>
                 Update personal, contact, belt rank, fee structure, and status
               </p>
             </div>

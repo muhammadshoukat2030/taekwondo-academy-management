@@ -124,12 +124,12 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
             >
               <Award className="w-4 h-4" />
             </span>
-            <h1 className="text-base lg:text-lg font-bold" style={{ color: colors.textPrimary }}>
-              Belt Certificates
+            <h1 className="text-[22px] sm:text-[24px] font-bold tracking-tight" style={{ color: colors.textHeading }}>
+              Belt Promotion Certificates
             </h1>
           </div>
-          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
-            Generate and print official KPK & PTF belt promotion certificates.
+          <p className="text-[13px] font-normal mt-0.5 leading-relaxed" style={{ color: colors.textSecondary }}>
+            Official Pakistan Taekwondo Federation (PTF) and KPK Taekwondo Association belt awards.
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
           {currentCert && (
             <button
               onClick={handlePrint}
-              className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:opacity-95 active:scale-95"
+              className="px-3.5 py-1.5 rounded-lg text-white text-[12px] font-medium flex items-center gap-1.5 shadow-xs transition hover:opacity-95 active:scale-95"
               style={{ backgroundColor: colors.primary }}
             >
               <Printer className="w-3.5 h-3.5" />

@@ -1,9 +1,13 @@
 import axios from 'axios';
 
-// Create Axios client pointing to Express backend
+// API Base URL from environment variable (falls back to /api proxy)
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
+// Create Axios client with credentials (HTTP-only cookies) enabled
 const apiClient = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -80,6 +84,26 @@ const fallbackStudents = [
 ];
 
 export const api = {
+  // Authentication
+  login: async ({ email, password }) => {
+    const res = await apiClient.post('/auth/login', { email, password });
+    return res.data;
+  },
+
+  logout: async () => {
+    try {
+      const res = await apiClient.post('/auth/logout');
+      return res.data;
+    } catch (err) {
+      return { success: true };
+    }
+  },
+
+  getMe: async () => {
+    const res = await apiClient.get('/auth/me');
+    return res.data;
+  },
+
   // Students
   getStudents: async (params = {}) => {
     try {
@@ -460,6 +484,45 @@ export const api = {
         }))
       };
     }
+  },
+
+  // Academy Settings
+  getSettings: async () => {
+    try {
+      const res = await apiClient.get('/settings');
+      return res.data;
+    } catch (err) {
+      console.warn('API Offline - fallback default settings:', err.message);
+      return {
+        success: true,
+        data: {
+          academyName: 'Al Murtaza Shah Taekwondo Academy',
+          shortName: 'Al Murtaza Shah',
+          subtitle: 'PTF & KPK Recognized Martial Arts Training Academy',
+          recognition: 'PTF Recognized',
+          address: 'Abdur Rehman Plaza, Chogi No.7, Kohat',
+          city: 'Kohat',
+          phone: '0335-9117230',
+          whatsapp: '0335-9117230',
+          email: 'info@almurtazataekwondo.com',
+          website: 'https://almurtazataekwondo.com',
+          logo: '',
+          dashboardHeading: 'Academy Overview Dashboard',
+          dashboardSubtitle: 'Al Murtaza Shah Taekwondo • Abdur Rehman Plaza, Chogi No.7, Kohat • PTF/KPK Recognized',
+          instructorName: 'Instructor Murtaza Hassan Bangash'
+        }
+      };
+    }
+  },
+
+  updateSettings: async (settingsData) => {
+    const res = await apiClient.put('/settings', settingsData);
+    return res.data;
+  },
+
+  resetSettings: async () => {
+    const res = await apiClient.post('/settings/reset');
+    return res.data;
   }
 };
 

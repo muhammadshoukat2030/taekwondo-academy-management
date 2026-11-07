@@ -115,7 +115,7 @@ export const StudentListView = ({
           className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl border shadow-xl flex items-center gap-2 text-xs font-semibold animate-fade-in ${
             toastMessage.isError
               ? 'bg-red-500 text-white border-red-600'
-              : 'bg-emerald-600 text-white border-emerald-700'
+              : 'bg-blue-600 text-white border-blue-700 shadow-blue-500/20'
           }`}
         >
           {toastMessage.isError ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
@@ -134,20 +134,21 @@ export const StudentListView = ({
         <div>
           <div className="flex items-center gap-2">
             <span
-              className="p-1.5 rounded-lg border flex items-center justify-center"
-              style={{
-                backgroundColor: colors.badgeBg,
-                borderColor: colors.border,
-                color: colors.primary
-              }}
+              className="p-1.5 rounded-lg border flex items-center justify-center bg-blue-50 dark:bg-blue-900/40 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300"
             >
               <Users className="w-4 h-4" />
             </span>
-            <h1 className="text-base sm:text-lg font-bold tracking-tight" style={{ color: colors.textPrimary }}>
+            <h1
+              className="text-[20px] sm:text-[22px] font-bold tracking-tight"
+              style={{ color: colors.textHeading }}
+            >
               Student Directory
             </h1>
           </div>
-          <p className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
+          <p
+            className="text-[12px] sm:text-[13px] font-normal mt-0.5 leading-relaxed"
+            style={{ color: colors.textSecondary }}
+          >
             Manage active student rosters, update student details, and collect fees.
           </p>
         </div>
@@ -155,10 +156,9 @@ export const StudentListView = ({
         <div>
           <button
             onClick={onNavigateAdmission}
-            className="px-3.5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:scale-105 active:scale-95"
-            style={{ backgroundColor: colors.primary }}
+            className="px-3.5 py-1.5 rounded-lg text-white text-[12.5px] font-semibold flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 shadow-xs transition cursor-pointer"
           >
-            <UserPlus className="w-4 h-4" />
+            <UserPlus className="w-3.5 h-3.5 text-white" />
             <span>+ Add New Student</span>
           </button>
         </div>
@@ -174,24 +174,18 @@ export const StudentListView = ({
       >
         {/* Search input with clear button */}
         <div className="relative w-full lg:w-96">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5" style={{ color: colors.textMuted }} />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500 dark:text-slate-400" />
           <input
             type="text"
             placeholder="Search by student name, father name, or phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-8 py-1.5 rounded-lg border text-xs focus:outline-none transition"
-            style={{
-              backgroundColor: colors.inputBg,
-              borderColor: colors.border,
-              color: colors.textPrimary
-            }}
+            className="w-full pl-9 pr-8 py-1.5 rounded-lg border text-[13px] font-normal bg-white dark:bg-[#142238] border-[#CBD5E1] dark:border-[#2B3B52] text-[#334155] dark:text-[#D7E0EC] placeholder:text-[#94A3B8] focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-2.5 top-2.5 p-0.5 rounded hover:opacity-80"
-              style={{ color: colors.textMuted }}
+              className="absolute right-2.5 top-2.5 p-0.5 rounded text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
             >
               <X className="w-3 h-3" />
             </button>
@@ -199,14 +193,10 @@ export const StudentListView = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto text-xs">
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto text-[12.5px]">
           {/* Status Quick Filter Pills */}
           <div
-            className="flex items-center p-0.5 rounded-lg border"
-            style={{
-              backgroundColor: colors.bgSecondary,
-              borderColor: colors.border
-            }}
+            className="flex items-center p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800"
           >
             {['All', 'Active', 'Inactive'].map((st) => {
               const isSelected = selectedStatus === st;
@@ -214,10 +204,10 @@ export const StudentListView = ({
                 <button
                   key={st}
                   onClick={() => setSelectedStatus(st)}
-                  className="px-2.5 py-1 rounded-md text-xs font-semibold transition"
+                  className="px-2.5 py-1 rounded-md text-[12px] font-medium transition cursor-pointer"
                   style={{
-                    backgroundColor: isSelected ? colors.primary : 'transparent',
-                    color: isSelected ? '#FFFFFF' : colors.textSecondary
+                    backgroundColor: isSelected ? '#2563EB' : 'transparent',
+                    color: isSelected ? '#FFFFFF' : (mode === 'dark' ? '#CBD5E1' : '#334155')
                   }}
                 >
                   {st}
@@ -228,24 +218,19 @@ export const StudentListView = ({
 
           {/* Belt Dropdown */}
           <div className="flex items-center gap-1.5">
-            <span style={{ color: colors.textSecondary }}>Belt:</span>
+            <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">Belt:</span>
             <select
               value={selectedBelt}
               onChange={(e) => setSelectedBelt(e.target.value)}
-              className="rounded-lg px-2.5 py-1.5 text-xs font-medium focus:outline-none border transition"
-              style={{
-                backgroundColor: colors.inputBg,
-                borderColor: colors.border,
-                color: colors.textPrimary
-              }}
+              className="rounded-lg px-2.5 py-1.5 text-[12.5px] font-medium focus:outline-none border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition cursor-pointer"
             >
-              <option value="All">All Belts</option>
-              <option value="White">White Belt</option>
-              <option value="Yellow">Yellow Belt</option>
-              <option value="Green">Green Belt</option>
-              <option value="Blue">Blue Belt</option>
-              <option value="Red">Red Belt</option>
-              <option value="Black">Black Belt</option>
+              <option value="All" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">All Belts</option>
+              <option value="White" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">White Belt</option>
+              <option value="Yellow" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Yellow Belt</option>
+              <option value="Green" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Green Belt</option>
+              <option value="Blue" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Blue Belt</option>
+              <option value="Red" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Red Belt</option>
+              <option value="Black" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Black Belt</option>
             </select>
           </div>
         </div>
@@ -257,27 +242,24 @@ export const StudentListView = ({
           className="p-10 rounded-xl border text-center flex flex-col items-center justify-center gap-2"
           style={{
             backgroundColor: colors.bgCard,
-            borderColor: colors.border,
-            color: colors.textSecondary
+            borderColor: colors.border
           }}
         >
-          <Loader2 className="w-6 h-6 animate-spin" style={{ color: colors.primary }} />
-          <span className="text-xs">Loading students...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Loading students...</span>
         </div>
       ) : students.length === 0 ? (
         <div
           className="p-10 rounded-xl border text-center"
           style={{
             backgroundColor: colors.bgCard,
-            borderColor: colors.border,
-            color: colors.textSecondary
+            borderColor: colors.border
           }}
         >
-          <p className="text-xs font-medium">No students match your search criteria.</p>
+          <p className="text-xs font-bold text-slate-800 dark:text-slate-200">No students match your search criteria.</p>
           <button
             onClick={() => { setSearch(''); setSelectedBelt('All'); setSelectedStatus('All'); }}
-            className="mt-2 text-xs font-bold underline"
-            style={{ color: colors.primary }}
+            className="mt-2 text-xs font-bold underline text-blue-600 dark:text-blue-400 cursor-pointer"
           >
             Reset Filters
           </button>
@@ -292,12 +274,10 @@ export const StudentListView = ({
             return (
               <div
                 key={st._id}
-                className={`p-3.5 rounded-xl border transition-all duration-150 flex flex-col justify-between shadow-sm hover:shadow group relative ${
-                  isInactive ? 'opacity-85' : ''
-                }`}
+                className="p-3.5 rounded-xl border transition-all duration-150 flex flex-col justify-between shadow-xs hover:shadow group"
                 style={{
                   backgroundColor: colors.bgCard,
-                  borderColor: isInactive ? (mode === 'dark' ? '#334155' : '#cbd5e1') : colors.border
+                  borderColor: colors.border
                 }}
               >
                 <div>
@@ -308,30 +288,31 @@ export const StudentListView = ({
                         <img
                           src={st.photo}
                           alt=""
-                          className="w-10 h-10 rounded-lg object-cover border flex-shrink-0"
-                          style={{ borderColor: colors.border }}
+                          className="w-10 h-10 rounded-lg object-cover border border-slate-300 dark:border-slate-600 flex-shrink-0"
                         />
                       ) : (
                         <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0"
-                          style={{
-                            backgroundColor: colors.bgSecondary,
-                            color: colors.textPrimary
-                          }}
+                          className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0 bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-200"
                         >
                           {st.fullName ? st.fullName[0] : 'S'}
                         </div>
                       )}
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <h3 className="text-xs font-bold leading-tight" style={{ color: colors.textPrimary }}>
+                          <h3
+                            className="text-[14px] font-semibold leading-tight tracking-tight"
+                            style={{ color: colors.textHeading }}
+                          >
                             {st.fullName}
                           </h3>
                         </div>
-                        <div className="text-[11px]" style={{ color: colors.textSecondary }}>
+                        <div
+                          className="text-[12px] font-normal"
+                          style={{ color: colors.textSecondary }}
+                        >
                           S/O {st.fatherName}
                         </div>
-                        <div className="text-[10px] font-mono mt-0.5" style={{ color: colors.textMuted }}>
+                        <div className="text-[11px] font-mono-numbers font-medium text-blue-700 dark:text-blue-300 mt-0.5">
                           {st.registrationNo}
                         </div>
                       </div>
@@ -340,21 +321,21 @@ export const StudentListView = ({
                     <div className="flex flex-col items-end gap-1">
                       {/* Status Badge */}
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border flex items-center gap-1 ${
+                        className={`px-1.5 py-0.5 rounded text-[10.5px] font-medium border flex items-center gap-1 ${
                           isActive
-                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-400'
                             : isInactive
-                            ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
-                            : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                            ? 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-400'
+                            : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-400'
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : isInactive ? 'bg-red-500' : 'bg-amber-500'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-600' : 'bg-red-600'}`} />
                         {st.status || 'Active'}
                       </span>
 
                       {/* Belt Badge */}
                       <span
-                        className={`px-1.5 py-0.2 rounded text-[9.5px] font-semibold border ${
+                        className={`px-1.5 py-0.5 rounded text-[10.5px] font-medium border ${
                           beltColors[st.currentBelt] || 'border-current'
                         }`}
                       >
@@ -365,41 +346,42 @@ export const StudentListView = ({
 
                   {/* Student Metadata */}
                   <div
-                    className="mt-3 pt-2.5 border-t text-[11px] space-y-1"
-                    style={{
-                      borderColor: colors.border,
-                      color: colors.textSecondary
-                    }}
+                    className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 text-[12px] space-y-1"
                   >
-                    <div className="flex justify-between">
-                      <span style={{ color: colors.textMuted }}>Phone:</span>
-                      <span className="font-mono font-medium" style={{ color: colors.textPrimary }}>{st.phone}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-normal" style={{ color: colors.textSecondary }}>Phone:</span>
+                      <span
+                        className="font-mono-numbers font-medium text-[12px]"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {st.phone}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: colors.textMuted }}>Monthly Fee:</span>
-                      <span className="font-mono font-bold" style={{ color: colors.primary }}>PKR {st.fixedMonthlyFee}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-normal" style={{ color: colors.textSecondary }}>Monthly Fee:</span>
+                      <span className="font-mono-numbers font-semibold text-[12px] text-emerald-700 dark:text-emerald-400">PKR {st.fixedMonthlyFee}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: colors.textMuted }}>Address:</span>
-                      <span className="truncate max-w-[170px]" style={{ color: colors.textPrimary }}>{st.permanentAddress}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-normal" style={{ color: colors.textSecondary }}>Address:</span>
+                      <span
+                        className="truncate max-w-[170px] text-[11.5px] font-normal"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {st.permanentAddress}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-3 pt-2 border-t flex items-center justify-between gap-1.5" style={{ borderColor: colors.border }}>
+                <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-1.5">
                   <div className="flex items-center gap-1.5">
                     {/* Edit Student */}
                     <button
                       onClick={() => setEditingStudent(st)}
-                      className="px-2 py-1 rounded-lg text-[11px] font-semibold border flex items-center gap-1 transition hover:opacity-80"
-                      style={{
-                        backgroundColor: colors.bgSecondary,
-                        borderColor: colors.border,
-                        color: colors.textPrimary
-                      }}
+                      className="px-2 py-1 rounded-md text-[12px] font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-1 transition hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                     >
-                      <Edit2 className="w-3 h-3" style={{ color: colors.primary }} />
+                      <Edit2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                       <span>Edit</span>
                     </button>
 
@@ -408,10 +390,10 @@ export const StudentListView = ({
                       onClick={() => handleToggleStatus(st)}
                       disabled={isUpdating}
                       title={isActive ? "Mark Inactive" : "Reactivate"}
-                      className={`px-2 py-1 rounded-lg text-[11px] font-semibold border flex items-center gap-1 transition ${
+                      className={`px-2 py-1 rounded-md text-[11.5px] font-bold border flex items-center gap-1 transition cursor-pointer ${
                         isActive
-                          ? 'border-red-500/30 text-red-500 hover:bg-red-500/10'
-                          : 'border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10'
+                          ? 'border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100'
+                          : 'border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100'
                       }`}
                     >
                       {isUpdating ? (
@@ -426,27 +408,17 @@ export const StudentListView = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => onCollectFee(st._id)}
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border flex items-center gap-1 transition hover:scale-105"
-                      style={{
-                        backgroundColor: colors.badgeBg,
-                        borderColor: colors.border,
-                        color: colors.primary
-                      }}
+                      className="px-2.5 py-1 rounded-md text-[11.5px] font-bold border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 flex items-center gap-1 transition hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer"
                     >
-                      <CreditCard className="w-3 h-3" />
+                      <CreditCard className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                       <span>Fee</span>
                     </button>
 
                     <button
                       onClick={() => onOpenProfile(st._id)}
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-medium border flex items-center gap-1 transition hover:scale-105"
-                      style={{
-                        backgroundColor: colors.bgSecondary,
-                        borderColor: colors.border,
-                        color: colors.textPrimary
-                      }}
+                      className="px-2.5 py-1 rounded-md text-[11.5px] font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-1 transition hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                     >
-                      <ExternalLink className="w-3 h-3 text-cyan-500" />
+                      <ExternalLink className="w-3 h-3 text-blue-600 dark:text-blue-400" />
                       <span>Profile</span>
                     </button>
                   </div>

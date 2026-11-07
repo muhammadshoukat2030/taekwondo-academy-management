@@ -1,135 +1,94 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export const THEME_PALETTES = {
-  emerald: {
-    id: 'emerald',
-    name: 'Emerald Green',
-    subtitle: 'Elegant, fresh, modern martial arts aesthetic',
-    dark: {
-      primary: '#10B981',
-      primaryHover: '#059669',
-      bgMain: '#071C18',
-      bgSidebar: '#0B2721',
-      bgCard: '#123D32',
-      bgCardSubtle: '#0E3027',
-      bgSecondary: '#102C25',
-      textPrimary: '#F0FDF4',
-      textSecondary: '#A7C4B8',
-      textMuted: '#6B9080',
-      border: '#245044',
-      borderSubtle: '#1A3C33',
-      success: '#10B981',
-      warning: '#F59E0B',
-      danger: '#EF4444',
-      glow: 'rgba(16, 185, 129, 0.25)',
-      chartGrid: '#1B4137',
-      inputBg: '#09211C',
-      inputBorder: '#245044',
-      badgeBg: 'rgba(16, 185, 129, 0.15)',
-      badgeText: '#34D399',
-      accentGradient: 'from-emerald-500 to-teal-600',
-    },
+  posNavy: {
+    id: 'posNavy',
+    name: 'POS Modern Navy',
+    subtitle: 'Professional Navy Blue sidebar with clean white workspace and Royal Blue accents',
     light: {
-      primary: '#10B981',
-      primaryHover: '#059669',
-      bgMain: '#F2FBF6',
-      bgSidebar: '#FFFFFF',
+      primary: '#2563EB',
+      primaryHover: '#1D4ED8',
+      secondaryAccent: '#3B82F6',
+      bgMain: '#F4F6FA',
+      bgWorkspace: '#F4F6FA',
+      bgSidebar: '#142B4A',
+      bgSidebarSecondary: '#1B385E',
+      sidebarText: '#FFFFFF',
+      sidebarTextMuted: '#94A3B8',
+      sidebarActiveBg: '#2563EB',
+      sidebarActiveText: '#FFFFFF',
       bgCard: '#FFFFFF',
-      bgCardSubtle: '#F6FDF9',
-      bgSecondary: '#E6F7F0',
-      textPrimary: '#064E3B',
-      textSecondary: '#2D6A55',
-      textMuted: '#528B75',
-      border: '#D1FAE5',
-      borderSubtle: '#E2E8F0',
-      success: '#10B981',
-      warning: '#D97706',
-      danger: '#EF4444',
-      glow: 'rgba(16, 185, 129, 0.15)',
-      chartGrid: '#E2E8F0',
-      inputBg: '#FFFFFF',
-      inputBorder: '#D1FAE5',
-      badgeBg: '#D1FAE5',
-      badgeText: '#065F46',
-      accentGradient: 'from-emerald-500 to-teal-600',
-    }
-  },
-  royal: {
-    id: 'royal',
-    name: 'White + Royal Blue',
-    subtitle: 'Clean, professional, modern premium SaaS dashboard',
-    light: {
-      primary: '#1D4ED8',
-      primaryHover: '#1E40AF',
-      bgMain: '#F8FAFC',
-      bgSidebar: '#FFFFFF',
-      bgCard: '#FFFFFF',
-      bgCardSubtle: '#F1F5F9',
-      bgSecondary: '#EFF4FF',
-      textPrimary: '#172554',
-      textSecondary: '#64748B',
-      textMuted: '#94A3B8',
+      bgCardSubtle: '#F8FAFC',
+      bgSecondary: '#F4F6FA',
+      textHeading: '#111827',
+      textPrimary: '#1F2937',
+      textSecondary: '#475569',
+      textMuted: '#64748B',
+      textSoft: '#64748B',
       border: '#E2E8F0',
-      borderSubtle: '#CBD5E1',
-      success: '#16A34A',
-      warning: '#F59E0B',
+      borderSubtle: '#F1F5F9',
+      success: '#15803D',
+      warning: '#B45309',
       danger: '#DC2626',
-      glow: 'rgba(29, 78, 216, 0.15)',
+      glow: 'rgba(37, 99, 235, 0.12)',
       chartGrid: '#E2E8F0',
+      chartTick: '#475569',
       inputBg: '#FFFFFF',
       inputBorder: '#E2E8F0',
-      badgeBg: '#DBEAFE',
-      badgeText: '#1E40AF',
+      badgeBg: '#EFF6FF',
+      badgeText: '#1D4ED8',
       accentGradient: 'from-blue-600 to-indigo-700',
     },
     dark: {
-      primary: '#2563EB',
-      primaryHover: '#1D4ED8',
-      bgMain: '#0A1128',
-      bgSidebar: '#0F1A3A',
-      bgCard: '#162248',
-      bgCardSubtle: '#111B3C',
-      bgSecondary: '#131D3F',
-      textPrimary: '#EFF6FF',
-      textSecondary: '#93C5FD',
-      textMuted: '#6B8CC7',
-      border: '#1E3A8A',
-      borderSubtle: '#233876',
-      success: '#22C55E',
-      warning: '#F59E0B',
-      danger: '#EF4444',
-      glow: 'rgba(37, 99, 235, 0.25)',
-      chartGrid: '#1E3A8A',
-      inputBg: '#0D1734',
-      inputBorder: '#1E3A8A',
-      badgeBg: 'rgba(37, 99, 235, 0.2)',
-      badgeText: '#93C5FD',
+      primary: '#3B82F6',
+      primaryHover: '#2563EB',
+      secondaryAccent: '#60A5FA',
+      bgMain: '#0F172A',
+      bgWorkspace: '#0F172A',
+      bgSidebar: '#10233D',
+      bgSidebarSecondary: '#1B385E',
+      sidebarText: '#F8FAFC',
+      sidebarTextMuted: '#94A3B8',
+      sidebarActiveBg: '#3B82F6',
+      sidebarActiveText: '#FFFFFF',
+      bgCard: '#172033',
+      bgCardSubtle: '#1E2D43',
+      bgSecondary: '#1E2D43',
+      textHeading: '#F8FAFC',
+      textPrimary: '#E2E8F0',
+      textSecondary: '#CBD5E1',
+      textMuted: '#94A3B8',
+      textSoft: '#94A3B8',
+      border: '#334155',
+      borderSubtle: '#1E2D43',
+      success: '#4ADE80',
+      warning: '#FBBF24',
+      danger: '#F87171',
+      glow: 'rgba(59, 130, 246, 0.20)',
+      chartGrid: '#334155',
+      chartTick: '#CBD5E1',
+      inputBg: '#172033',
+      inputBorder: '#334155',
+      badgeBg: 'rgba(59, 130, 246, 0.20)',
+      badgeText: '#BFDBFE',
       accentGradient: 'from-blue-500 to-indigo-600',
     }
   }
 };
 
-const STORAGE_KEY = 'ams_taekwondo_theme_prefs_v2';
-const DEFAULT_THEME = 'emerald';
-const DEFAULT_MODE = 'dark';
+// Aliases for backwards compatibility
+THEME_PALETTES.blackPurple = THEME_PALETTES.posNavy;
+THEME_PALETTES.emerald = THEME_PALETTES.posNavy;
+THEME_PALETTES.royal = THEME_PALETTES.posNavy;
+
+const STORAGE_KEY = 'ams_taekwondo_pos_theme_v6';
+const DEFAULT_THEME = 'posNavy';
+const DEFAULT_MODE = 'light';
 
 const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setThemeState] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.theme === 'royal' || parsed.theme === 'emerald') {
-          return parsed.theme;
-        }
-      }
-    } catch {
-      // Ignore
-    }
-    return DEFAULT_THEME;
-  });
+  const [theme, setThemeState] = useState(DEFAULT_THEME);
 
   const [mode, setModeState] = useState(() => {
     try {
@@ -146,20 +105,19 @@ export const ThemeProvider = ({ children }) => {
     return DEFAULT_MODE;
   });
 
-  // Current palette colors
-  const activePalette = THEME_PALETTES[theme] || THEME_PALETTES.emerald;
-  const colors = activePalette[mode] || activePalette.dark;
+  const activePalette = THEME_PALETTES.posNavy;
+  const colors = activePalette[mode] || activePalette.light;
 
   // Sync to HTML document attributes & localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, mode }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme: DEFAULT_THEME, mode }));
     } catch (e) {
       console.warn('Failed to persist theme:', e);
     }
 
     const root = document.documentElement;
-    root.setAttribute('data-theme', theme);
+    root.setAttribute('data-theme', 'posNavy');
     root.setAttribute('data-mode', mode);
 
     if (mode === 'dark') {
@@ -173,12 +131,10 @@ export const ThemeProvider = ({ children }) => {
     // Set body inline styles for immediate flicker-free rendering
     document.body.style.backgroundColor = colors.bgMain;
     document.body.style.color = colors.textPrimary;
-  }, [theme, mode, colors]);
+  }, [mode, colors]);
 
-  const setTheme = (newTheme) => {
-    if (newTheme === 'emerald' || newTheme === 'royal') {
-      setThemeState(newTheme);
-    }
+  const setTheme = () => {
+    setThemeState(DEFAULT_THEME);
   };
 
   const setMode = (newMode) => {
@@ -191,8 +147,7 @@ export const ThemeProvider = ({ children }) => {
     setModeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  const setThemeAndMode = (newTheme, newMode) => {
-    if (newTheme) setTheme(newTheme);
+  const setThemeAndMode = (_, newMode) => {
     if (newMode) setMode(newMode);
   };
 
