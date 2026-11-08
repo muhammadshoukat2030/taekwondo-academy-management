@@ -65,6 +65,17 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
+// URL restoration middleware: If any proxy or serverless rewrite ever changes req.url to /server.js, restore the original path
+app.use((req, res, next) => {
+  if (req.url === '/server.js' || req.url.startsWith('/server.js?') || req.url.startsWith('/server.js/')) {
+    const rawPath = req.headers['x-matched-path'] || req.headers['x-forwarded-uri'] || req.headers['x-original-url'];
+    if (rawPath && rawPath !== '/server.js' && !rawPath.startsWith('/server.js')) {
+      req.url = rawPath;
+    }
+  }
+  next();
+});
+
 // Ensure database connection before handling any request (essential for Vercel serverless execution)
 app.use(async (req, res, next) => {
   try {
