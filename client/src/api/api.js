@@ -1,7 +1,19 @@
 import axios from 'axios';
 
-// API Base URL from environment variable (falls back to /api proxy)
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+// Normalize API Base URL from environment variable (falls back to /api proxy in local development)
+const getApiBase = () => {
+  const envUrl = (import.meta.env.VITE_API_URL || '/api').trim();
+  // If relative path (e.g. '/api' for local Vite proxy), return as is
+  if (!envUrl.startsWith('http')) {
+    return envUrl;
+  }
+  // Strip trailing slashes
+  const clean = envUrl.replace(/\/+$/, '');
+  // Ensure it points to /api endpoint namespace
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+};
+
+const API_BASE = getApiBase();
 
 // Create Axios client with credentials (HTTP-only cookies) enabled
 const apiClient = axios.create({

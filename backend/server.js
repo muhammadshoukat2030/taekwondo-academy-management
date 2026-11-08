@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS configuration supporting credentials (cookies)
+// CORS configuration supporting credentials (cookies and cross-origin Authorization headers)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
@@ -64,6 +64,30 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
+
+// Ensure database connection before handling any request (essential for Vercel serverless execution)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('❌ [Database Connection Error]:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Database connection failed. Please verify MongoDB Atlas connection string and Network Access (0.0.0.0/0).'
+    });
+  }
+});
+
+// Root endpoint to verify backend status
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    system: 'Al Murtaza Shah Taekwondo Academy API Backend',
+    documentation: '/api/health',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Public Authentication Endpoints
 app.use('/api/auth', authRoutes);
