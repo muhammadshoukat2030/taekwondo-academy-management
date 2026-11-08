@@ -3,6 +3,7 @@ import { api } from '../../api/api.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import { useAcademy } from '../../context/AcademyContext.jsx';
 import { EndOfMonthAuditWidget } from './EndOfMonthAuditWidget.jsx';
+import { DashboardSkeleton } from '../common/Skeleton.jsx';
 import {
   Users,
   UserCheck,
@@ -172,6 +173,9 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
           </button>
         </div>
       </div>
+
+      {/* SKELETON LOADER WHILE FETCHING INITIAL METRICS */}
+      {!data && loading && <DashboardSkeleton />}
 
       {/* 2. COMPACT 5-KPI STATISTICS SECTION */}
       {data && (

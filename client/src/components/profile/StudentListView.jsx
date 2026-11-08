@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import { EditStudentModal } from './EditStudentModal.jsx';
+import { StudentCardSkeleton } from '../common/Skeleton.jsx';
 import {
   Users,
   Search,
@@ -238,15 +239,10 @@ export const StudentListView = ({
 
       {/* Student Cards Grid */}
       {loading ? (
-        <div
-          className="p-10 rounded-xl border text-center flex flex-col items-center justify-center gap-2"
-          style={{
-            backgroundColor: colors.bgCard,
-            borderColor: colors.border
-          }}
-        >
-          <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Loading students...</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <StudentCardSkeleton key={i} />
+          ))}
         </div>
       ) : students.length === 0 ? (
         <div
@@ -286,6 +282,7 @@ export const StudentListView = ({
                     <div className="flex items-center gap-2.5">
                       {st.photo ? (
                         <img
+                          loading="lazy"
                           src={st.photo}
                           alt=""
                           className="w-10 h-10 rounded-lg object-cover border border-slate-300 dark:border-slate-600 flex-shrink-0"

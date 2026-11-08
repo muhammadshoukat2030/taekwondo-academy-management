@@ -31,7 +31,7 @@ export const getStudents = async (req, res) => {
       ];
     }
 
-    const students = await Student.find(query).sort({ createdAt: -1 });
+    const students = await Student.find(query).sort({ createdAt: -1 }).lean();
     res.json({ success: true, count: students.length, data: students });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -40,15 +40,17 @@ export const getStudents = async (req, res) => {
 
 export const getStudentById = async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(req.params.id).lean();
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
-    const feeLedgers = await FeeLedger.find({ student: student._id }).sort({ year: -1, month: -1 });
-    const attendances = await Attendance.find({ student: student._id }).sort({ date: -1 });
-    const achievements = await Achievement.find({ student: student._id }).sort({ date: -1 });
-    const certificates = await Certificate.find({ student: student._id }).sort({ issueDate: -1 });
+    const [feeLedgers, attendances, achievements, certificates] = await Promise.all([
+      FeeLedger.find({ student: student._id }).sort({ year: -1, month: -1 }).lean(),
+      Attendance.find({ student: student._id }).sort({ date: -1 }).lean(),
+      Achievement.find({ student: student._id }).sort({ date: -1 }).lean(),
+      Certificate.find({ student: student._id }).sort({ issueDate: -1 }).lean()
+    ]);
 
     const totalBilled = feeLedgers.reduce((sum, item) => sum + item.totalDue, 0);
     const totalPaid = feeLedgers.reduce((sum, item) => sum + item.paidAmount, 0);

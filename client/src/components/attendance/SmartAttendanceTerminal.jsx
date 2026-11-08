@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/api.js';
 import { soundEffects } from '../../utils/audio.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { TableSkeleton } from '../common/Skeleton.jsx';
 import {
   ScanFace,
   Fingerprint,
@@ -911,57 +912,67 @@ export const SmartAttendanceTerminal = () => {
                 </tr>
               </thead>
               <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
-                {gridMatrix.map((row) => (
-                  <tr key={row.student._id} className="hover:opacity-90">
-                    <td className="py-2 px-2.5 sticky left-0 z-10 border-r" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
-                      <div className="font-semibold truncate max-w-[150px] text-[11px]" style={{ color: colors.textPrimary }}>{row.student.fullName}</div>
-                      <div className="text-[9.5px] font-mono truncate" style={{ color: colors.textMuted }}>{row.student.registrationNo} • {row.student.currentBelt}</div>
-                    </td>
-
-                    {Array.from({ length: daysInGridMonth }, (_, i) => {
-                      const dayVal = row.dailyRecords[i + 1] || '-';
-                      let cellStyle = { color: colors.textMuted };
-                      let char = '-';
-
-                      if (dayVal === 'Present') {
-                        cellStyle = { color: colors.primary, fontWeight: 'bold' };
-                        char = 'P';
-                      } else if (dayVal === 'Absent') {
-                        cellStyle = { color: '#EF4444', fontWeight: 'bold' };
-                        char = 'A';
-                      } else if (dayVal === 'Leave') {
-                        cellStyle = { color: '#F59E0B', fontWeight: 'bold' };
-                        char = 'L';
-                      } else if (dayVal === 'Late') {
-                        cellStyle = { color: '#06B6D4', fontWeight: 'bold' };
-                        char = 'T';
-                      }
-
-                      return (
-                        <td
-                          key={i + 1}
-                          className="py-1.5 px-0.5 text-center font-mono text-[10px] border-r"
-                          style={{ borderColor: colors.border, ...cellStyle }}
-                        >
-                          {char}
-                        </td>
-                      );
-                    })}
-
-                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.primary }}>
-                      {row.presentCount}
-                    </td>
-                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs text-rose-500">
-                      {row.absentCount}
-                    </td>
-                    <td className="py-1.5 px-1.5 text-center font-mono font-semibold text-[10.5px]" style={{ color: colors.textSecondary }}>
-                      {row.attendanceRatio}
-                    </td>
-                    <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.textPrimary }}>
-                      {row.attendancePercentage}%
+                {loading ? (
+                  <TableSkeleton rows={8} columns={daysInGridMonth + 5} />
+                ) : gridMatrix.length === 0 ? (
+                  <tr>
+                    <td colSpan={daysInGridMonth + 5} className="py-8 text-center text-xs font-semibold" style={{ color: colors.textSecondary }}>
+                      No attendance records found for this period.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  gridMatrix.map((row) => (
+                    <tr key={row.student._id} className="hover:opacity-90">
+                      <td className="py-2 px-2.5 sticky left-0 z-10 border-r" style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}>
+                        <div className="font-semibold truncate max-w-[150px] text-[11px]" style={{ color: colors.textPrimary }}>{row.student.fullName}</div>
+                        <div className="text-[9.5px] font-mono truncate" style={{ color: colors.textMuted }}>{row.student.registrationNo} • {row.student.currentBelt}</div>
+                      </td>
+
+                      {Array.from({ length: daysInGridMonth }, (_, i) => {
+                        const dayVal = row.dailyRecords[i + 1] || '-';
+                        let cellStyle = { color: colors.textMuted };
+                        let char = '-';
+
+                        if (dayVal === 'Present') {
+                          cellStyle = { color: colors.primary, fontWeight: 'bold' };
+                          char = 'P';
+                        } else if (dayVal === 'Absent') {
+                          cellStyle = { color: '#EF4444', fontWeight: 'bold' };
+                          char = 'A';
+                        } else if (dayVal === 'Leave') {
+                          cellStyle = { color: '#F59E0B', fontWeight: 'bold' };
+                          char = 'L';
+                        } else if (dayVal === 'Late') {
+                          cellStyle = { color: '#06B6D4', fontWeight: 'bold' };
+                          char = 'T';
+                        }
+
+                        return (
+                          <td
+                            key={i + 1}
+                            className="py-1.5 px-0.5 text-center font-mono text-[10px] border-r"
+                            style={{ borderColor: colors.border, ...cellStyle }}
+                          >
+                            {char}
+                          </td>
+                        );
+                      })}
+
+                      <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.primary }}>
+                        {row.presentCount}
+                      </td>
+                      <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs text-rose-500">
+                        {row.absentCount}
+                      </td>
+                      <td className="py-1.5 px-1.5 text-center font-mono font-semibold text-[10.5px]" style={{ color: colors.textSecondary }}>
+                        {row.attendanceRatio}
+                      </td>
+                      <td className="py-1.5 px-1.5 text-center font-mono font-bold text-xs" style={{ color: colors.textPrimary }}>
+                        {row.attendancePercentage}%
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -92,7 +92,7 @@ export const getTodayAttendance = async (req, res) => {
     const records = await Attendance.find({ date: todayStr }).populate(
       'student',
       'fullName fatherName registrationNo currentBelt photo phone status'
-    );
+    ).lean();
 
     const counts = {
       Present: 0,
@@ -178,9 +178,11 @@ export const getMonthlyAttendanceReport = async (req, res) => {
     const monthYear = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
     const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
 
-    // Fetch and display only Active students for monthly attendance marking
-    const students = await Student.find({ status: 'Active' }).sort({ registrationNo: 1 });
-    const attendances = await Attendance.find({ monthYear });
+    // Fetch and display only Active students for monthly attendance marking concurrently with .lean()
+    const [students, attendances] = await Promise.all([
+      Student.find({ status: 'Active' }).sort({ registrationNo: 1 }).lean(),
+      Attendance.find({ monthYear }).lean()
+    ]);
 
     const lookup = {};
     attendances.forEach(att => {

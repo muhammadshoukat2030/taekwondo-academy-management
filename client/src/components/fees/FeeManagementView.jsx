@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
 import { DualSlipReceipt } from './DualSlipReceipt.jsx';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { TableSkeleton } from '../common/Skeleton.jsx';
 import {
   CreditCard,
   AlertTriangle,
@@ -606,7 +607,9 @@ export const FeeManagementView = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700 font-sans" style={{ backgroundColor: colors.bgCard }}>
-                {filteredDefaulters.length === 0 ? (
+                {loading ? (
+                  <TableSkeleton rows={5} columns={9} />
+                ) : filteredDefaulters.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-6 text-center text-xs font-semibold text-slate-700 dark:text-slate-300">
                       No defaulters matching your filter!
@@ -714,37 +717,47 @@ export const FeeManagementView = ({
                 </tr>
               </thead>
               <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
-                {receipts.map((r) => (
-                  <tr key={r._id} className="hover:opacity-90">
-                    <td className="py-2 px-2.5 font-mono font-bold text-xs" style={{ color: colors.primary }}>#{r.receiptNo}</td>
-                    <td className="py-2 px-2.5 font-mono text-[11px]" style={{ color: colors.textMuted }}>
-                      {new Date(r.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-2 px-2.5 font-semibold text-xs" style={{ color: colors.textPrimary }}>{r.studentName}</td>
-                    <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.fatherName}</td>
-                    <td className="py-2 px-2.5 text-right font-mono font-bold text-xs" style={{ color: colors.primary }}>
-                      PKR {r.amountReceived !== undefined ? r.amountReceived : r.receivedAmount}
-                    </td>
-                    <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-500">
-                      PKR {r.remainingBalance !== undefined ? r.remainingBalance : r.balanceRemaining}
-                    </td>
-                    <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.paymentMethod}</td>
-                    <td className="py-2 px-2.5 text-center">
-                      <button
-                        onClick={() => setActiveReceipt(r)}
-                        className="px-2.5 py-0.5 rounded-md text-[11px] font-medium border flex items-center gap-1 mx-auto transition hover:scale-102"
-                        style={{
-                          backgroundColor: colors.bgSecondary,
-                          borderColor: colors.border,
-                          color: colors.textPrimary
-                        }}
-                      >
-                        <Printer className="w-3 h-3 text-cyan-500" />
-                        <span>Print Slip</span>
-                      </button>
+                {loading ? (
+                  <TableSkeleton rows={5} columns={8} />
+                ) : receipts.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-6 text-center text-xs font-semibold" style={{ color: colors.textSecondary }}>
+                      No fee receipts issued yet.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  receipts.map((r) => (
+                    <tr key={r._id} className="hover:opacity-90">
+                      <td className="py-2 px-2.5 font-mono font-bold text-xs" style={{ color: colors.primary }}>#{r.receiptNo}</td>
+                      <td className="py-2 px-2.5 font-mono text-[11px]" style={{ color: colors.textMuted }}>
+                        {new Date(r.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-2 px-2.5 font-semibold text-xs" style={{ color: colors.textPrimary }}>{r.studentName}</td>
+                      <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.fatherName}</td>
+                      <td className="py-2 px-2.5 text-right font-mono font-bold text-xs" style={{ color: colors.primary }}>
+                        PKR {r.amountReceived !== undefined ? r.amountReceived : r.receivedAmount}
+                      </td>
+                      <td className="py-2 px-2.5 text-right font-mono font-bold text-xs text-rose-500">
+                        PKR {r.remainingBalance !== undefined ? r.remainingBalance : r.balanceRemaining}
+                      </td>
+                      <td className="py-2 px-2.5 text-[11px]" style={{ color: colors.textSecondary }}>{r.paymentMethod}</td>
+                      <td className="py-2 px-2.5 text-center">
+                        <button
+                          onClick={() => setActiveReceipt(r)}
+                          className="px-2.5 py-0.5 rounded-md text-[11px] font-medium border flex items-center gap-1 mx-auto transition hover:scale-102"
+                          style={{
+                            backgroundColor: colors.bgSecondary,
+                            borderColor: colors.border,
+                            color: colors.textPrimary
+                          }}
+                        >
+                          <Printer className="w-3 h-3 text-cyan-500" />
+                          <span>Print Slip</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

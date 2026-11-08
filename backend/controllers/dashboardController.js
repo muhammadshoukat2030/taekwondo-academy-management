@@ -10,12 +10,56 @@ export const getDashboardKPIs = async (req, res) => {
     const currentYear = now.getFullYear();
     const currentMonthYear = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
 
-    const totalStudents = await Student.countDocuments();
-    const activeStudents = await Student.countDocuments({ status: 'Active' });
-    const inactiveStudents = await Student.countDocuments({ status: 'Inactive' });
-    const onLeaveStudents = await Student.countDocuments({ status: 'On Leave' });
+    // Build the date list for the last 7 days
+    const dailyAttendanceTrendDates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+      dailyAttendanceTrendDates.push({ dateStr, dayLabel });
+    }
+    const last7DateStrings = dailyAttendanceTrendDates.map(item => item.dateStr);
 
-    const todayAttendances = await Attendance.find({ date: todayStr });
+    // Build the month-year list for the last 6 months
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const revenueTrendMonths = [];
+    for (let i = 5; i >= 0; i--) {
+      const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const m = targetDate.getMonth() + 1;
+      const y = targetDate.getFullYear();
+      const mYear = `${y}-${m.toString().padStart(2, '0')}`;
+      const mLabel = `${monthNames[m - 1]} ${y}`;
+      revenueTrendMonths.push({ mYear, mLabel });
+    }
+    const last6MonthYearStrings = revenueTrendMonths.map(item => item.mYear);
+
+    // Execute ALL database queries in parallel with .lean()
+    const [
+      totalStudents,
+      activeStudents,
+      inactiveStudents,
+      onLeaveStudents,
+      todayAttendances,
+      ledgers,
+      beltCounts,
+      last7DaysAttendanceRecords,
+      last6MonthsLedgerRecords
+    ] = await Promise.all([
+      Student.countDocuments(),
+      Student.countDocuments({ status: 'Active' }),
+      Student.countDocuments({ status: 'Inactive' }),
+      Student.countDocuments({ status: 'On Leave' }),
+      Attendance.find({ date: todayStr }).lean(),
+      FeeLedger.find({ monthYear: currentMonthYear }).lean(),
+      Student.aggregate([
+        { $match: { status: { $ne: 'Inactive' } } },
+        { $group: { _id: '$currentBelt', count: { $sum: 1 } } }
+      ]),
+      Attendance.find({ date: { $in: last7DateStrings } }).lean(),
+      FeeLedger.find({ monthYear: { $in: last6MonthYearStrings } }).lean()
+    ]);
+
     const attendanceStats = {
       Present: 0,
       Absent: 0,
@@ -30,7 +74,6 @@ export const getDashboardKPIs = async (req, res) => {
       }
     });
 
-    const ledgers = await FeeLedger.find({ monthYear: currentMonthYear });
     let totalExpectedFee = 0;
     let totalFeeCollected = 0;
     let totalRemainingBalance = 0;
@@ -48,10 +91,6 @@ export const getDashboardKPIs = async (req, res) => {
       else unpaidCount++;
     });
 
-    const beltCounts = await Student.aggregate([
-      { $match: { status: { $ne: 'Inactive' } } },
-      { $group: { _id: '$currentBelt', count: { $sum: 1 } } }
-    ]);
     const beltDistribution = {
       White: 0,
       Yellow: 0,
@@ -66,45 +105,42 @@ export const getDashboardKPIs = async (req, res) => {
       }
     });
 
-    const dailyAttendanceTrend = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
-      const dayRecords = await Attendance.find({ date: dateStr });
-      const pCount = dayRecords.filter(r => r.status === 'Present').length;
-      const aCount = dayRecords.filter(r => r.status === 'Absent').length;
-      dailyAttendanceTrend.push({
-        date: dateStr,
-        label: dayLabel,
-        Present: pCount,
-        Absent: aCount
-      });
-    }
+    // In-memory grouping for 7-day attendance trend
+    const attByDate = {};
+    last7DaysAttendanceRecords.forEach(r => {
+      if (!attByDate[r.date]) attByDate[r.date] = { Present: 0, Absent: 0 };
+      if (r.status === 'Present') attByDate[r.date].Present++;
+      else if (r.status === 'Absent') attByDate[r.date].Absent++;
+    });
 
-    const revenueTrend = [];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    for (let i = 5; i >= 0; i--) {
-      const targetDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const m = targetDate.getMonth() + 1;
-      const y = targetDate.getFullYear();
-      const mYear = `${y}-${m.toString().padStart(2, '0')}`;
-      const mLabel = `${monthNames[m - 1]} ${y}`;
+    const dailyAttendanceTrend = dailyAttendanceTrendDates.map(({ dateStr, dayLabel }) => ({
+      date: dateStr,
+      label: dayLabel,
+      Present: attByDate[dateStr]?.Present || 0,
+      Absent: attByDate[dateStr]?.Absent || 0
+    }));
 
-      const mRecords = await FeeLedger.find({ monthYear: mYear });
-      const collected = mRecords.reduce((sum, item) => sum + item.paidAmount, 0);
-      const pending = mRecords.reduce((sum, item) => sum + item.remainingBalance, 0);
-      const expected = mRecords.reduce((sum, item) => sum + item.totalDue, 0);
+    // In-memory grouping for 6-month revenue trend
+    const ledgersByMonthYear = {};
+    last6MonthsLedgerRecords.forEach(item => {
+      if (!ledgersByMonthYear[item.monthYear]) {
+        ledgersByMonthYear[item.monthYear] = { collected: 0, pending: 0, expected: 0 };
+      }
+      ledgersByMonthYear[item.monthYear].collected += (item.paidAmount || 0);
+      ledgersByMonthYear[item.monthYear].pending += (item.remainingBalance || 0);
+      ledgersByMonthYear[item.monthYear].expected += (item.totalDue || 0);
+    });
 
-      revenueTrend.push({
+    const revenueTrend = revenueTrendMonths.map(({ mYear, mLabel }) => {
+      const stats = ledgersByMonthYear[mYear] || { collected: 0, pending: 0, expected: 0 };
+      return {
         monthYear: mYear,
         month: mLabel,
-        Collected: collected,
-        Pending: pending,
-        TotalExpected: expected
-      });
-    }
+        Collected: stats.collected,
+        Pending: stats.pending,
+        TotalExpected: stats.expected
+      };
+    });
 
     res.json({
       success: true,
@@ -154,9 +190,12 @@ export const getMonthlyAudit = async (req, res) => {
     ];
     const monthName = `${monthNames[targetMonth - 1]} ${targetYear}`;
 
-    const students = await Student.find().sort({ registrationNo: 1 });
-    const attendances = await Attendance.find({ monthYear });
-    const feeLedgers = await FeeLedger.find({ monthYear });
+    // Concurrently fetch students, attendances, and ledgers with .lean()
+    const [students, attendances, feeLedgers] = await Promise.all([
+      Student.find().sort({ registrationNo: 1 }).lean(),
+      Attendance.find({ monthYear }).lean(),
+      FeeLedger.find({ monthYear }).lean()
+    ]);
 
     const attMap = {};
     attendances.forEach(att => {

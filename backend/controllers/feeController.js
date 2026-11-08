@@ -13,7 +13,7 @@ export const getFees = async (req, res) => {
     const query = {};
     if (studentId) query.student = studentId;
 
-    const receipts = await FeeReceipt.find(query).sort({ receiptNo: -1 });
+    const receipts = await FeeReceipt.find(query).sort({ receiptNo: -1 }).lean();
     res.json({ success: true, count: receipts.length, data: receipts });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -144,7 +144,7 @@ export const getDefaulters = async (req, res) => {
     const defaulters = await FeeLedger.find({
       monthYear,
       remainingBalance: { $gt: 0 }
-    }).populate('student', 'fullName fatherName phone whatsapp registrationNo currentBelt status remainingBalance');
+    }).populate('student', 'fullName fatherName phone whatsapp registrationNo currentBelt status remainingBalance').lean();
 
     res.json({
       success: true,
@@ -164,7 +164,7 @@ export const getFinancialSummary = async (req, res) => {
     const targetMonth = parseInt(month) || now.getMonth() + 1;
     const monthYear = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
 
-    const ledgers = await FeeLedger.find({ monthYear }).populate('student', 'fullName fatherName status phone');
+    const ledgers = await FeeLedger.find({ monthYear }).populate('student', 'fullName fatherName status phone').lean();
 
     let totalExpected = 0;
     let totalCollected = 0;
@@ -215,14 +215,27 @@ export const generateMonthlyDues = async (req, res) => {
     ];
     const monthName = `${monthNames[targetMonth - 1]} ${targetYear}`;
 
-    const activeStudents = await Student.find({ status: 'Active' });
-    let createdCount = 0;
-    let existingCount = 0;
+    const activeStudents = await Student.find({ status: 'Active' }).lean();
+    if (activeStudents.length === 0) {
+      return res.json({
+        success: true,
+        message: `No active students found for billing in ${monthName}.`,
+        createdCount: 0,
+        existingCount: 0
+      });
+    }
+
+    const activeStudentIds = activeStudents.map(s => s._id);
+    const existingLedgers = await FeeLedger.find({
+      monthYear,
+      student: { $in: activeStudentIds }
+    }).select('student').lean();
+
+    const existingStudentIds = new Set(existingLedgers.map(l => l.student.toString()));
+    const newLedgers = [];
 
     for (const st of activeStudents) {
-      const existing = await FeeLedger.findOne({ student: st._id, monthYear });
-      if (existing) {
-        existingCount++;
+      if (existingStudentIds.has(st._id.toString())) {
         continue;
       }
 
@@ -230,7 +243,7 @@ export const generateMonthlyDues = async (req, res) => {
       const monthlyFee = st.fixedMonthlyFee || 1000;
       const totalDue = monthlyFee + prevBal;
 
-      const newLedger = new FeeLedger({
+      newLedgers.push({
         student: st._id,
         monthYear,
         monthName,
@@ -245,10 +258,14 @@ export const generateMonthlyDues = async (req, res) => {
         status: 'UNPAID',
         notes: prevBal > 0 ? `Carried forward PKR ${prevBal} Baqaya from previous month` : 'Regular monthly fee'
       });
-
-      await newLedger.save();
-      createdCount++;
     }
+
+    if (newLedgers.length > 0) {
+      await FeeLedger.insertMany(newLedgers);
+    }
+
+    const createdCount = newLedgers.length;
+    const existingCount = existingLedgers.length;
 
     res.json({
       success: true,

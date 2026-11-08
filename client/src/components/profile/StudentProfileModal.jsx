@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../api/api.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import { EditStudentModal } from './EditStudentModal.jsx';
+import { ProfileModalSkeleton } from '../common/Skeleton.jsx';
 import {
   X,
   User,
@@ -107,21 +108,7 @@ export const StudentProfileModal = ({
   }, [studentId]);
 
   if (!student && loading) {
-    return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          className="border rounded-xl p-6 flex items-center gap-2.5 shadow-md"
-          style={{
-            backgroundColor: colors.bgCard,
-            borderColor: colors.border,
-            color: colors.textPrimary
-          }}
-        >
-          <Clock className="w-4 h-4 animate-spin" style={{ color: colors.primary }} />
-          <span className="text-xs">Loading 360° Student Dossier...</span>
-        </div>
-      </div>
-    );
+    return <ProfileModalSkeleton onClose={onClose} />;
   }
 
   if (!student) return null;
