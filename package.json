@@ -1,13 +1,31 @@
 {
   "name": "al-murtaza-shah-taekwondo-management",
   "version": "2.0.0",
+  "type": "module",
   "description": "Full-Stack Pure MERN (MongoDB, Express.js, React.js .jsx, Node.js) Academy Management System & Admin Dashboard for Al Murtaza Shah Taekwondo, Kohat",
+  "workspaces": [
+    "backend",
+    "client"
+  ],
   "scripts": {
+    "dev": "npm run client",
     "backend": "npm run start --prefix backend",
     "backend:dev": "npm run dev --prefix backend",
     "client": "npm run dev --prefix client",
     "build": "npm run build --prefix client",
-    "seed": "npm run seed --prefix backend"
+    "vercel-build": "npm run build --prefix client",
+    "seed": "npm run seed --prefix backend",
+    "init:admin": "npm run init:admin --prefix backend"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0"
   },
   "keywords": [
     "taekwondo",
@@ -17,6 +35,6 @@
     "react-jsx",
     "kohat"
   ],
-  "author": "Antigravity Principal Full-Stack Architect",
+  "author": "Al Murtaza Shah Taekwondo Academy",
   "license": "ISC"
 }

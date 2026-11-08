@@ -21,19 +21,35 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration supporting credentials (cookies)
 const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:3000',
+  process.env.FRONTEND_URL,
   'http://localhost:3000',
   'http://127.0.0.1:3000'
-];
+].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, postman)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // 1. Allow non-browser requests (mobile apps, curl, server-to-server) or same-origin
+      if (!origin) {
         return callback(null, true);
       }
-      return callback(null, true); // Dev fallback for local network
+
+      // 2. Allow configured production frontend or local development
+      if (allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.startsWith(o))) {
+        return callback(null, true);
+      }
+
+      // 3. Allow Vercel preview and production deployments (*.vercel.app)
+      if (origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+
+      // 4. Fallback for non-production environments
+      if (process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -44,7 +60,10 @@ app.use(
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
 // Public Authentication Endpoints
 app.use('/api/auth', authRoutes);
@@ -57,23 +76,35 @@ app.use('/api/certificates', protectAdmin, certificateRoutes);
 app.use('/api/dashboard', protectAdmin, dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 
-// Public Health check
+// Public Health Check Endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     system: 'Al Murtaza Shah Taekwondo Academy Management API (Pure MERN)',
     location: 'Abdur Rehman Plaza, Markaz Road, Chogi No.7, Kohat',
     contact: '0335-9117230',
+    environment: process.env.NODE_ENV || 'development',
+    serverless: Boolean(process.env.VERCEL),
     timestamp: new Date().toISOString()
   });
 });
 
-// Start Server
+// Start Server for standalone execution (local development)
 const startServer = async () => {
-  await connectDB();
-  app.listen(PORT, '127.0.0.1', () => {
-    console.log(`🥋 [Al Murtaza Shah TKD Express Backend] running on http://127.0.0.1:${PORT}`);
-  });
+  try {
+    await connectDB();
+    app.listen(PORT, '127.0.0.1', () => {
+      console.log(`🥋 [Al Murtaza Shah TKD Express Backend] running on http://127.0.0.1:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ [Server Startup Failure]:', error.message);
+    process.exit(1);
+  }
 };
 
-startServer();
+// Only bind to local port when not executing inside a serverless provider like Vercel
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;

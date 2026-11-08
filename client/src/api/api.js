@@ -13,6 +13,22 @@ const apiClient = axios.create({
   }
 });
 
+// Automatically attach Bearer token from localStorage as fallback when cookies are blocked
+apiClient.interceptors.request.use(
+  (config) => {
+    try {
+      const token = localStorage.getItem('tkd_token');
+      if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // LocalStorage access may fail in private browsing mode; ignore
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Fallback in-memory state for offline resilience
 const fallbackStudents = [
   {
@@ -87,14 +103,23 @@ export const api = {
   // Authentication
   login: async ({ email, password }) => {
     const res = await apiClient.post('/auth/login', { email, password });
+    if (res.data?.token) {
+      try {
+        localStorage.setItem('tkd_token', res.data.token);
+      } catch {
+        // Ignore localStorage write error
+      }
+    }
     return res.data;
   },
 
   logout: async () => {
     try {
+      localStorage.removeItem('tkd_token');
       const res = await apiClient.post('/auth/logout');
       return res.data;
     } catch (err) {
+      localStorage.removeItem('tkd_token');
       return { success: true };
     }
   },
