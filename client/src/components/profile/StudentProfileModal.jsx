@@ -3,6 +3,8 @@ import { api } from '../../api/api.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import { EditStudentModal } from './EditStudentModal.jsx';
 import { ProfileModalSkeleton } from '../common/Skeleton.jsx';
+import { FaceEnrollModal, FingerprintEnrollModal } from './BiometricEnrollModals.jsx';
+import { BeltPromotionModal, MedalAwardModal } from './BeltGradingModals.jsx';
 import {
   X,
   User,
@@ -21,7 +23,9 @@ import {
   Edit2,
   Power,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 
 export const StudentProfileModal = ({
@@ -34,6 +38,7 @@ export const StudentProfileModal = ({
   const { colors, theme, mode } = useTheme();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [student, setStudent] = useState(null);
   const [feeLedgers, setFeeLedgers] = useState([]);
   const [attendances, setAttendances] = useState([]);
@@ -45,6 +50,12 @@ export const StudentProfileModal = ({
   const [isEditing, setIsEditing] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
 
+  // Sub-modal states for Biometrics and Belt Promotion
+  const [isEnrollingFace, setIsEnrollingFace] = useState(false);
+  const [isEnrollingFingerprint, setIsEnrollingFingerprint] = useState(false);
+  const [isRecordingPromotion, setIsRecordingPromotion] = useState(false);
+  const [isAwardingMedal, setIsAwardingMedal] = useState(false);
+
   // Attendance calendar state
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -52,17 +63,27 @@ export const StudentProfileModal = ({
   const fetchStudentData = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const res = await api.getStudentById(studentId);
-      if (res.success && res.data) {
-        setStudent(res.data.student);
-        setFeeLedgers(res.data.feeLedgers || []);
-        setAttendances(res.data.attendances || []);
-        setAchievements(res.data.achievements || []);
-        setCertificates(res.data.certificates || []);
-        setFinancialSummary(res.data.financialSummary || null);
+      if (res && res.success && res.data) {
+        const std = res.data.student || (res.data._id ? res.data : null);
+        if (std) {
+          setStudent(std);
+          setFeeLedgers(res.data.feeLedgers || []);
+          setAttendances(res.data.attendances || []);
+          setAchievements(res.data.achievements || []);
+          setCertificates(res.data.certificates || []);
+          setFinancialSummary(res.data.financialSummary || null);
+          setFetchError(null);
+        } else {
+          setFetchError('Student record was not found in response payload.');
+        }
+      } else {
+        setFetchError(res?.message || 'Unable to load student profile details.');
       }
     } catch (err) {
       console.error('Error fetching student details:', err);
+      setFetchError(err.response?.data?.message || err.message || 'Error communicating with server.');
     } finally {
       setLoading(false);
     }
@@ -111,7 +132,43 @@ export const StudentProfileModal = ({
     return <ProfileModalSkeleton onClose={onClose} />;
   }
 
-  if (!student) return null;
+  if (!student) {
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div
+          className="border rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4"
+          style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+        >
+          <div className="w-12 h-12 rounded-full bg-rose-500/15 text-rose-500 flex items-center justify-center mx-auto border border-rose-500/30">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold" style={{ color: colors.textPrimary }}>
+            Unable to Open Student Profile
+          </h3>
+          <p className="text-xs leading-relaxed" style={{ color: colors.textSecondary }}>
+            {fetchError || 'The student record could not be retrieved from the server. Please verify your connection and try again.'}
+          </p>
+          <div className="flex items-center justify-center gap-2 pt-2">
+            <button
+              type="button"
+              onClick={fetchStudentData}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition cursor-pointer"
+            >
+              Try Again
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-semibold border transition cursor-pointer"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border, color: colors.textPrimary }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Calendar helpers
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -124,7 +181,7 @@ export const StudentProfileModal = ({
   const currentMonthKey = `${calendarYear}-${(calendarMonth + 1).toString().padStart(2, '0')}`;
   const monthAttendances = attendances.filter(a => a.date && a.date.startsWith(currentMonthKey));
   const attendanceDateMap = new Map();
-  monthAttendances.forEach(a => attendanceDateMap.set(a.date, a.status));
+  monthAttendances.forEach(a => attendanceDateMap.set(a.date, a));
 
   const changeCalendarMonth = (offset) => {
     let newM = calendarMonth + offset;
@@ -474,6 +531,37 @@ export const StudentProfileModal = ({
                       </span>
                     </div>
                   </div>
+
+                  {/* Biometric Enrollment Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2.5 mt-2 border-t" style={{ borderColor: colors.border }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsEnrollingFace(true)}
+                      className="flex-1 min-w-[130px] py-1.5 px-2.5 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 transition hover:scale-102"
+                      style={{
+                        backgroundColor: colors.badgeBg,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{student.isFaceEnrolled ? 'Update Face AI' : 'Enroll Face AI'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsEnrollingFingerprint(true)}
+                      className="flex-1 min-w-[130px] py-1.5 px-2.5 rounded-lg text-xs font-semibold border flex items-center justify-center gap-1.5 transition hover:scale-102"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.textPrimary
+                      }}
+                    >
+                      <Fingerprint className="w-3.5 h-3.5" style={{ color: colors.primary }} />
+                      <span>{student.isFingerprintEnrolled ? 'Re-link Fingerprint' : 'Enroll Fingerprint'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div
@@ -598,7 +686,8 @@ export const StudentProfileModal = ({
                     {Array.from({ length: daysInMonth }).map((_, i) => {
                       const dayNum = i + 1;
                       const dateStr = `${calendarYear}-${(calendarMonth + 1).toString().padStart(2, '0')}-${dayNum.toString().padStart(2, '0')}`;
-                      const status = attendanceDateMap.get(dateStr);
+                      const attRec = attendanceDateMap.get(dateStr);
+                      const status = attRec?.status;
 
                       let borderCol = colors.border;
                       let textCol = colors.textSecondary;
@@ -625,6 +714,7 @@ export const StudentProfileModal = ({
                       return (
                         <div
                           key={`day-${dayNum}`}
+                          title={attRec ? `${attRec.status} • ${attRec.checkInTime || 'Session logged'} • ${attRec.method || 'Biometric/Manual'}` : `Day ${dayNum}: Not Marked`}
                           className="h-11 p-1 rounded-lg border flex flex-col justify-between transition-all"
                           style={{
                             backgroundColor: status === 'Present' ? colors.badgeBg : colors.bgCard,
@@ -634,12 +724,19 @@ export const StudentProfileModal = ({
                         >
                           <span className="text-[10px] font-bold leading-none">{dayNum}</span>
                           {label ? (
-                            <span
-                              className="text-[9px] font-black uppercase text-center py-0.2 rounded"
-                              style={{ backgroundColor: colors.bgSecondary }}
-                            >
-                              {status}
-                            </span>
+                            <div className="flex flex-col items-center">
+                              <span
+                                className="text-[8.5px] font-black uppercase text-center px-1 rounded"
+                                style={{ backgroundColor: colors.bgSecondary }}
+                              >
+                                {status}
+                              </span>
+                              {attRec?.checkInTime && (
+                                <span className="text-[7.5px] font-mono leading-none mt-0.5 opacity-80" style={{ color: colors.textSecondary }}>
+                                  {attRec.checkInTime}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-[8px] opacity-40 text-center">-</span>
                           )}
@@ -833,7 +930,11 @@ export const StudentProfileModal = ({
                               </span>
                             ) : l.status === 'PARTIAL' ? (
                               <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
-                                PART
+                                PARTIAL
+                              </span>
+                            ) : (l.status === 'OVERDUE' || (l.dueDate && new Date() > new Date(l.dueDate) && l.remainingBalance > 0)) ? (
+                              <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-rose-600/20 text-rose-500 border border-rose-500/40">
+                                OVERDUE
                               </span>
                             ) : (
                               <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
@@ -863,16 +964,42 @@ export const StudentProfileModal = ({
                   borderColor: colors.border
                 }}
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
                   <div>
                     <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>Belt Promotion History & Tournament Honors</h3>
                     <p className="text-[10px]" style={{ color: colors.textSecondary }}>Official timeline accredited by Khyber Pakhtunkhwa Taekwondo Association</p>
                   </div>
-                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/30">
-                    <Trophy className="w-4 h-4" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsRecordingPromotion(true)}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1.5 shadow-sm transition hover:scale-102"
+                      style={{ backgroundColor: colors.primary }}
+                    >
+                      <Award className="w-3.5 h-3.5" />
+                      <span>Record Belt Exam</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsAwardingMedal(true)}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition hover:scale-102"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.textPrimary
+                      }}
+                    >
+                      <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Award Medal</span>
+                    </button>
                   </div>
                 </div>
 
+                {achievements.length === 0 ? (
+                  <div className="py-8 text-center text-xs" style={{ color: colors.textSecondary }}>
+                    No promotion exams or medals recorded yet. Use the buttons above to record an official belt exam or championship medal.
+                  </div>
+                ) : (
                 <div className="relative pl-5 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-300 dark:before:bg-slate-700">
                   {achievements.map((ach) => (
                     <div key={ach._id} className="relative group">
@@ -911,6 +1038,7 @@ export const StudentProfileModal = ({
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           )}
@@ -1002,6 +1130,60 @@ export const StudentProfileModal = ({
           isOpen={isEditing}
           onClose={() => setIsEditing(false)}
           onSaveSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Biometrics Enrollment Modals */}
+      {isEnrollingFace && student && (
+        <FaceEnrollModal
+          student={student}
+          isOpen={isEnrollingFace}
+          onClose={() => setIsEnrollingFace(false)}
+          onEnrolled={(updated) => {
+            setStudent(updated);
+            if (onStudentUpdated) onStudentUpdated(updated);
+            fetchStudentData();
+          }}
+        />
+      )}
+
+      {isEnrollingFingerprint && student && (
+        <FingerprintEnrollModal
+          student={student}
+          isOpen={isEnrollingFingerprint}
+          onClose={() => setIsEnrollingFingerprint(false)}
+          onEnrolled={(updated) => {
+            setStudent(updated);
+            if (onStudentUpdated) onStudentUpdated(updated);
+            fetchStudentData();
+          }}
+        />
+      )}
+
+      {/* Belt Promotion & Medal Modals */}
+      {isRecordingPromotion && student && (
+        <BeltPromotionModal
+          student={student}
+          isOpen={isRecordingPromotion}
+          onClose={() => setIsRecordingPromotion(false)}
+          onPromoted={(newAch, newBelt) => {
+            setStudent((prev) => ({ ...prev, currentBelt: newBelt }));
+            setAchievements((prev) => [newAch, ...prev]);
+            if (onStudentUpdated) onStudentUpdated({ ...student, currentBelt: newBelt });
+            fetchStudentData();
+          }}
+        />
+      )}
+
+      {isAwardingMedal && student && (
+        <MedalAwardModal
+          student={student}
+          isOpen={isAwardingMedal}
+          onClose={() => setIsAwardingMedal(false)}
+          onAwarded={(newAch) => {
+            setAchievements((prev) => [newAch, ...prev]);
+            fetchStudentData();
+          }}
         />
       )}
     </div>

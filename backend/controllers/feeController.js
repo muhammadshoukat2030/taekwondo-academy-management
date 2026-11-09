@@ -164,37 +164,99 @@ export const getFinancialSummary = async (req, res) => {
     const targetMonth = parseInt(month) || now.getMonth() + 1;
     const monthYear = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
 
-    const ledgers = await FeeLedger.find({ monthYear }).populate('student', 'fullName fatherName status phone').lean();
+    const [ledgers, totalActiveStudents] = await Promise.all([
+      FeeLedger.find({ monthYear }).populate('student', 'fullName fatherName status phone').lean(),
+      Student.countDocuments({ status: 'Active' })
+    ]);
 
     let totalExpected = 0;
     let totalCollected = 0;
     let totalRemaining = 0;
     let paidCount = 0;
     let partialCount = 0;
-    let unpaidCount = 0;
+    let pendingCount = 0;
+    let overdueCount = 0;
+
+    const isMonthPastOrDue = targetYear < now.getFullYear() ||
+      (targetYear === now.getFullYear() && targetMonth < now.getMonth() + 1) ||
+      (targetYear === now.getFullYear() && targetMonth === now.getMonth() + 1 && now.getDate() > 10);
 
     ledgers.forEach(l => {
       totalExpected += l.totalDue;
       totalCollected += l.paidAmount;
       totalRemaining += l.remainingBalance;
 
-      if (l.status === 'PAID') paidCount++;
-      else if (l.status === 'PARTIAL') partialCount++;
-      else unpaidCount++;
+      if (l.status === 'PAID') {
+        paidCount++;
+      } else if (l.status === 'PARTIAL') {
+        partialCount++;
+        if (isMonthPastOrDue) overdueCount++;
+      } else {
+        if (isMonthPastOrDue) {
+          overdueCount++;
+        } else {
+          pendingCount++;
+        }
+      }
     });
+
+    const metrics = {
+      totalExpected,
+      totalCollected,
+      totalRemaining,
+      paidCount,
+      partialCount,
+      pendingCount,
+      overdueCount,
+      totalActiveStudents,
+      totalBilledStudents: ledgers.length
+    };
 
     res.json({
       success: true,
       monthYear,
-      metrics: {
-        totalExpected,
-        totalCollected,
-        totalRemaining,
-        paidCount,
-        partialCount,
-        unpaidCount,
-        totalBilledStudents: ledgers.length
+      metrics,
+      data: metrics
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getMonthlyLedgers = async (req, res) => {
+  try {
+    const { month, year, status } = req.query;
+    const now = new Date();
+    const targetYear = parseInt(year) || now.getFullYear();
+    const targetMonth = parseInt(month) || now.getMonth() + 1;
+    const monthYear = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
+
+    let query = { monthYear };
+    if (status && status !== 'All') {
+      if (status === 'PAID') {
+        query.status = 'PAID';
+      } else if (status === 'PARTIAL') {
+        query.status = 'PARTIAL';
+      } else if (status === 'OVERDUE') {
+        query.remainingBalance = { $gt: 0 };
+        query.$or = [
+          { status: 'OVERDUE' },
+          { dueDate: { $lt: now } }
+        ];
+      } else if (status === 'UNPAID' || status === 'Pending') {
+        query.status = 'UNPAID';
       }
+    }
+
+    const ledgers = await FeeLedger.find(query)
+      .populate('student', 'fullName fatherName phone whatsapp registrationNo currentBelt status remainingBalance fixedMonthlyFee')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      success: true,
+      count: ledgers.length,
+      data: ledgers
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

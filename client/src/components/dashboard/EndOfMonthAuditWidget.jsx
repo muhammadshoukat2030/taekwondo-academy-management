@@ -432,7 +432,7 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
 
                     <td className="py-2 px-2 text-center">
                       <button
-                        onClick={() => onOpenStudent && onOpenStudent(row.student._id)}
+                        onClick={() => onOpenStudent && onOpenStudent(row.student?._id || row.student)}
                         className="px-2 py-1 rounded text-[11px] font-bold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                       >
                         Audit Details

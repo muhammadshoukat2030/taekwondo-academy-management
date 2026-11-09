@@ -98,10 +98,12 @@ export const SmartAttendanceTerminal = () => {
   const processCheckIn = async (student, method) => {
     try {
       setLoading(true);
+      const exactCheckInTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
       const res = await api.markAttendance({
         studentId: student._id,
         status: 'Present',
         method,
+        checkInTime: exactCheckInTime,
         confidenceScore: 0.98
       });
 
@@ -120,7 +122,8 @@ export const SmartAttendanceTerminal = () => {
           belt: student.currentBelt,
           photo: student.photo,
           status: 'Present',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          method,
+          time: exactCheckInTime,
           feeAlert
         };
 

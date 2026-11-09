@@ -4,7 +4,9 @@ import { useTheme } from '../../context/ThemeContext.jsx';
 import {
   Award,
   Printer,
-  Sparkles
+  Sparkles,
+  MessageSquare,
+  Share2
 } from 'lucide-react';
 
 export const CertificateGeneratorView = ({ initialCertificate }) => {
@@ -100,6 +102,27 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!currentCert) return;
+    const msg = `*PAKISTAN TAEKWONDO FEDERATION & KPK TAEKWONDO ASSOCIATION*
+*OFFICIAL BELT PROMOTION CERTIFICATE*
+----------------------------------------
+*Certificate Serial No:* ${currentCert.certificateNo}
+*Candidate:* ${currentCert.studentName}
+*Father's Name:* ${currentCert.fatherName}
+*Belt Certified:* ${currentCert.beltLevel || currentCert.beltRank}
+*Training Unit:* ${currentCert.unit}
+*Date of Issue:* ${new Date(currentCert.issueDate).toLocaleDateString('en-GB')}
+*Accredited By:* President Murtaza Hassan Bangash (6th Dan WTF)
+----------------------------------------
+"${currentCert.citationText}"
+----------------------------------------
+_Al Murtaza Shah Taekwondo Academy, Abdur Rehman Plaza, Markaz Road, Chogi No.7, Kohat_
+_Official Helpline: 0335-9117230_`;
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
   };
 
   return (
@@ -328,18 +351,57 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
         </div>
 
         {/* High-Resolution Landscape Certificate Canvas */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-3">
           {currentCert ? (
             <div
-              className="p-2 sm:p-4 rounded-xl border shadow-sm overflow-x-auto w-full"
+              className="p-3 sm:p-4 rounded-xl border shadow-sm space-y-3"
               style={{
                 backgroundColor: colors.bgCard,
                 borderColor: colors.border
               }}
             >
+              {/* Certificate Actions Toolbar */}
               <div
-                id="printable-federation-certificate"
-                className="certificate-print-page bg-[#fcfbfa] text-slate-900 rounded-lg shadow-2xl relative overflow-hidden border-8 border-[#1e3a8a] aspect-[1.414/1] w-full min-w-[580px] lg:min-w-0 p-4 sm:p-8 flex flex-col justify-between select-none"
+                className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b no-print"
+                style={{ borderColor: colors.border }}
+              >
+                <div>
+                  <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                    {currentCert.studentName} • {currentCert.beltLevel || currentCert.beltRank}
+                  </span>
+                  <div className="text-[10.5px] font-mono text-blue-600 dark:text-blue-400">
+                    Serial #{currentCert.certificateNo}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleWhatsAppShare}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95"
+                    title="Share certificate citation via WhatsApp"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Share WhatsApp</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handlePrint}
+                    className="px-3.5 py-1.5 rounded-lg text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95"
+                    style={{ backgroundColor: colors.primary }}
+                    title="Print A4 Landscape Certificate"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Print Certificate (A4)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto w-full">
+                <div
+                  id="printable-federation-certificate"
+                  className="certificate-print-page bg-[#fcfbfa] text-slate-900 rounded-lg shadow-2xl relative overflow-hidden border-8 border-[#1e3a8a] aspect-[1.414/1] w-full min-w-[580px] lg:min-w-0 p-4 sm:p-8 flex flex-col justify-between select-none"
                 style={{
                   backgroundImage: 'radial-gradient(circle at center, #ffffff 60%, #eff6ff 100%)',
                 }}
@@ -495,6 +557,7 @@ export const CertificateGeneratorView = ({ initialCertificate }) => {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           ) : (
             <div

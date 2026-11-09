@@ -17,9 +17,25 @@ const achievementSchema = new mongoose.Schema(
       enum: ['BeltPromotion', 'Tournament', 'Medal', 'SpecialAward'],
       default: 'BeltPromotion'
     },
+    previousBelt: {
+      type: String,
+      default: ''
+    },
     beltPromotedTo: {
       type: String,
       default: ''
+    },
+    marks: {
+      type: String,
+      default: ''
+    },
+    result: {
+      type: String,
+      default: 'Pass'
+    },
+    examiner: {
+      type: String,
+      default: 'Murtaza Hassan Bangash (6th Dan WTF)'
     },
     medal: {
       type: String,

@@ -15,8 +15,14 @@ import {
   Power,
   GraduationCap,
   FileText,
-  Activity
+  Activity,
+  Camera,
+  Upload,
+  Trash2,
+  Loader2,
+  Sparkles
 } from 'lucide-react';
+import { compressImage } from '../../utils/imageHelper.js';
 
 export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) => {
   const { colors, mode } = useTheme();
@@ -32,6 +38,8 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
     phone: '',
     whatsapp: '',
     permanentAddress: '',
+    emergencyContact: '',
+    notes: '',
     education: '',
     fixedMonthlyFee: 1000,
     admissionFee: 1500,
@@ -44,8 +52,30 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
   });
 
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingPhoto(true);
+      setPhotoError('');
+      const compressed = await compressImage(file, 600, 600, 0.82);
+      setFormData((prev) => ({ ...prev, photo: compressed }));
+    } catch (err) {
+      setPhotoError(err.message || 'Failed to process image');
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData((prev) => ({ ...prev, photo: '' }));
+  };
 
   useEffect(() => {
     if (student) {
@@ -60,6 +90,8 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
         phone: student.phone || '',
         whatsapp: student.whatsapp || '',
         permanentAddress: student.permanentAddress || '',
+        emergencyContact: student.emergencyContact || '',
+        notes: student.notes || '',
         education: student.education || '',
         fixedMonthlyFee: student.fixedMonthlyFee !== undefined ? student.fixedMonthlyFee : 1000,
         admissionFee: student.admissionFee !== undefined ? student.admissionFee : 1500,
@@ -474,6 +506,25 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
                 />
               </div>
 
+              <div>
+                <label className="block text-[11px] font-medium mb-1" style={{ color: colors.textSecondary }}>
+                  Emergency Contact
+                </label>
+                <input
+                  type="text"
+                  name="emergencyContact"
+                  value={formData.emergencyContact}
+                  onChange={handleChange}
+                  placeholder="03xx-xxxxxxx"
+                  className="w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none transition font-mono"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                />
+              </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-[11px] font-medium mb-1" style={{ color: colors.textSecondary }}>
                   Permanent Address
@@ -493,7 +544,7 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-[11px] font-medium mb-1" style={{ color: colors.textSecondary }}>
                   Education / School / College
                 </label>
@@ -512,23 +563,85 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
                 />
               </div>
 
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: colors.textSecondary }}>
-                  Photo URL
-                </label>
-                <input
-                  type="text"
-                  name="photo"
-                  value={formData.photo}
-                  onChange={handleChange}
-                  placeholder="https://..."
-                  className="w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none transition"
-                  style={{
-                    backgroundColor: colors.inputBg,
-                    borderColor: colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
+              {/* Student Profile Photo Upload Card */}
+              <div
+                className="sm:col-span-2 p-3 rounded-xl border flex flex-col sm:flex-row items-center gap-3.5"
+                style={{
+                  backgroundColor: colors.bgCard,
+                  borderColor: colors.border
+                }}
+              >
+                <div className="relative flex-shrink-0">
+                  {formData.photo ? (
+                    <img
+                      src={formData.photo}
+                      alt="Student"
+                      className="w-16 h-16 rounded-xl object-cover border-2 shadow-sm"
+                      style={{ borderColor: colors.primary }}
+                    />
+                  ) : (
+                    <div
+                      className="w-16 h-16 rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center p-1"
+                      style={{
+                        backgroundColor: colors.bgSecondary,
+                        borderColor: colors.border,
+                        color: colors.textMuted
+                      }}
+                    >
+                      <Camera className="w-5 h-5 mb-0.5" />
+                      <span className="text-[8px] uppercase font-bold">No Photo</span>
+                    </div>
+                  )}
+                  {uploadingPhoto && (
+                    <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0 space-y-1 text-center sm:text-left">
+                  <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                    Student Photo (For Biometric AI & ID Card)
+                  </div>
+                  <p className="text-[10.5px]" style={{ color: colors.textSecondary }}>
+                    Upload or replace photo via mobile camera or desktop file. Automatically optimized & compressed.
+                  </p>
+                  {photoError && (
+                    <p className="text-[10px] font-semibold text-rose-500">{photoError}</p>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                    <label
+                      className="px-3 py-1 rounded-lg text-xs font-semibold cursor-pointer border flex items-center gap-1.5 transition hover:opacity-90 shadow-sm"
+                      style={{
+                        backgroundColor: colors.badgeBg,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
+                      <Upload className="w-3 h-3" />
+                      <span>{formData.photo ? 'Replace Photo' : 'Upload Photo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        disabled={uploadingPhoto}
+                      />
+                    </label>
+
+                    {formData.photo && (
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="px-2.5 py-1 rounded-lg text-xs font-medium border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 flex items-center gap-1 transition"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -650,6 +763,25 @@ export const EditStudentModal = ({ student, isOpen, onClose, onSaveSuccess }) =>
                   }}
                 />
               </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-[11px] font-medium mb-1" style={{ color: colors.textSecondary }}>
+                Administrative Notes & Special Concessions
+              </label>
+              <textarea
+                name="notes"
+                rows={2}
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="Fee agreements, sibling discounts, emergency notes, etc."
+                className="w-full px-3 py-1.5 text-xs rounded-lg border focus:outline-none transition"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
+              />
             </div>
           </div>
 

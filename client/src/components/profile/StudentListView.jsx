@@ -276,7 +276,12 @@ export const StudentListView = ({
                   borderColor: colors.border
                 }}
               >
-                <div>
+                {/* Clickable Card Body to Open Student Profile */}
+                <div
+                  onClick={() => onOpenProfile(st._id)}
+                  className="cursor-pointer group-hover:opacity-95 transition"
+                  title={`Click to view profile of ${st.fullName}`}
+                >
                   {/* Top card row: Student photo, Info, Belt and Status badges */}
                   <div className="flex items-start justify-between gap-2.5">
                     <div className="flex items-center gap-2.5">
@@ -297,7 +302,7 @@ export const StudentListView = ({
                       <div>
                         <div className="flex items-center gap-1.5">
                           <h3
-                            className="text-[14px] font-semibold leading-tight tracking-tight"
+                            className="text-[14px] font-semibold leading-tight tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition"
                             style={{ color: colors.textHeading }}
                           >
                             {st.fullName}
@@ -375,7 +380,10 @@ export const StudentListView = ({
                   <div className="flex items-center gap-1.5">
                     {/* Edit Student */}
                     <button
-                      onClick={() => setEditingStudent(st)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingStudent(st);
+                      }}
                       className="px-2 py-1 rounded-md text-[12px] font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-1 transition hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                     >
                       <Edit2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
@@ -384,7 +392,10 @@ export const StudentListView = ({
 
                     {/* Quick Active / Inactive Toggle */}
                     <button
-                      onClick={() => handleToggleStatus(st)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleStatus(st);
+                      }}
                       disabled={isUpdating}
                       title={isActive ? "Mark Inactive" : "Reactivate"}
                       className={`px-2 py-1 rounded-md text-[11.5px] font-bold border flex items-center gap-1 transition cursor-pointer ${
@@ -404,7 +415,10 @@ export const StudentListView = ({
 
                   <div className="flex items-center gap-1.5">
                     <button
-                      onClick={() => onCollectFee(st._id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCollectFee(st._id);
+                      }}
                       className="px-2.5 py-1 rounded-md text-[11.5px] font-bold border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 flex items-center gap-1 transition hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer"
                     >
                       <CreditCard className="w-3 h-3 text-blue-600 dark:text-blue-400" />
@@ -412,7 +426,10 @@ export const StudentListView = ({
                     </button>
 
                     <button
-                      onClick={() => onOpenProfile(st._id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenProfile(st._id);
+                      }}
                       className="px-2.5 py-1 rounded-md text-[11.5px] font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-1 transition hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                     >
                       <ExternalLink className="w-3 h-3 text-blue-600 dark:text-blue-400" />

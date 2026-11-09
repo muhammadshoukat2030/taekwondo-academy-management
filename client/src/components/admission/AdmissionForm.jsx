@@ -8,8 +8,12 @@ import {
   Printer,
   X,
   Sparkles,
-  FileCheck
+  FileCheck,
+  Trash2,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
+import { compressImage } from '../../utils/imageHelper.js';
 
 export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
   const { colors, theme, mode } = useTheme();
@@ -26,6 +30,8 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
     whatsapp: '',
     email: '',
     permanentAddress: 'Kohat, KPK',
+    emergencyContact: '',
+    notes: '',
     education: 'Matric',
     hasPlayedBefore: false,
     hasIllnessInjury: false,
@@ -40,6 +46,8 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
   });
 
   const [photo, setPhoto] = useState('');
+  const [imageProcessing, setImageProcessing] = useState(false);
+  const [imageError, setImageError] = useState('');
   const [cameraActive, setCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
@@ -83,8 +91,9 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
         canvasRef.current.width = 300;
         canvasRef.current.height = 300;
         context.drawImage(videoRef.current, 0, 0, 300, 300);
-        const dataUrl = canvasRef.current.toDataURL('image/jpeg');
+        const dataUrl = canvasRef.current.toDataURL('image/jpeg', 0.82);
         setPhoto(dataUrl);
+        setImageError('');
         stopCamera();
       }
     }
@@ -99,15 +108,26 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
     setCameraActive(false);
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    try {
+      setImageProcessing(true);
+      setImageError('');
+      const compressed = await compressImage(file, 600, 600, 0.82);
+      setPhoto(compressed);
+    } catch (err) {
+      setImageError(err.message || 'Error processing image');
+    } finally {
+      setImageProcessing(false);
+      e.target.value = '';
     }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhoto('');
+    setImageError('');
+    if (cameraActive) stopCamera();
   };
 
   const handleSubmit = async (e) => {
@@ -122,7 +142,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
       const payload = {
         ...formData,
         age: Number(formData.age) || 16,
-        photo: photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+        photo: photo || '',
         fixedMonthlyFee: Number(formData.fixedMonthlyFee),
         admissionFee: Number(formData.admissionFee)
       };
@@ -258,45 +278,89 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                       <span className="text-[8.5px] font-urdu">پاسپورٹ سائز تصویر</span>
                     </div>
                   )}
+
+                  {imageProcessing && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
                 </div>
                 <canvas ref={canvasRef} className="hidden" />
 
-                <div className="flex items-center gap-1.5 mt-2.5 w-full">
-                  {cameraActive ? (
-                    <button
-                      type="button"
-                      onClick={capturePhoto}
-                      className="w-full py-1 rounded-md text-white text-xs font-semibold"
-                      style={{ backgroundColor: colors.primary }}
-                    >
-                      Capture Snapshot
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={startCamera}
-                      className="w-1/2 py-1 rounded-md text-white text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-sm"
-                      style={{ backgroundColor: '#4F46E5' }}
-                    >
-                      <Camera className="w-3 h-3" />
-                      <span>Webcam</span>
-                    </button>
-                  )}
+                {imageError && (
+                  <p className="text-[9.5px] font-semibold text-rose-500 mt-1 max-w-[140px] truncate">{imageError}</p>
+                )}
 
-                  <label
-                    className="w-1/2 py-1 rounded-md text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer border"
-                    style={{
-                      backgroundColor: colors.bgCard,
-                      borderColor: colors.border,
-                      color: colors.textPrimary
-                    }}
-                  >
-                    <Upload className="w-3 h-3" />
-                    <span>Upload</span>
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
+                <div className="flex flex-col gap-1.5 mt-2.5 w-full">
+                  {cameraActive ? (
+                    <div className="flex gap-1 w-full">
+                      <button
+                        type="button"
+                        onClick={capturePhoto}
+                        className="flex-1 py-1 rounded-md text-white text-xs font-semibold shadow-sm"
+                        style={{ backgroundColor: colors.primary }}
+                      >
+                        Capture
+                      </button>
+                      <button
+                        type="button"
+                        onClick={stopCamera}
+                        className="px-2 py-1 rounded-md text-xs font-medium border"
+                        style={{ backgroundColor: colors.bgCard, borderColor: colors.border, color: colors.textSecondary }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : photo ? (
+                    <div className="flex gap-1 w-full">
+                      <label
+                        className="flex-1 py-1 rounded-md text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer border shadow-sm transition hover:opacity-90"
+                        style={{
+                          backgroundColor: colors.badgeBg,
+                          borderColor: colors.border,
+                          color: colors.primary
+                        }}
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Replace</span>
+                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" disabled={imageProcessing} />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="px-2 py-1 rounded-md text-[10.5px] font-medium border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 w-full">
+                      <button
+                        type="button"
+                        onClick={startCamera}
+                        className="w-1/2 py-1 rounded-md text-white text-[10.5px] font-medium flex items-center justify-center gap-1 shadow-sm"
+                        style={{ backgroundColor: '#4F46E5' }}
+                      >
+                        <Camera className="w-3 h-3" />
+                        <span>Webcam</span>
+                      </button>
+
+                      <label
+                        className="w-1/2 py-1 rounded-md text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer border"
+                        style={{
+                          backgroundColor: colors.bgCard,
+                          borderColor: colors.border,
+                          color: colors.textPrimary
+                        }}
+                      >
+                        <Upload className="w-3 h-3" />
+                        <span>Upload</span>
+                        <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" disabled={imageProcessing} />
+                      </label>
+                    </div>
+                  )}
                 </div>
-                <span className="text-[8.5px] mt-1" style={{ color: colors.textMuted }}>Used for AI Face Recognition</span>
+                <span className="text-[8.5px] mt-1" style={{ color: colors.textMuted }}>Optimized for AI Facial ID</span>
               </div>
 
               {/* Form inputs */}
@@ -444,7 +508,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
                   Cell / WhatsApp No. <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(فون / واٹس ایپ)</span> *
@@ -455,6 +519,24 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                   placeholder="e.g. 0335-9117230"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value, whatsapp: e.target.value })}
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-mono transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Emergency Contact <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(ہنگامی رابطہ)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 0333-9642011"
+                  value={formData.emergencyContact}
+                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
                   className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none font-mono transition"
                   style={{
                     backgroundColor: colors.inputBg,
@@ -684,6 +766,24 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                   <option value="Red">Red Belt (سرخ بیلٹ)</option>
                   <option value="Black">Black Belt (سیاہ بیلٹ)</option>
                 </select>
+              </div>
+
+              <div className="sm:col-span-4 mt-2">
+                <label className="block text-[11px] font-semibold mb-1" style={{ color: colors.textPrimary }}>
+                  Admission Notes & Special Concessions <span className="font-urdu font-normal" style={{ color: colors.textMuted }}>(خصوصی نوٹس / تبصرہ)</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  placeholder="Special instructions, fee concessions, sibling references, etc."
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-xs focus:outline-none transition"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                />
               </div>
             </div>
           </div>

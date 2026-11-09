@@ -11,7 +11,15 @@ import {
   Sparkles,
   Printer,
   Search,
-  PlusCircle
+  PlusCircle,
+  LayoutDashboard,
+  Calendar,
+  Users,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 
 export const FeeManagementView = ({
@@ -19,7 +27,16 @@ export const FeeManagementView = ({
   onOpenStudentProfile
 }) => {
   const { colors, theme, mode } = useTheme();
-  const [activeTab, setActiveTab] = useState('collection');
+  const now = new Date();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [dashboardMonth, setDashboardMonth] = useState(now.getMonth() + 1);
+  const [dashboardYear, setDashboardYear] = useState(now.getFullYear());
+  const [dashboardStatus, setDashboardStatus] = useState('All');
+  const [summaryMetrics, setSummaryMetrics] = useState(null);
+  const [monthlyLedgers, setMonthlyLedgers] = useState([]);
+  const [loadingLedgers, setLoadingLedgers] = useState(false);
+  const [ledgerSearch, setLedgerSearch] = useState('');
+
   const [students, setStudents] = useState([]);
   const [defaulters, setDefaulters] = useState([]);
   const [receipts, setReceipts] = useState([]);
@@ -60,9 +77,29 @@ export const FeeManagementView = ({
     }
   };
 
+  const loadDashboardData = async () => {
+    try {
+      setLoadingLedgers(true);
+      const [sumRes, ledgersRes] = await Promise.all([
+        api.getFinancialSummary(dashboardMonth, dashboardYear),
+        api.getMonthlyLedgers(dashboardMonth, dashboardYear, dashboardStatus)
+      ]);
+      if (sumRes?.success) setSummaryMetrics(sumRes.metrics);
+      if (ledgersRes?.success) setMonthlyLedgers(ledgersRes.data);
+    } catch (err) {
+      console.error('Error fetching dashboard ledgers:', err);
+    } finally {
+      setLoadingLedgers(false);
+    }
+  };
+
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [dashboardMonth, dashboardYear, dashboardStatus]);
 
   useEffect(() => {
     if (selectedStudentId && students.length > 0) {
@@ -222,14 +259,27 @@ export const FeeManagementView = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b pb-2.5 border-slate-300 dark:border-slate-700">
+      <div className="flex flex-wrap items-center gap-2 border-b pb-2.5" style={{ borderColor: colors.border }}>
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
+          style={{
+            backgroundColor: activeTab === 'dashboard' ? colors.primary : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            color: activeTab === 'dashboard' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
+            border: activeTab === 'dashboard' ? `1px solid ${colors.primary}` : `1px solid ${colors.border}`
+          }}
+        >
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          <span>Monthly Tracking</span>
+        </button>
+
         <button
           onClick={() => setActiveTab('collection')}
           className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
           style={{
-            backgroundColor: activeTab === 'collection' ? '#2563EB' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            backgroundColor: activeTab === 'collection' ? colors.primary : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
             color: activeTab === 'collection' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
-            border: activeTab === 'collection' ? '1px solid #2563EB' : '1px solid ' + colors.border
+            border: activeTab === 'collection' ? `1px solid ${colors.primary}` : `1px solid ${colors.border}`
           }}
         >
           <PlusCircle className="w-3.5 h-3.5" />
@@ -242,7 +292,7 @@ export const FeeManagementView = ({
           style={{
             backgroundColor: activeTab === 'defaulters' ? '#DC2626' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
             color: activeTab === 'defaulters' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
-            border: activeTab === 'defaulters' ? '1px solid #DC2626' : '1px solid ' + colors.border
+            border: activeTab === 'defaulters' ? '1px solid #DC2626' : `1px solid ${colors.border}`
           }}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
@@ -253,15 +303,356 @@ export const FeeManagementView = ({
           onClick={() => setActiveTab('receipts')}
           className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
           style={{
-            backgroundColor: activeTab === 'receipts' ? '#2563EB' : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
+            backgroundColor: activeTab === 'receipts' ? colors.primary : (mode === 'dark' ? '#1E2D43' : '#FFFFFF'),
             color: activeTab === 'receipts' ? '#FFFFFF' : (mode === 'dark' ? '#D7E0EC' : '#334155'),
-            border: activeTab === 'receipts' ? '1px solid #2563EB' : '1px solid ' + colors.border
+            border: activeTab === 'receipts' ? `1px solid ${colors.primary}` : `1px solid ${colors.border}`
           }}
         >
           <Receipt className="w-3.5 h-3.5" />
           <span>Receipts Archive ({receipts.length})</span>
         </button>
       </div>
+
+      {/* TAB 0: MONTHLY FEE TRACKING DASHBOARD */}
+      {activeTab === 'dashboard' && (
+        <div className="space-y-4">
+          {/* Controls: Month, Year, Status, Search */}
+          <div
+            className="p-3.5 lg:p-4 rounded-xl border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4" style={{ color: colors.primary }} />
+                <span className="text-xs font-bold" style={{ color: colors.textPrimary }}>Period:</span>
+              </div>
+
+              <select
+                value={dashboardMonth}
+                onChange={(e) => setDashboardMonth(Number(e.target.value))}
+                className="px-2.5 py-1.5 rounded-lg border text-xs font-semibold focus:outline-none"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
+              >
+                {[
+                  'January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'
+                ].map((name, idx) => (
+                  <option key={name} value={idx + 1}>{name}</option>
+                ))}
+              </select>
+
+              <select
+                value={dashboardYear}
+                onChange={(e) => setDashboardYear(Number(e.target.value))}
+                className="px-2.5 py-1.5 rounded-lg border text-xs font-semibold focus:outline-none"
+                style={{
+                  backgroundColor: colors.inputBg,
+                  borderColor: colors.border,
+                  color: colors.textPrimary
+                }}
+              >
+                {[2024, 2025, 2026, 2027, 2028].map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+
+              <button
+                onClick={loadDashboardData}
+                disabled={loadingLedgers}
+                className="p-1.5 rounded-lg border hover:opacity-80 transition"
+                title="Refresh Monthly Data"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border,
+                  color: colors.textSecondary
+                }}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingLedgers ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative w-full sm:w-52">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5" style={{ color: colors.textMuted }} />
+                <input
+                  type="text"
+                  placeholder="Search student or roll no..."
+                  value={ledgerSearch}
+                  onChange={(e) => setLedgerSearch(e.target.value)}
+                  className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border text-xs focus:outline-none"
+                  style={{
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.border,
+                    color: colors.textPrimary
+                  }}
+                />
+              </div>
+
+              {/* Status Filter Buttons */}
+              <div
+                className="flex items-center p-0.5 rounded-lg border text-xs"
+                style={{
+                  backgroundColor: colors.bgSecondary,
+                  borderColor: colors.border
+                }}
+              >
+                {['All', 'PAID', 'PARTIAL', 'Pending', 'OVERDUE'].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setDashboardStatus(st)}
+                    className="px-2 py-1 rounded-md text-[11px] font-medium transition cursor-pointer"
+                    style={{
+                      backgroundColor: dashboardStatus === st
+                        ? (st === 'OVERDUE' ? '#DC2626' : colors.primary)
+                        : 'transparent',
+                      color: dashboardStatus === st ? '#FFFFFF' : colors.textSecondary,
+                      fontWeight: dashboardStatus === st ? 'bold' : 'normal'
+                    }}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 8 Summary KPI Tiles */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>Total Active</span>
+              <div className="text-base font-bold font-mono mt-1" style={{ color: colors.textPrimary }}>
+                {summaryMetrics?.totalActiveStudents ?? students.length}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Expected</span>
+              <div className="text-base font-bold font-mono mt-1 text-blue-600 dark:text-blue-400">
+                PKR {summaryMetrics?.totalExpected?.toLocaleString() || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between bg-emerald-500/10 border-emerald-500/30"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Collected</span>
+              <div className="text-base font-bold font-mono mt-1 text-emerald-600 dark:text-emerald-300">
+                PKR {summaryMetrics?.totalCollected?.toLocaleString() || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between bg-rose-500/10 border-rose-500/30"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">Outstanding Baqaya</span>
+              <div className="text-base font-bold font-mono mt-1 text-rose-600 dark:text-rose-300">
+                PKR {summaryMetrics?.totalRemaining?.toLocaleString() || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-500">Fully Paid</span>
+              <div className="text-base font-bold font-mono mt-1 text-emerald-500">
+                {summaryMetrics?.paidCount || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-500">Partial</span>
+              <div className="text-base font-bold font-mono mt-1 text-amber-500">
+                {summaryMetrics?.partialCount || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between"
+              style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: colors.textSecondary }}>Pending</span>
+              <div className="text-base font-bold font-mono mt-1" style={{ color: colors.textSecondary }}>
+                {summaryMetrics?.pendingCount || 0}
+              </div>
+            </div>
+
+            <div
+              className="p-3 rounded-xl border flex flex-col justify-between bg-rose-600/10 border-rose-600/30"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-500">Overdue</span>
+              <div className="text-base font-bold font-mono mt-1 text-rose-500">
+                {summaryMetrics?.overdueCount || 0}
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Ledgers Roster Table */}
+          <div
+            className="p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3"
+            style={{ backgroundColor: colors.bgCard, borderColor: colors.border }}
+          >
+            <div className="flex items-center justify-between pb-2 border-b" style={{ borderColor: colors.border }}>
+              <div>
+                <h3 className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                  Monthly Billing Ledger Roster ({monthlyLedgers.length} records)
+                </h3>
+                <p className="text-[10.5px]" style={{ color: colors.textSecondary }}>
+                  Full record of monthly dues, payment dates, arrears, and collection status
+                </p>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border w-full" style={{ borderColor: colors.border }}>
+              <table className="w-full text-left text-xs min-w-[760px]">
+                <thead>
+                  <tr
+                    className="uppercase text-[10.5px] font-bold border-b"
+                    style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border, color: colors.textHeading }}
+                  >
+                    <th className="py-2.5 px-3">Student Name</th>
+                    <th className="py-2.5 px-2">Father Name</th>
+                    <th className="py-2.5 px-2 text-center">Belt</th>
+                    <th className="py-2.5 px-2 font-mono">Contact</th>
+                    <th className="py-2.5 px-2 text-right">Fee</th>
+                    <th className="py-2.5 px-2 text-right">Total Due</th>
+                    <th className="py-2.5 px-2 text-right">Paid</th>
+                    <th className="py-2.5 px-2 text-right">Baqaya</th>
+                    <th className="py-2.5 px-2 text-center">Status</th>
+                    <th className="py-2.5 px-2 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y font-sans" style={{ borderColor: colors.border, backgroundColor: colors.bgCard }}>
+                  {loadingLedgers ? (
+                    <TableSkeleton rows={6} columns={10} />
+                  ) : monthlyLedgers.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="py-8 text-center text-xs" style={{ color: colors.textSecondary }}>
+                        No fee ledger records found for this period. Click "Generate Monthly Dues" above to generate this month's billing.
+                      </td>
+                    </tr>
+                  ) : (
+                    monthlyLedgers
+                      .filter((l) => {
+                        const st = l.student;
+                        if (!st) return false;
+                        if (!ledgerSearch) return true;
+                        const s = ledgerSearch.toLowerCase();
+                        return (
+                          st.fullName?.toLowerCase().includes(s) ||
+                          st.fatherName?.toLowerCase().includes(s) ||
+                          st.registrationNo?.toLowerCase().includes(s) ||
+                          st.phone?.includes(s)
+                        );
+                      })
+                      .map((l) => {
+                        const st = l.student || {};
+                        const isOverdue = l.status === 'OVERDUE' || (l.dueDate && new Date() > new Date(l.dueDate) && l.remainingBalance > 0);
+                        return (
+                          <tr key={l._id} className="hover:opacity-95 transition">
+                            <td className="py-2 px-3">
+                              <div
+                                onClick={() => onOpenStudentProfile && onOpenStudentProfile(st._id)}
+                                className="font-semibold cursor-pointer hover:underline flex items-center gap-1.5"
+                                style={{ color: colors.textPrimary }}
+                              >
+                                <span>{st.fullName || 'Student'}</span>
+                                <ExternalLink className="w-3 h-3 opacity-60" />
+                              </div>
+                              <div className="text-[10px] font-mono text-blue-600 dark:text-blue-400">{st.registrationNo}</div>
+                            </td>
+                            <td className="py-2 px-2 text-[11.5px]" style={{ color: colors.textSecondary }}>{st.fatherName || '-'}</td>
+                            <td className="py-2 px-2 text-center">
+                              <span
+                                className="px-1.5 py-0.5 rounded text-[10px] font-bold border"
+                                style={{ backgroundColor: colors.badgeBg, borderColor: colors.border, color: colors.textPrimary }}
+                              >
+                                {st.currentBelt || 'White'}
+                              </span>
+                            </td>
+                            <td className="py-2 px-2 font-mono text-[11px]" style={{ color: colors.textSecondary }}>{st.phone || '-'}</td>
+                            <td className="py-2 px-2 text-right font-mono" style={{ color: colors.textSecondary }}>PKR {l.monthlyFee}</td>
+                            <td className="py-2 px-2 text-right font-mono font-bold" style={{ color: colors.textPrimary }}>PKR {l.totalDue}</td>
+                            <td className="py-2 px-2 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">PKR {l.paidAmount}</td>
+                            <td className="py-2 px-2 text-right font-mono font-bold">
+                              {l.remainingBalance > 0 ? (
+                                <span className="text-rose-500">PKR {l.remainingBalance}</span>
+                              ) : (
+                                <span style={{ color: colors.primary }}>0</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              {l.status === 'PAID' ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
+                                  PAID
+                                </span>
+                              ) : l.status === 'PARTIAL' ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                                  PARTIAL
+                                </span>
+                              ) : isOverdue ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600/20 text-rose-500 border border-rose-500/40">
+                                  OVERDUE
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
+                                  UNPAID
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {l.remainingBalance > 0 && (
+                                  <button
+                                    onClick={() => sendWhatsAppReminder(l)}
+                                    className="p-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs"
+                                    title="Send WhatsApp Alert"
+                                  >
+                                    <MessageSquare className="w-3 h-3" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setSelectedStudentId(st._id);
+                                    setActiveTab('collection');
+                                  }}
+                                  className="px-2 py-0.5 rounded-md border text-[11px] font-semibold transition hover:scale-102"
+                                  style={{
+                                    backgroundColor: colors.badgeBg,
+                                    borderColor: colors.border,
+                                    color: colors.primary
+                                  }}
+                                >
+                                  Collect
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: FEE COLLECTION & DUAL-SLIP GENERATOR */}
       {activeTab === 'collection' && (

@@ -51,7 +51,7 @@ const feeLedgerSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['PAID', 'PARTIAL', 'UNPAID'],
+      enum: ['PAID', 'PARTIAL', 'UNPAID', 'OVERDUE'],
       default: 'UNPAID',
       index: true
     },

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Student } from '../models/Student.js';
 import { FeeLedger } from '../models/FeeLedger.js';
 import { Attendance } from '../models/Attendance.js';
@@ -40,7 +41,15 @@ export const getStudents = async (req, res) => {
 
 export const getStudentById = async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).lean();
+    const { id } = req.params;
+    let student = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      student = await Student.findById(id).lean();
+    }
+    if (!student) {
+      student = await Student.findOne({ registrationNo: id }).lean();
+    }
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
@@ -192,5 +201,45 @@ export const deleteStudent = async (req, res) => {
     res.json({ success: true, message: 'Student deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const enrollBiometrics = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { faceDescriptor, photo, fingerprintTemplateId, isFaceEnrolled, isFingerprintEnrolled } = req.body;
+
+    const student = await Student.findById(id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    if (faceDescriptor && Array.isArray(faceDescriptor)) {
+      student.faceDescriptor = faceDescriptor;
+      student.isFaceEnrolled = true;
+    } else if (isFaceEnrolled !== undefined) {
+      student.isFaceEnrolled = isFaceEnrolled;
+    }
+
+    if (photo) {
+      student.photo = photo;
+    }
+
+    if (fingerprintTemplateId) {
+      student.fingerprintTemplateId = fingerprintTemplateId;
+      student.isFingerprintEnrolled = true;
+    } else if (isFingerprintEnrolled !== undefined) {
+      student.isFingerprintEnrolled = isFingerprintEnrolled;
+    }
+
+    await student.save();
+
+    res.json({
+      success: true,
+      message: `Biometrics updated successfully for ${student.fullName}`,
+      data: student
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };

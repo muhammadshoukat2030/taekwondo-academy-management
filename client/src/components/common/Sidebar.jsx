@@ -54,7 +54,7 @@ export const Sidebar = ({
         },
         {
           id: 'students',
-          label: 'Students Roster',
+          label: 'All Students',
           icon: Users,
           badge: null
         },

@@ -24,12 +24,25 @@ export const markAttendance = async (req, res) => {
       });
     }
 
-    const checkMethod = method || mode || 'Manual';
+    let checkMethod = 'Manual';
+    const rawMethod = (method || mode || '').toLowerCase();
+    if (rawMethod.includes('face')) checkMethod = 'FaceRecognition';
+    else if (rawMethod.includes('finger')) checkMethod = 'Fingerprint';
+    else if (rawMethod === 'manual') checkMethod = 'Manual';
+
+    const rawStatus = (status || 'Present').toLowerCase();
+    let normStatus = 'Present';
+    if (rawStatus === 'absent') normStatus = 'Absent';
+    else if (rawStatus === 'leave') normStatus = 'Leave';
+    else if (rawStatus === 'late') normStatus = 'Late';
+
+    const exactCheckInTime = req.body.checkInTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
     let attendance = await Attendance.findOne({ student: student._id, date: todayStr });
     if (attendance) {
-      attendance.status = status || 'Present';
+      attendance.status = normStatus;
       attendance.method = checkMethod;
+      if (req.body.checkInTime) attendance.checkInTime = req.body.checkInTime;
       attendance.remarks = remarks || attendance.remarks;
       if (confidenceScore) attendance.confidenceScore = confidenceScore;
       await attendance.save();
@@ -40,8 +53,9 @@ export const markAttendance = async (req, res) => {
         monthYear,
         month,
         year,
-        status: status || 'Present',
+        status: normStatus,
         method: checkMethod,
+        checkInTime: exactCheckInTime,
         confidenceScore: confidenceScore || 1.0,
         remarks: remarks || ''
       });
@@ -143,14 +157,19 @@ export const batchMarkAttendance = async (req, res) => {
       const updated = await Attendance.findOneAndUpdate(
         { student: rec.studentId, date: targetDate },
         {
-          student: rec.studentId,
-          date: targetDate,
-          monthYear,
-          month,
-          year,
-          status: rec.status,
-          method: 'Manual',
-          remarks: rec.remarks || ''
+          $set: {
+            status: rec.status,
+            method: 'Manual',
+            remarks: rec.remarks || ''
+          },
+          $setOnInsert: {
+            student: rec.studentId,
+            date: targetDate,
+            monthYear,
+            month,
+            year,
+            checkInTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+          }
         },
         { upsert: true, new: true }
       );

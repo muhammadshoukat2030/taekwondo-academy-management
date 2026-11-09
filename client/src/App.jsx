@@ -85,8 +85,12 @@ const AppContent = () => {
     }
   }, [isAuthenticated]);
 
-  const handleOpenStudentProfile = (id) => {
-    setSelectedStudentId(id);
+  const handleOpenStudentProfile = (idOrStudent) => {
+    if (!idOrStudent) return;
+    const realId = typeof idOrStudent === 'object' && idOrStudent !== null
+      ? (idOrStudent._id || idOrStudent.id || idOrStudent.registrationNo)
+      : idOrStudent;
+    setSelectedStudentId(realId);
   };
 
   const handleCollectFeeForStudent = (id) => {

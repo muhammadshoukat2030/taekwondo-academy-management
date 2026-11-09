@@ -56,6 +56,15 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       default: ''
     },
+    emergencyContact: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    notes: {
+      type: String,
+      default: ''
+    },
     permanentAddress: {
       type: String,
       required: [true, 'Address is required'],
@@ -91,7 +100,7 @@ const studentSchema = new mongoose.Schema(
     },
     currentBelt: {
       type: String,
-      enum: ['White', 'Yellow', 'Green', 'Blue', 'Red', 'Black'],
+      enum: ['White', 'Yellow', 'Green', 'Blue', 'Red', 'Black', '1st Dan', '2nd Dan', '3rd Dan', '4th Dan', '5th Dan', '6th Dan', '7th Dan'],
       default: 'White'
     },
     danRank: {

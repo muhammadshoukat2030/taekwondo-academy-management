@@ -4,6 +4,7 @@ import {
   collectFee,
   getDefaulters,
   getFinancialSummary,
+  getMonthlyLedgers,
   generateMonthlyDues
 } from '../controllers/feeController.js';
 
@@ -17,6 +18,7 @@ router.route('/')
 router.post('/collect', collectFee);
 router.get('/defaulters', getDefaulters);
 router.get('/summary', getFinancialSummary);
+router.get('/ledgers', getMonthlyLedgers);
 router.post('/generate-monthly-dues', generateMonthlyDues);
 
 export default router;

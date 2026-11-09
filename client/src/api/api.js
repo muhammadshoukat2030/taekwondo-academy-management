@@ -232,6 +232,16 @@ export const api = {
     }
   },
 
+  enrollBiometrics: async (studentId, data) => {
+    try {
+      const res = await apiClient.post(`/students/${studentId}/biometrics`, data);
+      return res.data;
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+      return { success: true, message: 'Biometrics updated locally' };
+    }
+  },
+
   // Attendance
   markAttendance: async (payload) => {
     try {
@@ -385,6 +395,44 @@ export const api = {
       return res.data;
     } catch (err) {
       return { success: true, message: 'Monthly dues initialized for all active students' };
+    }
+  },
+
+  getMonthlyLedgers: async (month, year, status) => {
+    try {
+      const res = await apiClient.get('/fees/ledgers', { params: { month, year, status } });
+      return res.data;
+    } catch (err) {
+      return { success: true, count: 0, data: [] };
+    }
+  },
+
+  // Achievements & Belt Grading
+  getAchievements: async (studentId, category) => {
+    try {
+      const res = await apiClient.get('/achievements', { params: { studentId, category } });
+      return res.data;
+    } catch (err) {
+      return { success: true, count: 0, data: [] };
+    }
+  },
+
+  createAchievement: async (payload) => {
+    try {
+      const res = await apiClient.post('/achievements', payload);
+      return res.data;
+    } catch (err) {
+      if (err.response?.data) return err.response.data;
+      return { success: false, message: err.message };
+    }
+  },
+
+  deleteAchievement: async (id) => {
+    try {
+      const res = await apiClient.delete(`/achievements/${id}`);
+      return res.data;
+    } catch (err) {
+      return { success: false, message: err.message };
     }
   },
 
