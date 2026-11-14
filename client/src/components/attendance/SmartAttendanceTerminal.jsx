@@ -27,6 +27,47 @@ export const SmartAttendanceTerminal = () => {
   const [cameraActive, setCameraActive] = useState(false);
   const [lastCheckIn, setLastCheckIn] = useState(null);
   const [recentLogs, setRecentLogs] = useState([]);
+  const [terminalToast, setTerminalToast] = useState(null);
+
+  // Fingerprint states
+  const [selectedFpStudent, setSelectedFpStudent] = useState(null);
+  const [fpSearch, setFpSearch] = useState('');
+  const [fpScanning, setFpScanning] = useState(false);
+
+  const showTerminalToast = (title, text, type = 'success') => {
+    setTerminalToast({ title, text, type });
+    setTimeout(() => {
+      setTerminalToast(null);
+    }, 4000);
+  };
+
+  const handleFingerprintSensorPress = async () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate([40, 30, 60]);
+    }
+    setFpScanning(true);
+
+    const targetStudent = selectedFpStudent || students.find(s => !recentLogs.some(l => l.studentId === s._id)) || students[0];
+
+    if (!targetStudent) {
+      setFpScanning(false);
+      showTerminalToast('No Student Available', 'Please select or add a student to authenticate.', 'error');
+      return;
+    }
+
+    if (typeof window !== 'undefined' && window.PublicKeyCredential && navigator.credentials) {
+      try {
+        await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable?.();
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    setTimeout(async () => {
+      setFpScanning(false);
+      await processCheckIn(targetStudent, 'Fingerprint');
+    }, 400);
+  };
 
   // Register batch states
   const [registerDate, setRegisterDate] = useState(new Date().toISOString().split('T')[0]);
@@ -41,6 +82,41 @@ export const SmartAttendanceTerminal = () => {
   const videoRef = useRef(null);
   const scanIntervalRef = useRef(null);
 
+  const loadRecentCheckIns = async () => {
+    try {
+      const res = await api.getTodayAttendance();
+      if (res.success && Array.isArray(res.data)) {
+        const logs = [];
+        const seen = new Set();
+        // Traverse backwards to get latest logs first, unique per student
+        for (let i = res.data.length - 1; i >= 0; i--) {
+          const rec = res.data[i];
+          const st = rec.student || {};
+          const sId = st._id || rec.student;
+          if (sId && !seen.has(String(sId))) {
+            seen.add(String(sId));
+            logs.push({
+              studentId: sId,
+              studentName: st.fullName || 'Student',
+              fatherName: st.fatherName || '',
+              registrationNo: st.registrationNo || '',
+              belt: st.currentBelt || 'White',
+              photo: st.photo || '',
+              status: rec.status,
+              method: rec.method,
+              time: rec.checkInTime || '',
+              feeAlert: null,
+              alreadyMarked: true
+            });
+          }
+        }
+        setRecentLogs(logs.slice(0, 10));
+      }
+    } catch (e) {
+      console.warn('Could not load today attendance records:', e);
+    }
+  };
+
   const loadStudents = async () => {
     try {
       const res = await api.getStudents({ status: 'Active' });
@@ -52,6 +128,7 @@ export const SmartAttendanceTerminal = () => {
         });
         setBatchStatus(initialMap);
       }
+      await loadRecentCheckIns();
     } catch (err) {
       console.error('Error fetching students for terminal:', err);
     }
@@ -109,26 +186,51 @@ export const SmartAttendanceTerminal = () => {
 
       if (res.success) {
         const feeAlert = res.feeAlert;
-
-        soundEffects.playSuccessChime();
-        if (feeAlert && feeAlert.hasDues) {
-          setTimeout(() => soundEffects.playWarningTone(), 250);
-        }
+        const checkInTime = res.data?.checkInTime || exactCheckInTime;
+        const isAlready = Boolean(res.alreadyMarked);
 
         const logItem = {
+          studentId: student._id,
           studentName: student.fullName,
           fatherName: student.fatherName,
           registrationNo: student.registrationNo,
           belt: student.currentBelt,
           photo: student.photo,
-          status: 'Present',
+          status: res.data?.status || 'Present',
           method,
-          time: exactCheckInTime,
-          feeAlert
+          time: checkInTime,
+          feeAlert,
+          alreadyMarked: isAlready
         };
 
         setLastCheckIn(logItem);
-        setRecentLogs(prev => [logItem, ...prev.slice(0, 9)]);
+
+        if (isAlready) {
+          // Attendance was ALREADY recorded for today
+          soundEffects.playWarningTone();
+          showTerminalToast(
+            'Already Checked-In Today',
+            `${student.fullName} ki attendance pehle se lagi hui hai (${checkInTime}). Agli attendance raat 12:00 baje ke baad lag sakegi.`,
+            'info'
+          );
+        } else {
+          // Fresh check-in
+          soundEffects.playSuccessChime();
+          if (feeAlert && feeAlert.hasDues) {
+            setTimeout(() => soundEffects.playWarningTone(), 250);
+          }
+          showTerminalToast(
+            'Attendance Recorded',
+            `${student.fullName} ki attendance successfully mark ho gayi (${checkInTime}).`,
+            'success'
+          );
+
+          // Update recent logs: remove any duplicate of this student and prepend as the single latest entry
+          setRecentLogs(prev => [
+            logItem,
+            ...prev.filter(l => l.studentId !== student._id && l.studentName !== student.fullName)
+          ].slice(0, 10));
+        }
       } else {
         alert(res.message || 'Unable to record attendance for this student.');
       }
@@ -214,6 +316,29 @@ export const SmartAttendanceTerminal = () => {
 
   return (
     <div className="space-y-4">
+      {/* Real-time Status Toast Notification */}
+      {terminalToast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl border shadow-xl flex items-center gap-2 text-xs font-semibold animate-fade-in ${
+            terminalToast.type === 'info'
+              ? 'bg-amber-600 text-white border-amber-700 shadow-amber-500/20'
+              : terminalToast.type === 'error'
+              ? 'bg-rose-600 text-white border-rose-700 shadow-rose-500/20'
+              : 'bg-emerald-600 text-white border-emerald-700 shadow-emerald-500/20'
+          }`}
+        >
+          {terminalToast.type === 'info' ? (
+            <Clock className="w-4 h-4 flex-shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          )}
+          <div>
+            <div className="font-bold">{terminalToast.title}</div>
+            <div className="text-[11px] font-normal opacity-90">{terminalToast.text}</div>
+          </div>
+        </div>
+      )}
+
       {/* Top Mode Selector Tabs */}
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 lg:p-4 rounded-xl border shadow-sm transition-all"
@@ -304,8 +429,8 @@ export const SmartAttendanceTerminal = () => {
         </div>
       </div>
 
-      {/* MODE 1: LIVE AI FACE RECOGNITION SCANNER */}
-      {activeMode === 'face' && (
+      {/* MODE 1 & 2: LIVE BIOMETRIC SCANNER (FACE OR FINGERPRINT) */}
+      {(activeMode === 'face' || activeMode === 'fingerprint') && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div
             className="lg:col-span-2 p-3.5 lg:p-4 rounded-xl border shadow-sm space-y-3 transition-all"
@@ -314,144 +439,315 @@ export const SmartAttendanceTerminal = () => {
               borderColor: colors.border
             }}
           >
-            <div className="flex items-center justify-between pb-2.5 border-b" style={{ borderColor: colors.border }}>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: colors.primary }} />
-                <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: colors.textPrimary }}>Live AI Neural Scanner Terminal</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                {!cameraActive ? (
-                  <button
-                    onClick={startFaceCamera}
-                    className="px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold flex items-center gap-1.5 transition hover:scale-102"
-                    style={{ backgroundColor: colors.primary }}
-                  >
-                    <Camera className="w-3 h-3" />
-                    <span>Start Live Webcam</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={stopFaceCamera}
-                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold"
-                  >
-                    Stop Webcam
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Video Viewport */}
-            <div
-              className="relative aspect-video rounded-lg border overflow-hidden flex items-center justify-center"
-              style={{
-                backgroundColor: colors.bgSecondary,
-                borderColor: colors.border
-              }}
-            >
-              {cameraActive ? (
-                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transform -scale-x-100" />
-              ) : (
-                <div className="flex flex-col items-center justify-center p-5 text-center space-y-2">
-                  <div
-                    className="w-12 h-12 rounded-full border flex items-center justify-center"
-                    style={{
-                      backgroundColor: colors.bgCard,
-                      borderColor: colors.border,
-                      color: colors.textMuted
-                    }}
-                  >
-                    <Camera className="w-6 h-6" />
+            {activeMode === 'face' ? (
+              /* SUB-CONSOLE A: FACE AI SCANNER */
+              <>
+                <div className="flex items-center justify-between pb-2.5 border-b" style={{ borderColor: colors.border }}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: colors.primary }} />
+                    <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: colors.textPrimary }}>Live AI Neural Face Scanner</h3>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold" style={{ color: colors.textPrimary }}>Live AI Face Terminal Ready</p>
-                    <p className="text-[10.5px] mt-0.5 max-w-sm" style={{ color: colors.textSecondary }}>
-                      Click "Start Live Webcam" to stream directly from your camera, or use the quick student triggers below to test instant face check-in.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* HUD / Scanning Overlay */}
-              <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
-                <div
-                  className="flex justify-between items-center text-[9.5px] font-mono px-2.5 py-0.5 rounded border backdrop-blur-sm self-start"
-                  style={{
-                    backgroundColor: colors.bgCard,
-                    borderColor: colors.border,
-                    color: colors.primary
-                  }}
-                >
-                  <span>AI MODEL: TKD-NET v2.4</span>
-                  <span className="mx-1.5">•</span>
-                  <span>FPS: 30</span>
-                </div>
-
-                <div
-                  className="self-center w-48 h-56 border-2 rounded-xl relative flex items-center justify-center"
-                  style={{ borderColor: colors.primary }}
-                >
-                  <div className="absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2" style={{ borderColor: colors.primary }} />
-                  <div className="absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2" style={{ borderColor: colors.primary }} />
-                  <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2" style={{ borderColor: colors.primary }} />
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2" style={{ borderColor: colors.primary }} />
-                  <div className="w-full h-0.5 animate-pulse" style={{ backgroundColor: colors.primary }} />
-                </div>
-
-                <div
-                  className="text-[10px] font-semibold text-center py-0.5 px-3 rounded-full border self-center backdrop-blur-sm"
-                  style={{
-                    backgroundColor: colors.bgCard,
-                    borderColor: colors.border,
-                    color: colors.textPrimary
-                  }}
-                >
-                  Align student face within the reticle for instant verification
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Trigger Bar */}
-            <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5" style={{ color: colors.textSecondary }}>
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                <span>Simulate Student Approach (Click Student to Trigger AI Match):</span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {students.slice(0, 8).map((st) => (
-                  <button
-                    key={st._id}
-                    onClick={() => triggerScanForStudent(st)}
-                    className="p-1.5 rounded-lg border text-left transition flex items-center gap-2 group hover:scale-[1.01]"
-                    style={{
-                      backgroundColor: colors.bgSecondary,
-                      borderColor: colors.border
-                    }}
-                  >
-                    {st.photo ? (
-                      <img src={st.photo} alt="" className="w-7 h-7 rounded-md object-cover" />
-                    ) : (
-                      <div
-                        className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold"
-                        style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}
+                  <div className="flex items-center gap-2">
+                    {!cameraActive ? (
+                      <button
+                        onClick={startFaceCamera}
+                        className="px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold flex items-center gap-1.5 transition hover:scale-102"
+                        style={{ backgroundColor: colors.primary }}
                       >
-                        {st.fullName[0]}
-                      </div>
+                        <Camera className="w-3 h-3" />
+                        <span>Start Live Webcam</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={stopFaceCamera}
+                        className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold"
+                      >
+                        Stop Webcam
+                      </button>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-semibold truncate group-hover:opacity-80" style={{ color: colors.textPrimary }}>
-                        {st.fullName}
+                  </div>
+                </div>
+
+                {/* Video Viewport */}
+                <div
+                  className="relative aspect-video rounded-lg border overflow-hidden flex items-center justify-center"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
+                >
+                  {cameraActive ? (
+                    <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover transform -scale-x-100" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-5 text-center space-y-2">
+                      <div
+                        className="w-12 h-12 rounded-full border flex items-center justify-center"
+                        style={{
+                          backgroundColor: colors.bgCard,
+                          borderColor: colors.border,
+                          color: colors.textMuted
+                        }}
+                      >
+                        <Camera className="w-6 h-6" />
                       </div>
-                      <div className="text-[9.5px] truncate" style={{ color: colors.textMuted }}>
-                        {st.currentBelt} Belt
+                      <div>
+                        <p className="text-xs font-semibold" style={{ color: colors.textPrimary }}>Live AI Face Terminal Ready</p>
+                        <p className="text-[10.5px] mt-0.5 max-w-sm" style={{ color: colors.textSecondary }}>
+                          Click "Start Live Webcam" to stream directly from your camera, or use the quick student triggers below to test instant face check-in.
+                        </p>
                       </div>
                     </div>
+                  )}
+
+                  {/* HUD / Scanning Overlay */}
+                  <div className="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+                    <div
+                      className="flex justify-between items-center text-[9.5px] font-mono px-2.5 py-0.5 rounded border backdrop-blur-sm self-start"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.primary
+                      }}
+                    >
+                      <span>AI MODEL: TKD-NET v2.4</span>
+                      <span className="mx-1.5">•</span>
+                      <span>FPS: 30</span>
+                    </div>
+
+                    <div
+                      className="self-center w-48 h-56 border-2 rounded-xl relative flex items-center justify-center"
+                      style={{ borderColor: colors.primary }}
+                    >
+                      <div className="absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2" style={{ borderColor: colors.primary }} />
+                      <div className="absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2" style={{ borderColor: colors.primary }} />
+                      <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2" style={{ borderColor: colors.primary }} />
+                      <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2" style={{ borderColor: colors.primary }} />
+                      <div className="w-full h-0.5 animate-pulse" style={{ backgroundColor: colors.primary }} />
+                    </div>
+
+                    <div
+                      className="text-[10px] font-semibold text-center py-0.5 px-3 rounded-full border self-center backdrop-blur-sm"
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: colors.border,
+                        color: colors.textPrimary
+                      }}
+                    >
+                      Align student face within the reticle for instant verification
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Trigger Bar */}
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5" style={{ color: colors.textSecondary }}>
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span>Simulate Student Approach (Click Student to Trigger AI Match):</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {students.slice(0, 8).map((st) => {
+                      const isMarkedToday = recentLogs.some(l => l.studentId === st._id || l.studentName === st.fullName);
+                      return (
+                        <button
+                          key={st._id}
+                          onClick={() => triggerScanForStudent(st)}
+                          className="p-1.5 rounded-lg border text-left transition flex items-center gap-2 group hover:scale-[1.01]"
+                          style={{
+                            backgroundColor: colors.bgSecondary,
+                            borderColor: isMarkedToday ? '#10B981' : colors.border
+                          }}
+                          title={isMarkedToday ? `${st.fullName}: Attendance already recorded today` : `Click to scan ${st.fullName}`}
+                        >
+                          {st.photo ? (
+                            <img src={st.photo} alt="" className="w-7 h-7 rounded-md object-cover" />
+                          ) : (
+                            <div
+                              className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold"
+                              style={{ backgroundColor: colors.bgCard, color: colors.textPrimary }}
+                            >
+                              {st.fullName[0]}
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] font-semibold truncate group-hover:opacity-80" style={{ color: colors.textPrimary }}>
+                              {st.fullName}
+                            </div>
+                            <div className="text-[9.5px] truncate flex items-center justify-between" style={{ color: colors.textMuted }}>
+                              <span>{st.currentBelt} Belt</span>
+                              {isMarkedToday && (
+                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1 rounded">
+                                  ✓ Done
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* SUB-CONSOLE B: FINGERPRINT SCANNER (WORKS ON ALL DEVICES & PHONES) */
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2.5 border-b" style={{ borderColor: colors.border }}>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full animate-ping" style={{ backgroundColor: '#10B981' }} />
+                    <h3 className="text-[15px] font-semibold tracking-tight" style={{ color: colors.textPrimary }}>
+                      Biometric Fingerprint Scanner Terminal
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono font-medium px-2 py-0.5 rounded border" style={{ backgroundColor: colors.bgSecondary, borderColor: colors.border, color: colors.primary }}>
+                    <Fingerprint className="w-3.5 h-3.5" />
+                    <span>SENSOR ONLINE</span>
+                  </div>
+                </div>
+
+                {/* Interactive Mobile & Desktop Fingerprint Touch Pad */}
+                <div
+                  className="p-5 rounded-xl border flex flex-col items-center justify-center text-center space-y-3 relative overflow-hidden transition"
+                  style={{
+                    backgroundColor: colors.bgSecondary,
+                    borderColor: colors.border
+                  }}
+                >
+                  <div
+                    className={`relative group cursor-pointer select-none transition-transform active:scale-95 ${fpScanning ? 'scale-105' : 'hover:scale-102'}`}
+                    onClick={handleFingerprintSensorPress}
+                    title="Press thumb / finger on scanner or tap here"
+                  >
+                    <div
+                      className={`w-24 h-24 rounded-2xl border-2 flex items-center justify-center shadow-lg transition duration-200 ${
+                        fpScanning ? 'ring-4 ring-emerald-500/40 animate-pulse bg-emerald-500/10' : ''
+                      }`}
+                      style={{
+                        backgroundColor: colors.bgCard,
+                        borderColor: fpScanning ? '#10B981' : colors.primary,
+                        color: fpScanning ? '#10B981' : colors.primary
+                      }}
+                    >
+                      <Fingerprint className={`w-14 h-14 ${fpScanning ? 'animate-pulse' : ''}`} />
+                    </div>
+                    <div
+                      className="absolute inset-0 rounded-2xl border animate-ping opacity-25 pointer-events-none"
+                      style={{ borderColor: colors.primary }}
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>
+                      {fpScanning
+                        ? 'Authenticating Biometrics...'
+                        : selectedFpStudent
+                        ? `Ready to Authenticate: ${selectedFpStudent.fullName}`
+                        : 'Press Thumb / Finger on Sensor'}
+                    </div>
+                    <p className="text-[11px] max-w-md mx-auto" style={{ color: colors.textSecondary }}>
+                      Mobile in-display scanner, touch screen, and USB optical sensor compatible (SecuGen / DigitalPersona / WebAuthn).
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleFingerprintSensorPress}
+                    disabled={fpScanning}
+                    className="px-4 py-1.5 rounded-lg text-white text-[11.5px] font-semibold flex items-center gap-1.5 shadow-sm transition hover:scale-102 active:scale-95"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    <Fingerprint className="w-3.5 h-3.5" />
+                    <span>{fpScanning ? 'Scanning Finger...' : 'Touch Sensor to Scan'}</span>
                   </button>
-                ))}
+                </div>
+
+                {/* Student Search & Quick Individual Fingerprint Cards */}
+                <div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                    <div className="text-[11px] font-bold uppercase tracking-wider" style={{ color: colors.textSecondary }}>
+                      Student Fingerprint Directory (Click Any Student to Authenticate):
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Filter by name or roll no..."
+                      value={fpSearch}
+                      onChange={(e) => setFpSearch(e.target.value)}
+                      className="px-2.5 py-1 rounded-lg border text-xs focus:outline-none w-full sm:w-48"
+                      style={{
+                        backgroundColor: colors.inputBg,
+                        borderColor: colors.border,
+                        color: colors.textPrimary
+                      }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-56 overflow-y-auto p-0.5">
+                    {students
+                      .filter((st) => {
+                        if (!fpSearch.trim()) return true;
+                        const q = fpSearch.toLowerCase();
+                        return (
+                          st.fullName.toLowerCase().includes(q) ||
+                          (st.fatherName && st.fatherName.toLowerCase().includes(q)) ||
+                          (st.registrationNo && st.registrationNo.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((st) => {
+                        const isMarkedToday = recentLogs.some(
+                          (l) => l.studentId === st._id || l.studentName === st.fullName
+                        );
+                        const isSelected = selectedFpStudent?._id === st._id;
+                        return (
+                          <button
+                            key={st._id}
+                            onClick={() => {
+                              if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                                navigator.vibrate([30, 20, 40]);
+                              }
+                              setSelectedFpStudent(st);
+                              processCheckIn(st, 'Fingerprint');
+                            }}
+                            className={`p-2 rounded-lg border text-left transition flex items-center gap-2 hover:scale-[1.02] active:scale-95 ${
+                              isSelected ? 'ring-2 ring-blue-500' : ''
+                            }`}
+                            style={{
+                              backgroundColor: colors.bgSecondary,
+                              borderColor: isMarkedToday ? '#10B981' : colors.border
+                            }}
+                            title={
+                              isMarkedToday
+                                ? `${st.fullName}: Attendance already recorded today`
+                                : `Authenticate fingerprint for ${st.fullName}`
+                            }
+                          >
+                            <Fingerprint
+                              className="w-4 h-4 flex-shrink-0"
+                              style={{ color: isMarkedToday ? '#10B981' : colors.primary }}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-[11px] font-semibold truncate" style={{ color: colors.textPrimary }}>
+                                {st.fullName}
+                              </div>
+                              <div
+                                className="text-[9.5px] font-mono flex items-center justify-between"
+                                style={{ color: colors.textMuted }}
+                              >
+                                <span className="truncate">{st.fingerprintTemplateId || 'FP-LINKED'}</span>
+                                {isMarkedToday && (
+                                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1 rounded font-sans ml-1 flex-shrink-0">
+                                    ✓ Done
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Real-Time Scan Result & Live Fee Alert */}
+          {/* Real-Time Scan Result & Live Fee Alert (Shared by Both Face & Fingerprint!) */}
           <div
             className="p-3.5 lg:p-4 rounded-xl border shadow-sm flex flex-col justify-between space-y-3 transition-all"
             style={{
@@ -519,9 +815,17 @@ export const SmartAttendanceTerminal = () => {
                       borderColor: colors.border
                     }}
                   >
-                    <span className="font-bold" style={{ color: colors.primary }}>STATUS: PRESENT</span>
+                    <span className="font-bold" style={{ color: lastCheckIn.alreadyMarked ? '#F59E0B' : colors.primary }}>
+                      {lastCheckIn.alreadyMarked ? 'STATUS: ALREADY MARKED TODAY' : 'STATUS: PRESENT'}
+                    </span>
                     <span style={{ color: colors.textMuted }}>TIME: {lastCheckIn.time}</span>
                   </div>
+
+                  {lastCheckIn.alreadyMarked && (
+                    <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[11px] font-medium text-center">
+                      Attendance already recorded for today. Next check-in allowed after 12:00 AM midnight.
+                    </div>
+                  )}
 
                   {/* CRITICAL: Live Fee Alert */}
                   {lastCheckIn.feeAlert && lastCheckIn.feeAlert.hasDues ? (
@@ -553,7 +857,7 @@ export const SmartAttendanceTerminal = () => {
                 </div>
               ) : (
                 <div className="py-10 text-center text-[11px]" style={{ color: colors.textMuted }}>
-                  Scan a face to see real-time student identity, timestamp, and fee pending alert.
+                  Scan a face or fingerprint to see real-time student identity, timestamp, and fee pending alert.
                 </div>
               )}
             </div>
@@ -563,115 +867,34 @@ export const SmartAttendanceTerminal = () => {
                 Recent Check-ins Today
               </div>
               <div className="space-y-1 max-h-44 overflow-y-auto">
-                {recentLogs.map((log, i) => (
-                  <div
-                    key={i}
-                    className="p-1.5 rounded-lg border text-[11px] flex items-center justify-between"
-                    style={{
-                      backgroundColor: colors.bgSecondary,
-                      borderColor: colors.border
-                    }}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.primary }} />
-                      <span className="font-semibold truncate" style={{ color: colors.textPrimary }}>{log.studentName}</span>
+                {recentLogs.length === 0 ? (
+                  <div className="text-[11px] text-center py-4" style={{ color: colors.textMuted }}>
+                    No check-ins recorded yet today.
+                  </div>
+                ) : (
+                  recentLogs.map((log, i) => (
+                    <div
+                      key={log.studentId || i}
+                      className="p-1.5 rounded-lg border text-[11px] flex items-center justify-between"
+                      style={{
+                        backgroundColor: colors.bgSecondary,
+                        borderColor: colors.border
+                      }}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#10B981' }} />
+                        <span className="font-semibold truncate" style={{ color: colors.textPrimary }}>{log.studentName}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-mono text-[10px]" style={{ color: colors.textMuted }}>
+                        <span>{log.time}</span>
+                        <span className="text-[9px] px-1 py-0.2 rounded font-sans font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800">
+                          Present
+                        </span>
+                      </div>
                     </div>
-                    <span className="font-mono text-[10px]" style={{ color: colors.textMuted }}>{log.time}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODE 2: FINGERPRINT SCANNER */}
-      {activeMode === 'fingerprint' && (
-        <div
-          className="p-4 lg:p-5 rounded-xl border shadow-sm max-w-2xl mx-auto space-y-4 transition-all"
-          style={{
-            backgroundColor: colors.bgCard,
-            borderColor: colors.border
-          }}
-        >
-          <div className="text-center pb-3 border-b" style={{ borderColor: colors.border }}>
-            <div
-              className="w-12 h-12 rounded-xl border flex items-center justify-center mx-auto mb-2"
-              style={{
-                backgroundColor: colors.badgeBg,
-                borderColor: colors.border,
-                color: colors.primary
-              }}
-            >
-              <Fingerprint className="w-7 h-7" />
-            </div>
-            <h3 className="text-base font-bold" style={{ color: colors.textPrimary }}>
-              Optical / Capacitive Fingerprint Biometric Terminal
-            </h3>
-            <p className="text-[11px] mt-0.5" style={{ color: colors.textSecondary }}>
-              External USB Fingerprint Reader API listener (DigitalPersona / SecuGen / WebAuthn standard)
-            </p>
-          </div>
-
-          <div
-            className="p-4 rounded-xl border flex flex-col items-center justify-center text-center space-y-3"
-            style={{
-              backgroundColor: colors.bgSecondary,
-              borderColor: colors.border
-            }}
-          >
-            <div
-              className="relative group cursor-pointer"
-              onClick={() => {
-                if (students.length > 0) processCheckIn(students[0], 'Fingerprint');
-              }}
-            >
-              <div
-                className="w-24 h-24 rounded-2xl border-2 flex items-center justify-center shadow-sm group-hover:scale-102 transition"
-                style={{
-                  backgroundColor: colors.bgCard,
-                  borderColor: colors.primary,
-                  color: colors.primary
-                }}
-              >
-                <Fingerprint className="w-12 h-12 animate-pulse" />
-              </div>
-              <div
-                className="absolute inset-0 rounded-2xl border animate-ping opacity-30 pointer-events-none"
-                style={{ borderColor: colors.primary }}
-              />
-            </div>
-
-            <div className="space-y-0.5">
-              <div className="text-xs font-bold" style={{ color: colors.textPrimary }}>Press Thumb / Finger on Scanner</div>
-              <p className="text-[11px]" style={{ color: colors.textSecondary }}>
-                Listening on USB COM Port / WebUSB Device. Click the sensor icon to simulate immediate biometric match.
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-[10.5px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.textSecondary }}>
-              Registered Fingerprint Templates (Click to Authenticate):
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {students.map((st) => (
-                <button
-                  key={st._id}
-                  onClick={() => processCheckIn(st, 'Fingerprint')}
-                  className="p-2 rounded-lg border text-left transition flex items-center gap-2 hover:scale-102"
-                  style={{
-                    backgroundColor: colors.bgSecondary,
-                    borderColor: colors.border
-                  }}
-                >
-                  <Fingerprint className="w-3.5 h-3.5 flex-shrink-0" style={{ color: colors.primary }} />
-                  <div className="min-w-0">
-                    <div className="text-[11px] font-semibold truncate" style={{ color: colors.textPrimary }}>{st.fullName}</div>
-                    <div className="text-[9.5px] font-mono" style={{ color: colors.textMuted }}>{st.fingerprintTemplateId || 'FP-LINKED'}</div>
-                  </div>
-                </button>
-              ))}
             </div>
           </div>
         </div>

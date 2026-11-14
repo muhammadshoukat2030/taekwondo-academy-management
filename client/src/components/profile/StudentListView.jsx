@@ -26,6 +26,10 @@ export const StudentListView = ({
   const { colors, theme, mode } = useTheme();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalStudents, setTotalStudents] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedBelt, setSelectedBelt] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
@@ -42,27 +46,47 @@ export const StudentListView = ({
     }, 3500);
   };
 
-  const fetchStudents = async () => {
+  const PAGE_SIZE = 12;
+
+  const fetchStudents = async (pageNum = 1, isAppend = false) => {
     try {
-      setLoading(true);
+      if (isAppend) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       const res = await api.getStudents({
         search,
         belt: selectedBelt,
-        status: selectedStatus
+        status: selectedStatus,
+        page: pageNum,
+        limit: PAGE_SIZE
       });
       if (res.success) {
-        setStudents(res.data);
+        const newStudents = res.data || [];
+        setStudents((prev) => (isAppend ? [...prev, ...newStudents] : newStudents));
+        setHasMore(Boolean(res.hasMore));
+        setTotalStudents(res.total !== undefined ? res.total : newStudents.length);
+        setPage(pageNum);
       }
     } catch (err) {
       console.error('Error fetching students:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchStudents();
+    setPage(1);
+    fetchStudents(1, false);
   }, [search, selectedBelt, selectedStatus]);
+
+  const handleLoadMore = () => {
+    if (!loading && !loadingMore && hasMore) {
+      fetchStudents(page + 1, true);
+    }
+  };
 
   // Handle Quick Toggle Active / Inactive
   const handleToggleStatus = async (student) => {
@@ -440,6 +464,37 @@ export const StudentListView = ({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Infinite Scroll / Load More Footer */}
+      {!loading && students.length > 0 && (
+        <div className="flex flex-col items-center justify-center pt-4 pb-2 gap-2">
+          {hasMore ? (
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="px-5 py-2 rounded-xl text-xs font-bold border flex items-center gap-2 transition shadow-xs hover:shadow cursor-pointer bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                  <span>Loading more students...</span>
+                </>
+              ) : (
+                <>
+                  <span>Load More Students</span>
+                  <span className="text-[11px] font-mono-numbers px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                    {students.length} of {totalStudents}
+                  </span>
+                </>
+              )}
+            </button>
+          ) : (
+            <div className="text-center text-[12px] font-medium text-slate-700 dark:text-slate-300">
+              Showing all {students.length} {students.length === 1 ? 'student' : 'students'}
+            </div>
+          )}
         </div>
       )}
 

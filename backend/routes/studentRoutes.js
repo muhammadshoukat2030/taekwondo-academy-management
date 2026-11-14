@@ -14,7 +14,9 @@ router.route('/')
   .get(getStudents)
   .post(createStudent);
 
-router.post('/:id/biometrics', enrollBiometrics);
+router.route('/:id/biometrics')
+  .post(enrollBiometrics)
+  .put(enrollBiometrics);
 
 router.route('/:id')
   .get(getStudentById)

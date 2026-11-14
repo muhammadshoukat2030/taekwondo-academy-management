@@ -2,11 +2,20 @@ import { Attendance } from '../models/Attendance.js';
 import { Student } from '../models/Student.js';
 import { FeeLedger } from '../models/FeeLedger.js';
 
+// Helper to get local date string YYYY-MM-DD respecting local midnight transition
+const getLocalDateStr = (dateObj = new Date()) => {
+  const d = new Date(dateObj);
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const markAttendance = async (req, res) => {
   try {
-    const { studentId, date, status, method, mode, remarks, confidenceScore } = req.body;
+    const { studentId, date, status, method, mode, remarks, confidenceScore, forceUpdate } = req.body;
 
-    const todayStr = date || new Date().toISOString().split('T')[0];
+    const todayStr = date || getLocalDateStr();
     const monthYear = todayStr.substring(0, 7);
     const parts = todayStr.split('-');
     const year = parseInt(parts[0]);
@@ -38,7 +47,48 @@ export const markAttendance = async (req, res) => {
 
     const exactCheckInTime = req.body.checkInTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    let attendance = await Attendance.findOne({ student: student._id, date: todayStr });
+    // Live Fee Status Warning Alert
+    const currentLedger = await FeeLedger.findOne({ student: student._id, monthYear });
+    let feeAlert = null;
+    const remaining = currentLedger ? currentLedger.remainingBalance : (student.remainingBalance || 0);
+
+    if (remaining > 0) {
+      feeAlert = {
+        hasDues: true,
+        remainingBalance: remaining,
+        status: currentLedger?.status || 'UNPAID',
+        message: `Alert: PKR ${remaining} Fee Pending for this month`
+      };
+    } else {
+      feeAlert = {
+        hasDues: false,
+        message: 'Fee Fully Paid for current month'
+      };
+    }
+
+    // STRICT 1-CHECK-IN PER DAY RULE:
+    // Check if attendance is already recorded for this student today (valid until 12:00 AM midnight)
+    let existingAttendance = await Attendance.findOne({ student: student._id, date: todayStr });
+
+    if (existingAttendance && !forceUpdate) {
+      return res.status(200).json({
+        success: true,
+        alreadyMarked: true,
+        message: `Attendance already recorded today for ${student.fullName} at ${existingAttendance.checkInTime || 'Earlier'}. Next check-in allowed after 12:00 AM midnight.`,
+        data: existingAttendance,
+        student: {
+          id: student._id,
+          fullName: student.fullName,
+          fatherName: student.fatherName,
+          registrationNo: student.registrationNo,
+          currentBelt: student.currentBelt,
+          photo: student.photo
+        },
+        feeAlert
+      });
+    }
+
+    let attendance = existingAttendance;
     if (attendance) {
       attendance.status = normStatus;
       attendance.method = checkMethod;
@@ -62,27 +112,9 @@ export const markAttendance = async (req, res) => {
       await attendance.save();
     }
 
-    // Live Fee Status Warning Alert
-    const currentLedger = await FeeLedger.findOne({ student: student._id, monthYear });
-    let feeAlert = null;
-    const remaining = currentLedger ? currentLedger.remainingBalance : (student.remainingBalance || 0);
-
-    if (remaining > 0) {
-      feeAlert = {
-        hasDues: true,
-        remainingBalance: remaining,
-        status: currentLedger?.status || 'UNPAID',
-        message: `Alert: PKR ${remaining} Fee Pending for this month`
-      };
-    } else {
-      feeAlert = {
-        hasDues: false,
-        message: 'Fee Fully Paid for current month'
-      };
-    }
-
     res.json({
       success: true,
+      alreadyMarked: false,
       message: `Attendance marked (${attendance.status}) for ${student.fullName}`,
       data: attendance,
       student: {

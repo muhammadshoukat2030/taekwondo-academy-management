@@ -203,14 +203,9 @@ export const api = {
       const res = await apiClient.post('/students', studentData);
       return res.data;
     } catch (err) {
-      console.warn('API Offline - local admission created:', err.message);
-      const newStudent = {
-        ...studentData,
-        _id: 'local-' + Date.now(),
-        registrationNo: 'AMS-2026-' + Math.floor(100 + Math.random() * 900)
-      };
-      fallbackStudents.push(newStudent);
-      return { success: true, data: newStudent };
+      if (err.response?.data) return err.response.data;
+      console.error('Student registration error:', err.message);
+      return { success: false, message: err.message || 'Server connection failed' };
     }
   },
 
@@ -219,7 +214,8 @@ export const api = {
       const res = await apiClient.put(`/students/${id}`, updates);
       return res.data;
     } catch (err) {
-      return { success: true, data: { _id: id, ...updates } };
+      if (err.response?.data) return err.response.data;
+      return { success: false, message: err.message || 'Server connection failed' };
     }
   },
 

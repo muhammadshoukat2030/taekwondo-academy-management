@@ -4,6 +4,7 @@ import { FeeLedger } from '../models/FeeLedger.js';
 import { Attendance } from '../models/Attendance.js';
 import { Achievement } from '../models/Achievement.js';
 import { Certificate } from '../models/Certificate.js';
+import { escapeRegex, isValidPakPhone, isValidCNIC } from '../middleware/sanitize.js';
 
 const generateRegNo = async () => {
   const currentYear = new Date().getFullYear();
@@ -14,7 +15,7 @@ const generateRegNo = async () => {
 
 export const getStudents = async (req, res) => {
   try {
-    const { search, belt, status } = req.query;
+    const { search, belt, status, page, limit } = req.query;
     let query = {};
 
     if (status && status !== 'All') {
@@ -23,17 +24,35 @@ export const getStudents = async (req, res) => {
     if (belt && belt !== 'All') {
       query.currentBelt = belt;
     }
-    if (search) {
+    if (search && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       query.$or = [
-        { fullName: { $regex: search, $options: 'i' } },
-        { fatherName: { $regex: search, $options: 'i' } },
-        { registrationNo: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } }
+        { fullName: { $regex: safeSearch, $options: 'i' } },
+        { fatherName: { $regex: safeSearch, $options: 'i' } },
+        { registrationNo: { $regex: safeSearch, $options: 'i' } },
+        { phone: { $regex: safeSearch, $options: 'i' } }
       ];
     }
 
-    const students = await Student.find(query).sort({ createdAt: -1 }).lean();
-    res.json({ success: true, count: students.length, data: students });
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 0;
+    const total = await Student.countDocuments(query);
+
+    let queryExec = Student.find(query).sort({ createdAt: -1 });
+    if (limitNum > 0) {
+      queryExec = queryExec.skip((pageNum - 1) * limitNum).limit(limitNum);
+    }
+    const students = await queryExec.lean();
+
+    res.json({
+      success: true,
+      count: students.length,
+      total,
+      page: pageNum,
+      totalPages: limitNum > 0 ? Math.ceil(total / limitNum) : 1,
+      hasMore: limitNum > 0 ? pageNum * limitNum < total : false,
+      data: students
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -98,6 +117,23 @@ export const getStudentById = async (req, res) => {
 export const createStudent = async (req, res) => {
   try {
     const body = { ...req.body };
+
+    if (!body.fullName || !body.fullName.trim()) {
+      return res.status(400).json({ success: false, message: 'Student Full Name is required.' });
+    }
+    if (!body.fatherName || !body.fatherName.trim()) {
+      return res.status(400).json({ success: false, message: 'Father Name is required.' });
+    }
+    if (!body.phone || !body.phone.trim()) {
+      return res.status(400).json({ success: false, message: 'Contact Phone is required.' });
+    }
+    if (!isValidPakPhone(body.phone)) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid phone number (e.g. 0335-9117230).' });
+    }
+    if (body.cnicFormB && !isValidCNIC(body.cnicFormB)) {
+      return res.status(400).json({ success: false, message: 'CNIC / Form B must be 13 digits (e.g. 14301-8923412-1).' });
+    }
+
     if (!body.registrationNo) {
       body.registrationNo = await generateRegNo();
     }
@@ -166,6 +202,13 @@ export const createStudent = async (req, res) => {
 export const updateStudent = async (req, res) => {
   try {
     const body = { ...req.body };
+
+    if (body.phone && !isValidPakPhone(body.phone)) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid phone number (e.g. 0335-9117230).' });
+    }
+    if (body.cnicFormB && !isValidCNIC(body.cnicFormB)) {
+      return res.status(400).json({ success: false, message: 'CNIC / Form B must be 13 digits (e.g. 14301-8923412-1).' });
+    }
 
     // Auto calculate age if dob was updated and age is not explicitly set
     if (body.dob && !body.age) {

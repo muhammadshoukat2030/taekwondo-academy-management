@@ -3,7 +3,16 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from backend/.env then fallback to root .env
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
 
 import authRoutes from './routes/authRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
@@ -14,8 +23,7 @@ import achievementRoutes from './routes/achievementRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import { protectAdmin } from './middleware/authMiddleware.js';
-
-dotenv.config();
+import { sanitizeInput } from './middleware/sanitize.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -77,6 +85,7 @@ app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(sanitizeInput);
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
@@ -142,12 +151,60 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Express global error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Unhandled Server Error:', err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
+  });
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('exit', (code) => {
+  console.log(`🥋 [Process Exit]: Node process exited with code ${code}`);
+});
+
+process.on('beforeExit', (code) => {
+  console.log(`🥋 [Process BeforeExit]: Node process about to exit with code ${code}`);
+});
+
+process.on('SIGINT', () => {
+  console.log('🥋 [Signal]: SIGINT received. Shutting down gracefully.');
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('🥋 [Signal]: SIGTERM received. Shutting down gracefully.');
+  process.exit(0);
+});
+
 // Start Server for standalone execution (local development)
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, '127.0.0.1', () => {
+    const server = app.listen(PORT, '127.0.0.1', () => {
       console.log(`🥋 [Al Murtaza Shah TKD Express Backend] running on http://127.0.0.1:${PORT}`);
+    });
+
+    server.keepAliveTimeout = 65000;
+    server.headersTimeout = 66000;
+
+    server.on('error', (err) => {
+      console.error('❌ [HTTP Server Socket Error]:', err.message);
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is currently in use.`);
+      }
     });
   } catch (error) {
     console.error('❌ [Server Startup Failure]:', error.message);

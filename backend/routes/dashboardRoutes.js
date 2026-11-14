@@ -7,6 +7,7 @@ import {
 const router = express.Router();
 
 router.get('/kpis', getDashboardKPIs);
+router.get('/stats', getDashboardKPIs);
 router.get('/audit', getMonthlyAudit);
 
 export default router;

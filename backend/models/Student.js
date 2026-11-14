@@ -158,5 +158,9 @@ const studentSchema = new mongoose.Schema(
 );
 
 studentSchema.index({ fullName: 'text', fatherName: 'text', phone: 'text' });
+studentSchema.index({ status: 1, currentBelt: 1, createdAt: -1 });
+studentSchema.index({ phone: 1 });
+studentSchema.index({ cnicFormB: 1 });
+studentSchema.index({ createdAt: -1 });
 
 export const Student = mongoose.model('Student', studentSchema);

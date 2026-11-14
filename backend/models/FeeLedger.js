@@ -75,5 +75,8 @@ const feeLedgerSchema = new mongoose.Schema(
 );
 
 feeLedgerSchema.index({ student: 1, monthYear: 1 }, { unique: true });
+feeLedgerSchema.index({ monthYear: 1, status: 1 });
+feeLedgerSchema.index({ remainingBalance: 1, dueDate: 1 });
+feeLedgerSchema.index({ student: 1, year: -1, month: -1 });
 
 export const FeeLedger = mongoose.model('FeeLedger', feeLedgerSchema);

@@ -43,6 +43,22 @@ export const collectFee = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
+    // Duplicate payment protection (prevents double-clicks within 3 seconds)
+    const threeSecondsAgo = new Date(Date.now() - 3000);
+    const duplicateReceipt = await FeeReceipt.findOne({
+      student: student._id,
+      amountReceived: amount,
+      createdAt: { $gte: threeSecondsAgo }
+    }).lean();
+
+    if (duplicateReceipt) {
+      return res.status(200).json({
+        success: true,
+        message: `Fee of PKR ${amount} was already collected just now. Receipt #${duplicateReceipt.receiptNo}.`,
+        receipt: duplicateReceipt
+      });
+    }
+
     const targetMonthYear = billingMonthYear || monthYear || `${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`;
     const parts = targetMonthYear.split('-');
     const y = parseInt(parts[0]);
