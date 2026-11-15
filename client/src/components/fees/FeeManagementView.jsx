@@ -48,6 +48,7 @@ export const FeeManagementView = ({
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [monthlyFee, setMonthlyFee] = useState(1000);
   const [admissionFee, setAdmissionFee] = useState(0);
+  const [showAdmissionField, setShowAdmissionField] = useState(false);
   const [previousArrears, setPreviousArrears] = useState(0);
   const [receivedAmount, setReceivedAmount] = useState(1000);
   const [paymentMethod, setPaymentMethod] = useState('Cash');
@@ -113,6 +114,21 @@ export const FeeManagementView = ({
           return sObj && (sObj._id === found._id || sObj === found._id);
         });
 
+        // Only show admission fee input if student is new/unpaid or has pending admission fee
+        const hasUnpaidAdmission = def && Number(def.admissionFee) > 0 && Number(def.paidAmount) === 0;
+        const isFreshAdmission = (found.totalPaid === 0 || !found.totalPaid) && Number(found.admissionFee) > 0;
+
+        if (hasUnpaidAdmission) {
+          setAdmissionFee(Number(def.admissionFee));
+          setShowAdmissionField(true);
+        } else if (isFreshAdmission) {
+          setAdmissionFee(Number(found.admissionFee));
+          setShowAdmissionField(true);
+        } else {
+          setAdmissionFee(0);
+          setShowAdmissionField(false);
+        }
+
         if (def && def.remainingBalance > 0) {
           setPreviousArrears(def.previousBalance || 0);
           setReceivedAmount(def.totalDue);
@@ -121,11 +137,20 @@ export const FeeManagementView = ({
           setReceivedAmount(found.fixedMonthlyFee || 1000);
         }
       }
+    } else {
+      setSelectedStudent(null);
+      setMonthlyFee(1000);
+      setAdmissionFee(0);
+      setShowAdmissionField(false);
+      setPreviousArrears(0);
+      setReceivedAmount(1000);
     }
   }, [selectedStudentId, students, defaulters]);
 
-  const totalPayable = (monthlyFee || 0) + (admissionFee || 0) + (previousArrears || 0);
+  const effectiveAdmissionFee = showAdmissionField ? (admissionFee || 0) : 0;
+  const totalPayable = (monthlyFee || 0) + effectiveAdmissionFee + (previousArrears || 0);
   const calculatedRemainingBalance = Math.max(0, totalPayable - (receivedAmount || 0));
+  const advanceCredit = Math.max(0, (receivedAmount || 0) - totalPayable);
 
   const handleGenerateMonthlyDues = async () => {
     try {
@@ -160,6 +185,7 @@ export const FeeManagementView = ({
         studentId: selectedStudentId,
         amountReceived: receivedAmount,
         receivedAmount,
+        admissionFee: effectiveAdmissionFee,
         paymentMethod,
         receivedBy,
         notes: feeNotes
@@ -721,7 +747,7 @@ export const FeeManagementView = ({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div className={`grid grid-cols-1 ${showAdmissionField ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3 pt-1`}>
               <div>
                 <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
                   Monthly Academy Fee (PKR)
@@ -739,27 +765,52 @@ export const FeeManagementView = ({
                 />
               </div>
 
-              <div>
-                <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
-                  Admission Fee (if new)
-                </label>
-                <input
-                  type="number"
-                  value={admissionFee}
-                  onChange={(e) => setAdmissionFee(Number(e.target.value))}
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold focus:outline-none"
-                  style={{
-                    backgroundColor: colors.inputBg,
-                    borderColor: colors.border,
-                    color: colors.textPrimary
-                  }}
-                />
-              </div>
+              {showAdmissionField && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11.5px] font-medium" style={{ color: colors.textPrimary }}>
+                      Admission Fee (PKR)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAdmissionField(false);
+                        setAdmissionFee(0);
+                      }}
+                      className="text-[10px] text-rose-500 hover:text-rose-600 underline font-medium"
+                    >
+                      Hide / Remove
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    value={admissionFee}
+                    onChange={(e) => setAdmissionFee(Number(e.target.value))}
+                    className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold focus:outline-none"
+                    style={{
+                      backgroundColor: colors.inputBg,
+                      borderColor: colors.border,
+                      color: colors.textPrimary
+                    }}
+                  />
+                </div>
+              )}
 
               <div>
-                <label className="block text-[11.5px] font-medium mb-1" style={{ color: colors.textPrimary }}>
-                  Previous Arrears / Baqaya
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11.5px] font-medium" style={{ color: colors.textPrimary }}>
+                    Previous Arrears / Baqaya
+                  </label>
+                  {!showAdmissionField && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAdmissionField(true)}
+                      className="text-[10.5px] text-blue-500 hover:text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-0.5"
+                    >
+                      <span>+</span> Add Admission Fee
+                    </button>
+                  )}
+                </div>
                 <input
                   type="number"
                   value={previousArrears}
@@ -782,7 +833,9 @@ export const FeeManagementView = ({
             >
               <div>
                 <span className="text-[11.5px] font-medium" style={{ color: colors.textSecondary }}>Total Payable Amount:</span>
-                <p className="text-[10px] font-normal" style={{ color: colors.textMuted }}>Monthly + Admission + Carried Arrears</p>
+                <p className="text-[10px] font-normal" style={{ color: colors.textMuted }}>
+                  {effectiveAdmissionFee > 0 ? 'Monthly + Admission Fee + Carried Arrears' : 'Monthly Fee + Carried Arrears'}
+                </p>
               </div>
               <span className="text-[17px] font-semibold font-mono-numbers tabular-nums" style={{ color: colors.textPrimary }}>
                 PKR {totalPayable.toLocaleString()}
@@ -809,17 +862,27 @@ export const FeeManagementView = ({
               </div>
 
               <div>
-                <label className="block text-[11.5px] font-semibold mb-1 uppercase tracking-wider text-rose-500">
-                  Calculated Remaining Baqaya (PKR)
+                <label className="block text-[11.5px] font-semibold mb-1 uppercase tracking-wider" style={{ color: advanceCredit > 0 ? '#10b981' : '#f43f5e' }}>
+                  {advanceCredit > 0 ? 'Payment Status / Balance' : 'Calculated Remaining Baqaya (PKR)'}
                 </label>
                 <div
-                  className="w-full px-2.5 py-1.5 rounded-lg border text-[14px] font-mono-numbers font-semibold text-rose-500 flex items-center"
+                  className="w-full px-2.5 py-1.5 rounded-lg border text-[13px] font-mono-numbers font-semibold flex items-center justify-between transition-all"
                   style={{
-                    backgroundColor: colors.inputBg,
-                    borderColor: colors.border
+                    backgroundColor: advanceCredit > 0 ? 'rgba(16, 185, 129, 0.08)' : colors.inputBg,
+                    borderColor: advanceCredit > 0 ? '#10b981' : colors.border,
+                    color: advanceCredit > 0 ? '#10b981' : '#f43f5e'
                   }}
                 >
-                  PKR {calculatedRemainingBalance.toLocaleString()}
+                  <span>
+                    {calculatedRemainingBalance > 0
+                      ? `PKR ${calculatedRemainingBalance.toLocaleString()}`
+                      : 'PKR 0 (Baqaya Nil)'}
+                  </span>
+                  {advanceCredit > 0 && (
+                    <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded shadow-xs uppercase tracking-wide">
+                      Advance: +PKR {advanceCredit.toLocaleString()}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

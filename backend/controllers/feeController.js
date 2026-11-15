@@ -70,11 +70,12 @@ export const collectFee = async (req, res) => {
     const monthName = `${monthNames[m - 1]} ${y}`;
 
     let ledger = await FeeLedger.findOne({ student: student._id, monthYear: targetMonthYear });
+    const incomingAdmissionFee = (req.body.admissionFee !== undefined && Number(req.body.admissionFee) > 0) ? Number(req.body.admissionFee) : 0;
 
     if (!ledger) {
       const prevBal = student.remainingBalance || 0;
       const monthlyFee = student.fixedMonthlyFee || 1000;
-      const totalDue = monthlyFee + prevBal;
+      const totalDue = monthlyFee + incomingAdmissionFee + prevBal;
 
       ledger = new FeeLedger({
         student: student._id,
@@ -83,13 +84,16 @@ export const collectFee = async (req, res) => {
         month: m,
         year: y,
         monthlyFee,
-        admissionFee: 0,
+        admissionFee: incomingAdmissionFee,
         previousBalance: prevBal,
         totalDue,
         paidAmount: 0,
         remainingBalance: totalDue,
         status: 'UNPAID'
       });
+    } else if (incomingAdmissionFee > 0 && (!ledger.admissionFee || ledger.admissionFee === 0)) {
+      ledger.admissionFee = incomingAdmissionFee;
+      ledger.totalDue = (ledger.monthlyFee || 0) + incomingAdmissionFee + (ledger.previousBalance || 0);
     }
 
     const newPaidAmount = ledger.paidAmount + amount;
