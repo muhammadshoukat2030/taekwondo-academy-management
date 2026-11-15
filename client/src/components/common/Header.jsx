@@ -103,7 +103,7 @@ export const Header = ({
           </button>
 
           {/* Academy Brand Title */}
-          <div className="min-w-0 flex items-center gap-2.5">
+          <div className="min-w-0 flex items-center gap-2">
             {settings?.logo ? (
               <img
                 src={settings.logo}
@@ -117,7 +117,7 @@ export const Header = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[14px] sm:text-[15px] font-bold tracking-tight truncate"
+                  className="text-[13px] sm:text-[15px] font-bold tracking-tight truncate max-w-[125px] xs:max-w-[200px] sm:max-w-none"
                   style={{ color: colors.textHeading }}
                 >
                   {settings?.academyName || 'Al Murtaza Shah Taekwondo Academy'}
@@ -207,7 +207,7 @@ export const Header = ({
           {/* Quick Settings Shortcut */}
           <button
             onClick={() => onNavigate('settings')}
-            className={`p-1.5 rounded-lg border transition hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer ${
+            className={`hidden sm:flex p-1.5 rounded-lg border transition hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer ${
               activeTab === 'settings' ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'
             }`}
             style={{ borderColor: headerBorder }}
@@ -218,10 +218,10 @@ export const Header = ({
           </button>
 
           {/* Quick Action Navigation Buttons */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5">
             <button
               onClick={() => onNavigate('terminal')}
-              className="px-2.5 py-1.5 rounded-lg text-[12.5px] font-medium flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="hidden sm:flex px-2 sm:px-2.5 py-1.5 rounded-lg text-[11.5px] sm:text-[12.5px] font-medium items-center gap-1.5 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               title="Attendance Scanner Terminal"
             >
               <Camera className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
@@ -230,7 +230,7 @@ export const Header = ({
 
             <button
               onClick={() => onNavigate('fees')}
-              className="px-2.5 py-1.5 rounded-lg text-white text-[12.5px] font-semibold flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 transition shadow-xs cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg text-white text-[11.5px] sm:text-[12.5px] font-semibold flex items-center gap-1 sm:gap-1.5 bg-emerald-600 hover:bg-emerald-700 transition shadow-xs cursor-pointer"
               title="Collect Fee & Print POS Slip"
             >
               <CreditCard className="w-3.5 h-3.5 text-white" />
@@ -239,7 +239,7 @@ export const Header = ({
 
             <button
               onClick={() => onNavigate('admission')}
-              className="px-2.5 py-1.5 rounded-lg text-white text-[12.5px] font-semibold flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 transition shadow-xs cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-lg text-white text-[11.5px] sm:text-[12.5px] font-semibold flex items-center gap-1 sm:gap-1.5 bg-blue-600 hover:bg-blue-700 transition shadow-xs cursor-pointer"
               title="Register New Student"
             >
               <UserPlus className="w-3.5 h-3.5 text-white" />

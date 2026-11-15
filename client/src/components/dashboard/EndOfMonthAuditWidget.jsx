@@ -328,11 +328,11 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
           />
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Filter className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-          <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">Status:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto max-w-full overflow-x-auto pb-0.5">
+          <Filter className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 flex-shrink-0" />
+          <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 flex-shrink-0">Status:</span>
           <div
-            className="flex items-center p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-[12px]"
+            className="flex items-center p-0.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-[12px] flex-shrink-0"
           >
             {['All', 'PAID', 'PARTIAL', 'UNPAID'].map((st) => (
               <button

@@ -285,7 +285,7 @@ export const FeeManagementView = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b pb-2.5" style={{ borderColor: colors.border }}>
+      <div className="flex items-center gap-2 border-b pb-2.5 overflow-x-auto whitespace-nowrap max-w-full" style={{ borderColor: colors.border }}>
         <button
           onClick={() => setActiveTab('dashboard')}
           className="px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold flex items-center gap-1.5 transition cursor-pointer"
