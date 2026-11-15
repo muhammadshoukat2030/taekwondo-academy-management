@@ -300,7 +300,7 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
             </div>
             <div className="my-1">
               <div className="text-[21px] sm:text-[22px] font-bold font-mono tracking-tight tabular-nums leading-tight text-emerald-700 dark:text-emerald-400 truncate">
-                PKR {data.kpis.financial.totalFeeCollected.toLocaleString()}
+                PKR {(data.kpis.financial.totalFeeCollected || 0).toLocaleString()}
               </div>
               <div
                 className="text-[11.5px] font-normal truncate mt-0.5"
@@ -332,7 +332,7 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
             </div>
             <div className="my-1">
               <div className="text-[21px] sm:text-[22px] font-bold font-mono tracking-tight tabular-nums leading-tight text-rose-700 dark:text-rose-400 truncate">
-                PKR {data.kpis.financial.totalRemainingBalance.toLocaleString()}
+                PKR {(data.kpis.financial.totalRemainingBalance || 0).toLocaleString()}
               </div>
               <div className="text-[11.5px] font-medium truncate mt-0.5 text-rose-700 dark:text-rose-400">
                 {data.kpis.financial.breakdown.unpaid} Defaulters Pending
@@ -651,7 +651,7 @@ export const DashboardView = ({ onOpenStudent, onNavigate }) => {
               </div>
 
               <div className="mt-3 pt-2.5 border-t flex items-center justify-between text-[12px]" style={{ borderColor: colors.border }}>
-                <span className="font-normal" style={{ color: subtitleColor }}>Expected: PKR {data.kpis.financial.totalExpectedFee.toLocaleString()}</span>
+                <span className="font-normal" style={{ color: subtitleColor }}>Expected: PKR {(data.kpis.financial.totalExpectedFee || 0).toLocaleString()}</span>
                 <button
                   onClick={() => onNavigate('fees')}
                   className="font-medium hover:underline flex items-center gap-0.5 text-blue-600 dark:text-blue-400 cursor-pointer"

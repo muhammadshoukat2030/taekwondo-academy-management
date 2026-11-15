@@ -830,7 +830,7 @@ export const StudentProfileModal = ({
                   >
                     <span className="text-[10px] uppercase font-medium" style={{ color: colors.textSecondary }}>Lifetime Total Billed</span>
                     <div className="text-lg font-bold font-mono mt-0.5" style={{ color: colors.textPrimary }}>
-                      PKR {financialSummary.totalBilled.toLocaleString()}
+                      PKR {(financialSummary.totalBilled || 0).toLocaleString()}
                     </div>
                   </div>
                   <div
@@ -838,7 +838,7 @@ export const StudentProfileModal = ({
                   >
                     <span className="text-[10px] uppercase font-medium text-emerald-600 dark:text-emerald-400">Lifetime Total Paid</span>
                     <div className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-300 mt-0.5">
-                      PKR {financialSummary.totalPaid.toLocaleString()}
+                      PKR {(financialSummary.totalPaid || 0).toLocaleString()}
                     </div>
                   </div>
                   <div
@@ -846,7 +846,7 @@ export const StudentProfileModal = ({
                   >
                     <span className="text-[10px] uppercase font-medium text-rose-500">Remaining Baqaya</span>
                     <div className="text-lg font-bold font-mono text-rose-500 dark:text-rose-300 mt-0.5">
-                      PKR {financialSummary.totalRemaining.toLocaleString()}
+                      PKR {(financialSummary.totalRemaining || 0).toLocaleString()}
                     </div>
                   </div>
                 </div>

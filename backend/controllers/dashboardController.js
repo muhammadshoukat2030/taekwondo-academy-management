@@ -219,11 +219,11 @@ export const getMonthlyAudit = async (req, res) => {
       const sId = student._id.toString();
       const att = attMap[sId] || { present: 0, absent: 0, leave: 0, late: 0, total: 0 };
       const ledger = feeMap[sId] || {
-        paidAmount: student.totalPaid || 0,
-        remainingBalance: student.remainingBalance || student.fixedMonthlyFee || 1000,
-        totalDue: (student.fixedMonthlyFee || 1000) + (student.remainingBalance || 0),
+        paidAmount: 0,
+        remainingBalance: student.remainingBalance !== undefined ? student.remainingBalance : (student.fixedMonthlyFee || 1000),
+        totalDue: student.remainingBalance !== undefined && student.remainingBalance > 0 ? student.remainingBalance : (student.fixedMonthlyFee || 1000),
         dueDate: new Date(targetYear, targetMonth - 1, 10),
-        status: (student.remainingBalance === 0 ? 'PAID' : (student.totalPaid > 0 ? 'PARTIAL' : 'UNPAID'))
+        status: (student.remainingBalance === 0 ? 'PAID' : 'UNPAID')
       };
 
       const attendancePercentage = att.total > 0 ? Math.round((att.present / att.total) * 100) : 0;

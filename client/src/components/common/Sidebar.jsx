@@ -206,7 +206,7 @@ export const Sidebar = ({
           Stays fixed in place while content scrolls
           ========================================================= */}
       <aside
-        className={`hidden md:flex flex-col h-screen flex-shrink-0 border-r select-none transition-all duration-200 z-30 ${
+        className={`hidden md:flex flex-col h-full flex-shrink-0 border-r select-none transition-all duration-200 z-30 ${
           isCollapsed ? 'w-[68px]' : 'w-60'
         }`}
         style={{

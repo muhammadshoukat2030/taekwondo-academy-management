@@ -241,7 +241,14 @@ export const deleteStudent = async (req, res) => {
     if (!student) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
-    res.json({ success: true, message: 'Student deleted successfully' });
+    // Cascade cleanup to prevent orphan records
+    await Promise.all([
+      FeeLedger.deleteMany({ student: req.params.id }),
+      Attendance.deleteMany({ student: req.params.id }),
+      Achievement.deleteMany({ student: req.params.id }),
+      Certificate.deleteMany({ student: req.params.id })
+    ]);
+    res.json({ success: true, message: 'Student and related records deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

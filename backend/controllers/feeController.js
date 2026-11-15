@@ -166,10 +166,13 @@ export const getDefaulters = async (req, res) => {
       remainingBalance: { $gt: 0 }
     }).populate('student', 'fullName fatherName phone whatsapp registrationNo currentBelt status remainingBalance').lean();
 
+    // Filter out any potential orphans where student record was removed
+    const validDefaulters = defaulters.filter(d => d.student != null);
+
     res.json({
       success: true,
-      count: defaulters.length,
-      data: defaulters
+      count: validDefaulters.length,
+      data: validDefaulters
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

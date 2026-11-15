@@ -225,7 +225,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
               AL MURTAZA SHAH TAEKWONDO ACADEMY
             </h2>
             <div className="text-xs font-semibold font-urdu mt-0.5" style={{ color: colors.primary }}>
-              المurtضٰی شاہ تائیکوانڈو اکیڈمی کوہاٹ
+              المرتضیٰ شاہ تائیکوانڈو اکیڈمی کوہاٹ
             </div>
             <p className="text-[10.5px] mt-0.5" style={{ color: colors.textSecondary }}>
               Affiliated with Khyber Pakhtunkhwa Taekwondo Association & Pakistan Taekwondo Federation
@@ -1034,7 +1034,7 @@ export const AdmissionForm = ({ onSuccess, onNavigateToBiometrics }) => {
                   AL MURTAZA SHAH TAEKWONDO ACADEMY
                 </div>
                 <div className="text-base font-bold font-urdu">
-                  المurtضٰی شاہ تائیکوانڈو اکیڈمی کوہاٹ
+                  المرتضیٰ شاہ تائیکوانڈو اکیڈمی کوہاٹ
                 </div>
                 <p className="text-xs font-sans text-gray-700">
                   Abdur Rehman Plaza, Markaz Road, Chogi No. 7, Kohat • Contact: 0335-9117230

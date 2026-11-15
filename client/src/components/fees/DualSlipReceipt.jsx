@@ -81,7 +81,7 @@ _Helpline: 0335-9117230_`;
                 {settings?.academyName || 'AL MURTAZA SHAH TAEKWONDO ACADEMY'}
               </h2>
               <div className="text-[10px] font-semibold text-gray-700 font-urdu leading-tight">
-                المurtضٰی شاہ تائیکوانڈو اکیڈمی کوہاٹ
+                المرتضیٰ شاہ تائیکوانڈو اکیڈمی کوہاٹ
               </div>
             </div>
           </div>

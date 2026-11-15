@@ -218,7 +218,7 @@ export const FeeManagementView = ({
       : cleanPhone.replace(/[^0-9]/g, '');
 
     const message = `السلام علیکم محترم والد صاحب (${student.fatherName})،\n` +
-      `المurtضٰی شاہ تائیکوانڈو اکیڈمی کوہاٹ کی طرف سے اطلاع ہے کہ طالبعلم ${student.fullName} کی ماہانہ فیس برائے ${ledger.monthName || 'Current Month'} بقایا ہے:\n` +
+      `المرتضیٰ شاہ تائیکوانڈو اکیڈمی کوہاٹ کی طرف سے اطلاع ہے کہ طالبعلم ${student.fullName} کی ماہانہ فیس برائے ${ledger.monthName || 'Current Month'} بقایا ہے:\n` +
       `• واجب الادا بقایا فیس: PKR ${ledger.remainingBalance}\n` +
       `• آخری تاریخ: 10 تاریخ\n` +
       `برائے مہربانی اکیڈمی آفس (عبدالرحمن پلازہ چنگی نمبر 7 کوہاٹ) میں فیس جمع کروائیں۔ شکریہ!\n` +

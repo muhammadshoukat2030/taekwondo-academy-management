@@ -203,7 +203,7 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
             </span>
             <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate" style={{ color: colors.textPrimary }}>
               <span className="text-[10px] font-medium text-slate-400 mr-0.5">PKR</span>
-              {summary.totalExpected.toLocaleString()}
+              {(summary.totalExpected || 0).toLocaleString()}
             </div>
             <div className="text-[10px] sm:text-[10.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 truncate flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-slate-400 flex-shrink-0" />
@@ -224,7 +224,7 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
             </span>
             <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate text-emerald-600 dark:text-emerald-400">
               <span className="text-[10px] font-medium opacity-75 mr-0.5">PKR</span>
-              {summary.totalCollected.toLocaleString()}
+              {(summary.totalCollected || 0).toLocaleString()}
             </div>
             <div className="text-[10px] sm:text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-emerald-500 flex-shrink-0" />
@@ -245,7 +245,7 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
             </span>
             <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate text-rose-600 dark:text-rose-400">
               <span className="text-[10px] font-medium opacity-75 mr-0.5">PKR</span>
-              {summary.totalPending.toLocaleString()}
+              {(summary.totalPending || 0).toLocaleString()}
             </div>
             <div className="text-[10px] sm:text-[10.5px] font-medium text-rose-600 dark:text-rose-400 mt-0.5 truncate flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-rose-500 flex-shrink-0" />
@@ -478,15 +478,15 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
                       className="py-2 px-2.5 text-right font-mono-numbers font-semibold text-[12.5px]"
                       style={{ color: colors.textPrimary }}
                     >
-                      PKR {row.fee.totalDue.toLocaleString()}
+                      PKR {(row.fee.totalDue || 0).toLocaleString()}
                     </td>
 
                     <td className="py-2 px-2.5 text-right font-mono-numbers font-bold text-[12.5px] text-emerald-700 dark:text-emerald-400">
-                      PKR {row.fee.paidAmount.toLocaleString()}
+                      PKR {(row.fee.paidAmount || 0).toLocaleString()}
                     </td>
 
                     <td className="py-2 px-2.5 text-right font-mono-numbers font-bold text-[12.5px] text-rose-700 dark:text-rose-400">
-                      PKR {row.fee.remainingBalance.toLocaleString()}
+                      PKR {(row.fee.remainingBalance || 0).toLocaleString()}
                     </td>
 
                     <td className="py-2 px-2 text-center">
