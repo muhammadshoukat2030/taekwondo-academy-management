@@ -206,7 +206,7 @@ export const AcademySettingsView = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto pb-10">
+    <div className="space-y-4 w-full pb-10">
       {/* Toast Alert */}
       {toast && (
         <div

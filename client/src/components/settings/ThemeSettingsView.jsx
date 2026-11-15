@@ -40,7 +40,7 @@ export const ThemeSettingsView = () => {
   };
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto pb-8">
+    <div className="space-y-5 w-full pb-8">
       {/* Top Banner */}
       <div
         className="rounded-xl p-4 lg:p-5 border shadow-sm relative overflow-hidden transition-all"

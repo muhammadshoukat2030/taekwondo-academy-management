@@ -141,7 +141,7 @@ const AppContent = () => {
   // 3. Authenticated: Render Full Protected Admin Dashboard & Management Suite
   return (
     <div
-      className="h-screen w-screen overflow-hidden flex flex-row font-sans transition-colors duration-150"
+      className="fixed inset-0 h-full w-full overflow-hidden flex flex-row font-sans transition-colors duration-150"
       style={{
         backgroundColor: colors.bgMain,
         color: colors.textPrimary
@@ -158,7 +158,7 @@ const AppContent = () => {
       />
 
       {/* 2. Main Workspace Column: Header at top, scrollable main content below */}
-      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         <Header
           onNavigate={handleNavigate}
           activeTab={activeTab}
@@ -169,8 +169,8 @@ const AppContent = () => {
           defaulterCount={defaulterCount}
         />
 
-        <main className="flex-1 p-3.5 lg:p-5 overflow-y-auto w-full min-w-0">
-          <div className="max-w-7xl mx-auto space-y-4">
+        <main className="flex-1 p-2.5 sm:p-3.5 overflow-y-auto w-full min-w-0">
+          <div className="w-full space-y-3.5">
             {activeTab === 'dashboard' && (
               <DashboardView
                 onOpenStudent={handleOpenStudentProfile}

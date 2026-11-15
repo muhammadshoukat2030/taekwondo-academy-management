@@ -189,55 +189,128 @@ export const EndOfMonthAuditWidget = ({ onOpenStudent }) => {
 
       {/* Audit KPI Highlights */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 my-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 my-2.5">
+          {/* 1. Expected Billing */}
           <div
-            className="p-2.5 rounded-lg border bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700"
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: colors.bgCard,
+              borderColor: colors.border
+            }}
           >
-            <div className="text-[12px] font-medium text-slate-700 dark:text-slate-300">Expected Billing</div>
-            <div className="text-[16px] font-bold font-mono-numbers mt-0.5 tabular-nums text-slate-900 dark:text-slate-100">
-              PKR {summary.totalExpected.toLocaleString()}
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate block">
+              Expected Billing
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate" style={{ color: colors.textPrimary }}>
+              <span className="text-[10px] font-medium text-slate-400 mr-0.5">PKR</span>
+              {summary.totalExpected.toLocaleString()}
             </div>
-            <div className="text-[11.5px] mt-0.5 font-normal text-slate-600 dark:text-slate-400">{summary.totalStudentsCount} Students</div>
-          </div>
-
-          <div className="p-2.5 rounded-lg border bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800">
-            <div className="text-[12px] text-emerald-800 dark:text-emerald-300 font-medium">Total Collected</div>
-            <div className="text-[16px] font-bold text-emerald-700 dark:text-emerald-300 font-mono-numbers mt-0.5 tabular-nums">
-              PKR {summary.totalCollected.toLocaleString()}
+            <div className="text-[10px] sm:text-[10.5px] font-normal text-slate-500 dark:text-slate-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-slate-400 flex-shrink-0" />
+              <span>{summary.totalStudentsCount} Students</span>
             </div>
-            <div className="text-[11.5px] text-emerald-800 dark:text-emerald-300 mt-0.5 font-normal">{summary.collectionRate}% Recovered</div>
           </div>
 
-          <div className="p-2.5 rounded-lg border bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800">
-            <div className="text-[12px] text-rose-800 dark:text-rose-300 font-medium">Pending Baqaya</div>
-            <div className="text-[16px] font-bold text-rose-700 dark:text-rose-300 font-mono-numbers mt-0.5 tabular-nums">
-              PKR {summary.totalPending.toLocaleString()}
+          {/* 2. Total Collected */}
+          <div
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: mode === 'dark' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(16, 185, 129, 0.05)',
+              borderColor: 'rgba(16, 185, 129, 0.35)'
+            }}
+          >
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 truncate block">
+              Total Collected
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate text-emerald-600 dark:text-emerald-400">
+              <span className="text-[10px] font-medium opacity-75 mr-0.5">PKR</span>
+              {summary.totalCollected.toLocaleString()}
             </div>
-            <div className="text-[11.5px] text-rose-800 dark:text-rose-300 mt-0.5 font-normal">{summary.unpaidStudents + summary.partialStudents} Students</div>
+            <div className="text-[10px] sm:text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span>{summary.collectionRate}% Recovered</span>
+            </div>
           </div>
 
+          {/* 3. Pending Baqaya */}
           <div
-            className="p-2.5 rounded-lg border bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700"
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: mode === 'dark' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(244, 63, 94, 0.05)',
+              borderColor: 'rgba(244, 63, 94, 0.35)'
+            }}
           >
-            <div className="text-[12px] font-medium text-blue-700 dark:text-blue-300">Paid in Full</div>
-            <div className="text-[16px] font-bold font-mono-numbers mt-0.5 text-slate-900 dark:text-slate-100">{summary.paidStudents} Students</div>
-            <div className="text-[11.5px] mt-0.5 font-normal text-emerald-700 dark:text-emerald-400">Cleared 100%</div>
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 truncate block">
+              Pending Baqaya
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight tabular-nums whitespace-nowrap mt-0.5 truncate text-rose-600 dark:text-rose-400">
+              <span className="text-[10px] font-medium opacity-75 mr-0.5">PKR</span>
+              {summary.totalPending.toLocaleString()}
+            </div>
+            <div className="text-[10px] sm:text-[10.5px] font-medium text-rose-600 dark:text-rose-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-rose-500 flex-shrink-0" />
+              <span>{summary.unpaidStudents + summary.partialStudents} Students Due</span>
+            </div>
           </div>
 
+          {/* 4. Paid in Full */}
           <div
-            className="p-2.5 rounded-lg border bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700"
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: mode === 'dark' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.05)',
+              borderColor: 'rgba(59, 130, 246, 0.35)'
+            }}
           >
-            <div className="text-[12px] text-amber-800 dark:text-amber-300 font-medium">Partially Paid</div>
-            <div className="text-[16px] font-bold font-mono-numbers mt-0.5 text-slate-900 dark:text-slate-100">{summary.partialStudents} Students</div>
-            <div className="text-[11.5px] text-amber-700 dark:text-amber-400 mt-0.5 font-normal">Token / Partial</div>
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate block">
+              Paid in Full
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight whitespace-nowrap mt-0.5 truncate text-blue-600 dark:text-blue-400">
+              {summary.paidStudents} <span className="text-[10.5px] font-medium opacity-75">Students</span>
+            </div>
+            <div className="text-[10px] sm:text-[10.5px] font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span>Cleared 100%</span>
+            </div>
           </div>
 
+          {/* 5. Partially Paid */}
           <div
-            className="p-2.5 rounded-lg border bg-white dark:bg-slate-900/80 border-slate-300 dark:border-slate-700"
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: mode === 'dark' ? 'rgba(245, 158, 11, 0.08)' : 'rgba(245, 158, 11, 0.05)',
+              borderColor: 'rgba(245, 158, 11, 0.35)'
+            }}
           >
-            <div className="text-[12px] text-rose-800 dark:text-rose-300 font-medium">Defaulters</div>
-            <div className="text-[16px] font-bold text-rose-700 dark:text-rose-400 font-mono-numbers mt-0.5">{summary.unpaidStudents} Students</div>
-            <div className="text-[11.5px] text-rose-700 dark:text-rose-400 mt-0.5 font-normal">0 PKR Paid</div>
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 truncate block">
+              Partially Paid
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight whitespace-nowrap mt-0.5 truncate text-amber-600 dark:text-amber-400">
+              {summary.partialStudents} <span className="text-[10.5px] font-medium opacity-75">Students</span>
+            </div>
+            <div className="text-[10px] sm:text-[10.5px] font-medium text-amber-600 dark:text-amber-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-amber-500 flex-shrink-0" />
+              <span>Token / Partial</span>
+            </div>
+          </div>
+
+          {/* 6. Defaulters */}
+          <div
+            className="p-2 sm:p-2.5 rounded-lg border flex flex-col justify-between transition-all"
+            style={{
+              backgroundColor: mode === 'dark' ? 'rgba(244, 63, 94, 0.08)' : 'rgba(244, 63, 94, 0.05)',
+              borderColor: 'rgba(244, 63, 94, 0.35)'
+            }}
+          >
+            <span className="text-[10px] sm:text-[10.5px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400 truncate block">
+              Defaulters
+            </span>
+            <div className="text-[14px] sm:text-[15px] font-bold font-mono-numbers tracking-tight whitespace-nowrap mt-0.5 truncate text-rose-600 dark:text-rose-400">
+              {summary.unpaidStudents} <span className="text-[10.5px] font-medium opacity-75">Students</span>
+            </div>
+            <div className="text-[10px] sm:text-[10.5px] font-medium text-rose-600 dark:text-rose-400 mt-0.5 truncate flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-rose-500 flex-shrink-0" />
+              <span>0 PKR Paid</span>
+            </div>
           </div>
         </div>
       )}
